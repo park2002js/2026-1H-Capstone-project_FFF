@@ -12,7 +12,6 @@
 
   * **Engine**: `Unity Engine 6000.0.71f1`
   * **IDE**: `Visual Studio 2022`
-  * **Version Control**: `Git` / `GitHub`
 
 
 ## 🚀 시작 가이드
@@ -38,7 +37,8 @@ git clone https://github.com/park2002js/2026-1H-Capstone-project_FFF.git
 
 
 ## 🤝 팀 규칙
-
+*
+*
 
 
 
