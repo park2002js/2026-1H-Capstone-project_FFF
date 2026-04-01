@@ -15,6 +15,7 @@ namespace FFF.UI.Core
     /// - 비즈니스 로직을 알지 못한다.
     /// - 사용자 행동은 이벤트(Action)로 UIManager에게 전달만 한다.
     /// </summary>
+    [RequireComponent(typeof(CanvasGroup))]
     public abstract class BaseUIComponent : MonoBehaviour
     {
         [Header("UI 화면 설정")]

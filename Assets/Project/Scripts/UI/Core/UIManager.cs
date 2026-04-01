@@ -63,6 +63,10 @@ namespace FFF.UI.Core
                     _screens.Add(entry.ScreenName, entry.Screen);
                     entry.Screen.Hide(); // 초기에는 모두 숨김
                 }
+                else if (entry.Screen != null)
+                {
+                    Debug.LogWarning($"[UIManager] 중복된 UI 화면 이름이 발견되어 무시되었습니다. Inspector를 확인하세요: {entry.ScreenName}");
+                }
             }
 
             // Observer 구독: Controller → UI 방향 이벤트
