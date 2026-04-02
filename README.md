@@ -102,7 +102,7 @@ Assets/
 │   │   │
 │   │   └── Data/                    # 데이터 모델 (Model 영역)
 │   │       ├── HwaTuCard.cs         # 화투 카드 데이터 구조
-│   │       ├── HwaTuCardDatabase.cs # 화투 48장 전체 데이터 생성
+│   │       ├── HwaTuCardDatabase.cs # 화투 20장 전체 데이터 생성
 │   │       ├── SeotdaHand.cs        # 섯다 족보 enum + 공격력 테이블
 │   │       ├── SeotdaJudge.cs       # 족보 판정 시스템
 │   │       ├── ScriptableObjects/   # S.O 정의 클래스
