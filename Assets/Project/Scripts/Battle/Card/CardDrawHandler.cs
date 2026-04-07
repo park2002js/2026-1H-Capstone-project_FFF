@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,6 +30,9 @@ namespace FFF.Battle.Card
         /// <summary>남은 리롤 횟수.</summary>
         public int RerollsRemaining => _rerollsRemaining;
 
+        /// <summary>가중치 드로우 함수. null이면 균등 드로우 (기존 동작).</summary>
+        private readonly Func<Data.HwaTuCard, float> _drawWeightFunc;
+
         /// <summary>리롤 가능 여부.</summary>
         public bool CanReroll => _rerollsRemaining > 0;
 
@@ -45,14 +49,17 @@ namespace FFF.Battle.Card
         /// <param name="pile">카드 데이터를 관리하는 CardPile</param>
         /// <param name="drawCount">한 턴에 뽑는 카드 수 (k). 기본 5.</param>
         /// <param name="maxRerolls">턴당 리롤 최대 횟수 (r). 기본 1.</param>
-        public CardDrawHandler(CardPile pile, int drawCount = 5, int maxRerolls = 1)
+        /// <param name="drawWeightFunc">가중치 드로우 함수. null이면 균등 드로우.</param>
+        public CardDrawHandler(CardPile pile, int drawCount = 5, int maxRerolls = 1,
+                               Func<Data.HwaTuCard, float> drawWeightFunc = null)
         {
             _pile = pile;
             _drawCount = drawCount;
             _maxRerolls = maxRerolls;
             _rerollsRemaining = _maxRerolls;
+            _drawWeightFunc = drawWeightFunc;
         }
-
+ 
         #endregion
 
         #region === 드로우 ===
@@ -71,12 +78,23 @@ namespace FFF.Battle.Card
         public List<Data.HwaTuCard> DrawCards()
         {
             EnsureDrawPileHasEnough(_drawCount);
-
-            var drawn = _pile.MoveDrawToHand(_drawCount);
+ 
+            // 가중치 함수가 있으면 가중치 드로우, 없으면 기존 균등 드로우
+            List<Data.HwaTuCard> drawn;
+            if (_drawWeightFunc != null)
+            {
+                drawn = _pile.MoveDrawToHandWeighted(_drawCount, _drawWeightFunc);
+            }
+            else
+            {
+                drawn = _pile.MoveDrawToHand(_drawCount);
+            }
+ 
             _rerollsRemaining = _maxRerolls;
-
-            Debug.Log($"[CardDrawHandler] {drawn.Count}장 드로우 완료. 남은 리롤: {_rerollsRemaining}");
-
+ 
+            Debug.Log($"[CardDrawHandler] {drawn.Count}장 드로우 완료. " +
+                      $"가중치: {(_drawWeightFunc != null ? "적용" : "없음")}. 남은 리롤: {_rerollsRemaining}");
+ 
             return drawn;
         }
 
@@ -126,6 +144,20 @@ namespace FFF.Battle.Card
             return redrawn;
         }
 
+        /// <summary>
+        /// 현재 턴의 남은 리롤 횟수를 즉시 증가시킨다.
+        /// 다음 턴 DrawCards() 호출 시 _rerollsRemaining이 _maxRerolls로 리셋되므로
+        /// 자연스럽게 1턴짜리 효과가 된다.
+        /// 
+        /// 호출자: DeckSystem (조커 효과 등)
+        /// 호출자는 왜 리롤이 늘어나는지 알 필요 없다.
+        /// </summary>
+        public void AddTempRerolls(int bonus)
+        {
+            _rerollsRemaining += bonus;
+            Debug.Log($"[CardDrawHandler] 임시 리롤 추가: +{bonus}. 현재 남은 리롤: {_rerollsRemaining}");
+        }
+        
         #endregion
 
         #region === 내부 로직 ===

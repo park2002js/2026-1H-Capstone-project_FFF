@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using FFF.Core.Events;
@@ -67,6 +68,12 @@ namespace FFF.Battle.Card
         private CardDrawHandler _drawHandler;
         private CardSelectionHandler _selectionHandler;
 
+        /// <summary>장신구 등 외부 효과에 의한 보너스 리롤 횟수.</summary>
+        private int _bonusRerolls = 0;
+ 
+        /// <summary>장신구 등 외부 효과에 의한 가중치 드로우 함수.</summary>
+        private Func<Data.HwaTuCard, float> _drawWeightFunc = null;
+ 
         #endregion
 
         #region === Getter (외부 → 데이터 조회) ===
@@ -99,6 +106,42 @@ namespace FFF.Battle.Card
 
         #endregion
 
+        #region === Setter: 외부 효과 적용 (장신구/조커 매니저가 호출) ===
+ 
+        /// <summary>
+        /// 보너스 리롤 횟수를 증감한다.
+        /// 장신구 등 외부 효과에서 호출. Initialize() 시 반영된다.
+        /// 호출자가 누구인지는 DeckSystem이 알 필요 없다.
+        /// </summary>
+        public void AddBonusRerolls(int bonus)
+        {
+            _bonusRerolls += bonus;
+            Debug.Log($"[DeckSystem] 보너스 리롤 변경: {_bonusRerolls} (변경량: {(bonus >= 0 ? "+" : "")}{bonus})");
+        }
+ 
+        /// <summary>
+        /// 가중치 드로우 함수를 설정한다.
+        /// 장신구 등 외부 효과에서 호출. Initialize() 시 CardDrawHandler에 전달된다.
+        /// null로 설정하면 균등 드로우로 복귀.
+        /// </summary>
+        public void SetDrawWeightFunc(Func<Data.HwaTuCard, float> func)
+        {
+            _drawWeightFunc = func;
+            Debug.Log($"[DeckSystem] 가중치 드로우 함수 {(func != null ? "설정" : "해제")}");
+        }
+ 
+        /// <summary>
+        /// 현재 턴의 남은 리롤 횟수를 즉시 증가시킨다.
+        /// 조커 등 1회성 효과에서 호출.
+        /// 다음 턴 DrawCards() 시 자동 리셋되므로 해제 불필요.
+        /// </summary>
+        public void AddTempRerolls(int bonus)
+        {
+            _drawHandler.AddTempRerolls(bonus);
+        }
+ 
+        #endregion
+ 
         #region === 초기화 ===
 
         /// <summary>
@@ -111,13 +154,14 @@ namespace FFF.Battle.Card
         {
             // 하위 시스템 생성
             _pile = new CardPile();
-            _drawHandler = new CardDrawHandler(_pile, _drawCount, _maxRerolls);
+            _drawHandler = new CardDrawHandler(_pile, _drawCount, _maxRerolls + _bonusRerolls, _drawWeightFunc);
             _selectionHandler = new CardSelectionHandler(_pile, _maxSelectCount);
 
             // CardPile 초기화 (셔플 포함)
             _pile.Initialize(allCards, seed);
 
-            Debug.Log($"[DeckSystem] 전투 초기화 완료. 카드 {allCards.Count}장, 시드: {seed}");
+            Debug.Log($"[DeckSystem] 전투 초기화 완료. 카드 {allCards.Count}장, 시드: {seed}, " +
+                      $"보너스 리롤: {_bonusRerolls}, 가중치 드로우: {(_drawWeightFunc != null ? "적용" : "없음")}");
         }
 
         #endregion

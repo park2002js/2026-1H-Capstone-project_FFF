@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace FFF.Battle.Card
 {
@@ -89,6 +90,54 @@ namespace FFF.Battle.Card
             return moved;
         }
 
+        /// <summary>
+        /// DrawPile에서 가중치 기반으로 count장을 Hand로 이동한다.
+        /// 가중치가 높은 카드가 더 자주 선택된다.
+        /// 
+        /// 호출자: CardDrawHandler (가중치 함수가 설정되어 있을 때)
+        /// 호출자는 왜 가중치가 걸려있는지 알 필요 없다. 그냥 "가중치로 뽑아" 하면 된다.
+        /// </summary>
+        /// <param name="count">뽑을 카드 수</param>
+        /// <param name="weightFunc">카드별 가중치 반환 함수. 값이 클수록 자주 뽑힌다.</param>
+        /// <returns>실제로 이동된 카드 목록</returns>
+        public List<Data.HwaTuCard> MoveDrawToHandWeighted(int count, Func<Data.HwaTuCard, float> weightFunc)
+        {
+            int actual = Mathf.Min(count, _drawPile.Count);
+            var moved = new List<Data.HwaTuCard>(actual);
+
+            for (int i = 0; i < actual; i++)
+            {
+                // 남은 카드들의 가중치 합산
+                float totalWeight = 0f;
+                for (int j = 0; j < _drawPile.Count; j++)
+                {
+                    totalWeight += weightFunc(_drawPile[j]);
+                }
+
+                // 가중치 기반 랜덤 선택
+                float roll = (float)_random.NextDouble() * totalWeight;
+                float cumulative = 0f;
+                int pickedIndex = 0;
+
+                for (int j = 0; j < _drawPile.Count; j++)
+                {
+                    cumulative += weightFunc(_drawPile[j]);
+                    if (roll <= cumulative)
+                    {
+                        pickedIndex = j;
+                        break;
+                    }
+                }
+
+                var card = _drawPile[pickedIndex];
+                _drawPile.RemoveAt(pickedIndex);
+                _hand.Add(card);
+                moved.Add(card);
+            }
+
+            return moved;
+        }
+        
         /// <summary>
         /// 지정한 카드들을 Hand에서 제거하고 DrawPile로 되돌린다.
         /// </summary>
