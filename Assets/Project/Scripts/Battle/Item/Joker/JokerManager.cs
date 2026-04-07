@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FFF.Battle.FSM;
 using FFF.Data;
+using FFF.Core.Events;
 
 namespace FFF.Battle.Item.Joker
 {
@@ -47,20 +48,20 @@ namespace FFF.Battle.Item.Joker
 
         #region === Unity 생명주기 ===
 
+        [Header("=== 수신할 이벤트 ===")]
+        [Tooltip("BattleManager가 방송하는 TurnEnd 이벤트")]
+        [SerializeField] private GameEvent _onTurnEndEvent;
+
         private void OnEnable()
         {
-            if (BattleManager.Instance != null)
-            {
-                BattleManager.Instance.OnTurnEnd += ResetTurnEffects;
-            }
+            if (_onTurnEndEvent != null)
+                _onTurnEndEvent.Subscribe(ResetTurnEffects);
         }
 
         private void OnDisable()
         {
-            if (BattleManager.Instance != null)
-            {
-                BattleManager.Instance.OnTurnEnd -= ResetTurnEffects;
-            }
+            if (_onTurnEndEvent != null)
+                _onTurnEndEvent.Unsubscribe(ResetTurnEffects);
         }
 
         #endregion

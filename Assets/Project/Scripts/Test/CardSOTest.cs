@@ -8,7 +8,7 @@ namespace FFF.Test
     /// <summary>
     /// SO 카드 로딩 + 기존 시스템 호환성 테스트.
     /// 빈 GameObject에 붙이고 Play하면 Console에 결과 출력.
-    /// 테스트 완료 후 삭제할 것.
+    /// 이 스크립트 단 하나만 씬에 존재하면, 나머지 테스트들도 자동으로 연계 실행됩니다.
     /// </summary>
     public class CardSOTest : MonoBehaviour
     {
@@ -20,7 +20,7 @@ namespace FFF.Test
             _pass = 0;
             _fail = 0;
 
-            Debug.Log("========== [CardSOTest] 테스트 시작 ==========");
+            Debug.Log("========== [1. CardSOTest] 테스트 시작 ==========");
 
             Test_LoadAllCards();
             Test_CardCount();
@@ -29,7 +29,14 @@ namespace FFF.Test
             Test_CardPileCompatibility();
             Test_SeotdaJudgeCompatibility();
 
-            Debug.Log($"========== [CardSOTest] 결과: {_pass} 통과 / {_fail} 실패 ==========");
+            Debug.Log($"========== [1. CardSOTest] 결과: {_pass} 통과 / {_fail} 실패 ==========\n");
+
+            // 요구사항 1번: 이 스크립트 하나로 모든 테스트가 동작하도록 나머지 테스트 자동 실행
+            var cardSystemTest = gameObject.AddComponent<CardSystemTest>();
+            cardSystemTest.RunTest();
+
+            var itemSystemTest = gameObject.AddComponent<ItemSystemTest>();
+            itemSystemTest.RunTest();
         }
 
         /// <summary>1. SO 로드가 되는지</summary>
