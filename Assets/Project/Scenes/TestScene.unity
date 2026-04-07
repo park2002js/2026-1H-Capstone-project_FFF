@@ -220,7 +220,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 262633516}
-  - component: {fileID: 262633517}
+  - component: {fileID: 262633518}
   m_Layer: 0
   m_Name: CardSystemTest
   m_TagString: Untagged
@@ -243,7 +243,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &262633517
+--- !u!114 &262633518
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -252,10 +252,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 262633514}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ae08a43b40783b489e80f9c4c6e6ed1, type: 3}
+  m_Script: {fileID: 11500000, guid: 6f9341ecb3912ac428029758406046c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _testSeed: 42
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
