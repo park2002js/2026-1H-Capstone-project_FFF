@@ -10,7 +10,7 @@ namespace FFF.Battle.FSM
     // 전투의 현재 진행 상태를 나타내는 열거형
     public enum TurnState
     {
-        None,
+        None,       // 배틀 시작 & 종료
         TurnReady,  // 턴 준비 (드로우 및 멀리건)
         TurnProceed,// 턴 진행 (카드 선택, 아이템 사용)
         TurnEnd     // 턴 종료 (공격력 비교, 피해량 적용)

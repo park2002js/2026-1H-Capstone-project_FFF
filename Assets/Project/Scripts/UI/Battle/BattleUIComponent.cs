@@ -37,8 +37,11 @@ namespace FFF.UI.Battle
         public void SetupItemIcons(List<string> accessoryIds, List<string> jokerIds)
         {
             // 실제 시연을 위해 하위 오브젝트로 더미 아이콘 생성 (프리팹이 있을 경우)
-            foreach(var acc in accessoryIds) Instantiate(_tempAccessoryIconPrefab, _accessoryLayoutGroup);
-            foreach(var jkr in jokerIds) Instantiate(_tempJockerIconPrefab, _jokerLayoutGroup);
+            if (_tempJockerIconPrefab != null && _tempAccessoryIconPrefab != null)
+            {
+                foreach(var acc in accessoryIds) Instantiate(_tempAccessoryIconPrefab, _accessoryLayoutGroup);
+                foreach(var jkr in jokerIds) Instantiate(_tempJockerIconPrefab, _jokerLayoutGroup);
+            }
             Debug.Log($"[BattleUI] 🎒 장신구 {accessoryIds.Count}개, 조커 {jokerIds.Count}개 아이콘 생성 (프리팹 기준)");
         }
     }
