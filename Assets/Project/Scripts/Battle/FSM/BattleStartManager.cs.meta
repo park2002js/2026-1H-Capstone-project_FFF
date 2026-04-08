@@ -1,2 +1,17 @@
 fileFormatVersion: 2
 guid: 1627bb0d4f28cde4980bbfcaf57ade6f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _deckSystem: {instanceID: 0}
+  - _accessoryManager: {instanceID: 0}
+  - _jokerManager: {instanceID: 0}
+  - _enemyData: {instanceID: 0}
+  - _battleUI: {instanceID: 0}
+  - _onBattleStartEvent: {fileID: 11400000, guid: e2f42644fdf6823499e52e7b3754a7c7, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
