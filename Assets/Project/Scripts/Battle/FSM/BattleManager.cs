@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using FFF.Core.Events;
 
 
 namespace FFF.Battle.FSM
@@ -24,12 +25,14 @@ namespace FFF.Battle.FSM
         public TurnState CurrentPhase { get; private set; } = TurnState.None;
 
         // ==========================================
-        // 상태별 이벤트 델리게이트 (외부에서 함수 등록)
+        // SO Event Channels (상태 변경 시 방송할 채널들)
         // ==========================================
-        public event Action OnBattleStart;
-        public event Action OnTurnReady;
-        public event Action OnTurnProceed;
-        public event Action OnTurnEnd;
+        [Header("=== 이벤트 채널 ===")]
+        [SerializeField] private GameEvent _onBattleStart;
+        [SerializeField] private GameEvent _onTurnReady;
+        [SerializeField] private GameEvent _onTurnProceed;
+        [SerializeField] private GameEvent _onTurnEnd;
+        [SerializeField] private GameEvent _onBattleEnd;
 
         // ==========================================
         // 초기화
@@ -57,11 +60,22 @@ namespace FFF.Battle.FSM
         {
             CurrentPhase = TurnState.None;
             
-            // 전투 시작 이벤트 호출 (초기화 관련 로직들이 등록됨)
-            OnBattleStart?.Invoke();
+            // 전투 시작 이벤트 호출 (초기화 관련 로직들이 등록되어 있음)
+            _onBattleStart?.Raise();
             
             // 첫 턴 준비 단계로 바로 진입
             ChangeState(TurnState.TurnReady);
+        }
+
+        /// <summary>
+        /// 전투를 처음 시작할 때 호출
+        /// </summary>
+        public void EndBattle()
+        {
+            CurrentPhase = TurnState.None;
+            
+            // 전투 종료 이벤트 호출
+            _onBattleEnd?.Raise();
         }
 
         /// <summary>
@@ -79,13 +93,13 @@ namespace FFF.Battle.FSM
             switch (CurrentPhase)
             {
                 case TurnState.TurnReady:
-                    OnTurnReady?.Invoke();
+                    _onTurnReady?.Raise();
                     break;
                 case TurnState.TurnProceed:
-                    OnTurnProceed?.Invoke();
+                    _onTurnProceed?.Raise();
                     break;
                 case TurnState.TurnEnd:
-                    OnTurnEnd?.Invoke();
+                    _onTurnEnd?.Raise();
                     break;
             }
         }

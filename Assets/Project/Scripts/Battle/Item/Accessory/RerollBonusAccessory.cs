@@ -1,3 +1,5 @@
+using FFF.Battle.Modifier;
+
 namespace FFF.Battle.Item.Accessory
 {
     /// <summary>
@@ -17,14 +19,22 @@ namespace FFF.Battle.Item.Accessory
 
         private const int BONUS_REROLLS = 1;
 
+        // 생성한 모디파이어를 보유한 내부 변수
+        private TurnModifier _appliedModifier;
+
         public override void Apply(Card.DeckSystem deckSystem)
         {
-            deckSystem.AddBonusRerolls(BONUS_REROLLS);
+            _appliedModifier = new TurnModifier(ModifierType.MaxRerolls, BONUS_REROLLS, TurnModifier.PERMANENT_TURN);
+            deckSystem.AddModifier(_appliedModifier);
         }
 
         public override void Remove(Card.DeckSystem deckSystem)
         {
-            deckSystem.AddBonusRerolls(-BONUS_REROLLS);
+            if (_appliedModifier != null)
+            {
+                deckSystem.RemoveModifier(_appliedModifier);
+                _appliedModifier = null;
+            }
         }
     }
 }

@@ -1,3 +1,5 @@
+using FFF.Battle.Modifier;
+
 namespace FFF.Battle.Item.Joker
 {
     /// <summary>
@@ -18,10 +20,11 @@ namespace FFF.Battle.Item.Joker
 
         protected override void Activate(JokerContext context)
         {
-            // DeckSystem을 통해 현재 턴의 남은 리롤 횟수를 직접 증가.
-            // 다음 턴 DrawCards() 호출 시 _rerollsRemaining이 _maxRerolls로 리셋되므로
-            // 자연스럽게 1턴짜리 효과가 된다.
-            context.DeckSystem.AddTempRerolls(BONUS_REROLLS);
+            // Turn Modifier -> DeckSystem을 통해 현재 턴의 남은 리롤 횟수를 직접 증가.
+            // 다음 턴 시작시 DeckSystem 내부에서 자동으로 턴수가 차감된다.
+            var burstModifier = new TurnModifier(ModifierType.MaxRerolls, BONUS_REROLLS, 1);
+            
+            context.DeckSystem.AddModifier(burstModifier);
         }
     }
 }

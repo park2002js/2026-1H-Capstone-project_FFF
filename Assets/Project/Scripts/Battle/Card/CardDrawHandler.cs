@@ -20,24 +20,10 @@ namespace FFF.Battle.Card
     public class CardDrawHandler
     {
         private readonly CardPile _pile;
-        private readonly int _drawCount;
-        private readonly int _maxRerolls;
-
-        private int _rerollsRemaining;
 
         #region === Getter ===
-
-        /// <summary>남은 리롤 횟수.</summary>
-        public int RerollsRemaining => _rerollsRemaining;
-
         /// <summary>가중치 드로우 함수. null이면 균등 드로우 (기존 동작).</summary>
         private readonly Func<Data.HwaTuCard, float> _drawWeightFunc;
-
-        /// <summary>리롤 가능 여부.</summary>
-        public bool CanReroll => _rerollsRemaining > 0;
-
-        /// <summary>한 턴 드로우 장수.</summary>
-        public int DrawCount => _drawCount;
 
         #endregion
 
@@ -47,16 +33,10 @@ namespace FFF.Battle.Card
         /// CardDrawHandler를 생성한다.
         /// </summary>
         /// <param name="pile">카드 데이터를 관리하는 CardPile</param>
-        /// <param name="drawCount">한 턴에 뽑는 카드 수 (k). 기본 5.</param>
-        /// <param name="maxRerolls">턴당 리롤 최대 횟수 (r). 기본 1.</param>
         /// <param name="drawWeightFunc">가중치 드로우 함수. null이면 균등 드로우.</param>
-        public CardDrawHandler(CardPile pile, int drawCount = 5, int maxRerolls = 1,
-                               Func<Data.HwaTuCard, float> drawWeightFunc = null)
+        public CardDrawHandler(CardPile pile, Func<Data.HwaTuCard, float> drawWeightFunc = null)
         {
             _pile = pile;
-            _drawCount = drawCount;
-            _maxRerolls = maxRerolls;
-            _rerollsRemaining = _maxRerolls;
             _drawWeightFunc = drawWeightFunc;
         }
  
@@ -65,35 +45,54 @@ namespace FFF.Battle.Card
         #region === 드로우 ===
 
         /// <summary>
-        /// DrawPile에서 k장을 Hand로 드로우한다.
+        /// DrawPile에서 count장을 Hand로 드로우한다.
         /// 카드가 부족하면 내부에서 묘지 재활용까지 알아서 처리한다.
-        /// 리롤 횟수도 초기화된다.
         /// 
-        /// 호출자: TurnReadyState
+        /// 호출자: DeckSystem
         /// 호출자는 "카드 뽑아줘" 하고 결과만 받으면 된다.
         /// 
         /// 백로그 4번: "'화투패 산'에서 k장(초기 값 5)의 카드가 손패로 들어온다."
         /// </summary>
         /// <returns>새로 뽑힌 카드 목록</returns>
-        public List<Data.HwaTuCard> DrawCards()
+        public List<Data.HwaTuCard> DrawCards(int count)
         {
-            EnsureDrawPileHasEnough(_drawCount);
- 
+
             // 가중치 함수가 있으면 가중치 드로우, 없으면 기존 균등 드로우
-            List<Data.HwaTuCard> drawn;
-            if (_drawWeightFunc != null)
+            List<Data.HwaTuCard> drawn = new List<Data.HwaTuCard>();
+            int remainDrawCardsCount = count;
+
+            // 1차 드로우: 현재 뽑을 산에 있는 카드를 가능한 만큼 모두 뽑기
+            int firstDrawCount = Mathf.Min(remainDrawCardsCount, _pile.DrawPile.Count);
+            if (firstDrawCount > 0)
             {
-                drawn = _pile.MoveDrawToHandWeighted(_drawCount, _drawWeightFunc);
+                if (_drawWeightFunc != null)
+                    drawn.AddRange(_pile.MoveDrawToHandWeighted(firstDrawCount, _drawWeightFunc));
+                else
+                    drawn.AddRange(_pile.MoveDrawToHand(firstDrawCount));
+
+                remainDrawCardsCount -= firstDrawCount;
             }
-            else
+
+            // 카드가 부족하다면 묘지 재활용 후 2차 드로우
+            if (remainDrawCardsCount > 0)
             {
-                drawn = _pile.MoveDrawToHand(_drawCount);
+                ReturnDiscardToDrawPile();
+
+                // 2차 드로우: 재활용 후 채워진 산에서 남은 카드 수만큼 다시 뽑기
+                int secondDrawCount = Mathf.Min(remainDrawCardsCount, _pile.DrawPile.Count);
+                
+                // 가능한 만큼만 뽑고 더 이상 카드가 없으면 로직 자동 종료 (더 이상 뽑을 카드 자체가 존재하지 않는다)
+                if (secondDrawCount > 0)
+                {
+                    if (_drawWeightFunc != null)
+                        drawn.AddRange(_pile.MoveDrawToHandWeighted(secondDrawCount, _drawWeightFunc));
+                    else
+                        drawn.AddRange(_pile.MoveDrawToHand(secondDrawCount));
+                }
             }
- 
-            _rerollsRemaining = _maxRerolls;
  
             Debug.Log($"[CardDrawHandler] {drawn.Count}장 드로우 완료. " +
-                      $"가중치: {(_drawWeightFunc != null ? "적용" : "없음")}. 남은 리롤: {_rerollsRemaining}");
+                      $"가중치: {(_drawWeightFunc != null ? "적용" : "없음")}.");
  
             return drawn;
         }
@@ -105,7 +104,7 @@ namespace FFF.Battle.Card
         /// <summary>
         /// 지정한 카드들을 DrawPile에 되돌리고 같은 수만큼 재드로우한다.
         /// 
-        /// 호출자: TurnReadyState (플레이어 리롤 요청 시)
+        /// 호출자: DeckSystem (플레이어 리롤 요청 시)
         /// "이 카드들 리롤해줘" → 반납, 셔플, 재드로우를 알아서 한다.
         /// 
         /// 백로그 4번: "원하는 장수만큼 선택한 뒤, '리롤' 버튼을 눌러
@@ -115,12 +114,6 @@ namespace FFF.Battle.Card
         /// <returns>새로 뽑은 카드 목록. 리롤 불가 시 빈 목록.</returns>
         public List<Data.HwaTuCard> Reroll(List<Data.HwaTuCard> cardsToReturn)
         {
-            if (!CanReroll)
-            {
-                Debug.LogWarning("[CardDrawHandler] 리롤 기회가 없습니다.");
-                return new List<Data.HwaTuCard>();
-            }
-
             if (cardsToReturn == null || cardsToReturn.Count == 0)
             {
                 Debug.LogWarning("[CardDrawHandler] 리롤할 카드가 없습니다.");
@@ -134,52 +127,44 @@ namespace FFF.Battle.Card
             _pile.ShuffleDrawPile();
 
             // 3. 반납한 수만큼 재드로우
-            EnsureDrawPileHasEnough(returned);
-            var redrawn = _pile.MoveDrawToHand(returned);
+            var redrawn = DrawCards(returned);
 
-            _rerollsRemaining--;
-
-            Debug.Log($"[CardDrawHandler] 리롤 완료. {returned}장 반납 → {redrawn.Count}장 재드로우. 남은 리롤: {_rerollsRemaining}");
+            Debug.Log($"[CardDrawHandler] 리롤 완료. {returned}장 반납 → {redrawn.Count}장 재드로우.");
 
             return redrawn;
         }
-
-        /// <summary>
-        /// 현재 턴의 남은 리롤 횟수를 즉시 증가시킨다.
-        /// 다음 턴 DrawCards() 호출 시 _rerollsRemaining이 _maxRerolls로 리셋되므로
-        /// 자연스럽게 1턴짜리 효과가 된다.
-        /// 
-        /// 호출자: DeckSystem (조커 효과 등)
-        /// 호출자는 왜 리롤이 늘어나는지 알 필요 없다.
-        /// </summary>
-        public void AddTempRerolls(int bonus)
-        {
-            _rerollsRemaining += bonus;
-            Debug.Log($"[CardDrawHandler] 임시 리롤 추가: +{bonus}. 현재 남은 리롤: {_rerollsRemaining}");
-        }
         
+        #endregion
+
+        #region === 턴 정리 ===
+        /// <summary>
+        /// Hand와 SelectedCards의 모든 카드를 DiscardPile로 이동한다.
+        /// 호출자: DeckSystem
+        /// </summary>
+        public void MoveAllToDiscard()
+        {
+            _pile.MoveAllToDiscard();
+        }
         #endregion
 
         #region === 내부 로직 ===
 
         /// <summary>
-        /// DrawPile에 필요한 만큼 카드가 있는지 확인하고,
-        /// 부족하면 묘지 재활용을 CardPile에게 시킨다.
+        /// 외부에서 DrawPile에서 뽑을 카드가 부족하면 호출한다.
+        /// 이것이 호출되면 CardPile에서 버려진 카드들을 뽑을 카드로 바꾼다.
         /// 호출자는 이 과정을 알 필요 없다.
         /// 
         /// 백로그 5번: "'뽑을 화투패 산에 있는 카드 수'가 부족하다면,
         /// '버려진 화투패 산'에 있는 모든 화투패들을 다시 되돌린다."
         /// </summary>
-        private void EnsureDrawPileHasEnough(int needed)
+        private void ReturnDiscardToDrawPile()
         {
-            if (_pile.DrawPile.Count < needed)
-            {
-                int recycled = _pile.RecycleDiscardPile();
 
-                if (recycled > 0)
-                {
-                    Debug.Log($"[CardDrawHandler] 카드 부족 → 묘지 {recycled}장 재활용");
-                }
+            int recycled = _pile.RecycleDiscardPile();
+
+            if (recycled > 0)
+            {
+                Debug.Log($"[CardDrawHandler] 카드 부족 → 묘지 {recycled}장 재활용");
             }
         }
 
