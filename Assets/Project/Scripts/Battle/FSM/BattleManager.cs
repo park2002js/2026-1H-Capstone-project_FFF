@@ -32,6 +32,7 @@ namespace FFF.Battle.FSM
         [SerializeField] private GameEvent _onTurnReady;
         [SerializeField] private GameEvent _onTurnProceed;
         [SerializeField] private GameEvent _onTurnEnd;
+        [SerializeField] private GameEvent _onBattleEnd;
 
         // ==========================================
         // 초기화
@@ -64,6 +65,17 @@ namespace FFF.Battle.FSM
             
             // 첫 턴 준비 단계로 바로 진입
             ChangeState(TurnState.TurnReady);
+        }
+
+        /// <summary>
+        /// 전투를 처음 시작할 때 호출
+        /// </summary>
+        public void EndBattle()
+        {
+            CurrentPhase = TurnState.None;
+            
+            // 전투 종료 이벤트 호출
+            _onBattleEnd?.Raise();
         }
 
         /// <summary>
