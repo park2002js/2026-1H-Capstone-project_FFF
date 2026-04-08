@@ -93,6 +93,7 @@ namespace FFF.Battle.FSM
             switch (CurrentPhase)
             {
                 case TurnState.TurnReady:
+                    Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
                     _onTurnReady?.Raise();
                     break;
                 case TurnState.TurnProceed:

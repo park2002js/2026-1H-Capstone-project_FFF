@@ -97,17 +97,18 @@ Assets/Project/Scripts/Test/
  CardSOTest.cs
  CardSystemTest.cs
  ItemSystemTest.cs
-Assets/Project/Scripts/UI/
- Battle/BattleUIComponent.cs
- Core/
-  BaseUIComponent.cs
-  UIManager.cs
- Main/
-  MainSceneSetup.cs
-  MainUIComponent.cs
- Title/
-  TitleSceneSetup.cs
-  TitleUIComponent.cs
+Assets/Project/Scripts/UI/Battle/
+ BattleUIComponent.cs
+ CardUIComponent.cs
+Assets/Project/Scripts/UI/Core/
+ BaseUIComponent.cs
+ UIManager.cs
+Assets/Project/Scripts/UI/Main/
+ MainSceneSetup.cs
+ MainUIComponent.cs
+Assets/Project/Scripts/UI/Title/
+ TitleSceneSetup.cs
+ TitleUIComponent.cs
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
 [metadataReferences]

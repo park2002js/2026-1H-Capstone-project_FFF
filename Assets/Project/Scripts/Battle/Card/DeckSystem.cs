@@ -286,6 +286,26 @@ namespace FFF.Battle.Card
             return success;
         }
 
+        public void SetMaxSelectionLimit(int limit)
+        {
+            // _selectionHandler는 DeckSystem이 소유한 객체라고 가정합니다.
+            _selectionHandler.SetMaxSelectionLimit(limit);
+        }
+
+        /// <summary>
+        /// 현재 선택된 모든 카드를 선택 해제하여 Hand로 되돌린다 (TurnReady 종료시 사용될 부분)
+        /// </summary>
+        public void DeselectAllCards()
+        {
+            // 컬렉션 순회 중 삭제(Remove)가 발생하므로, 복사본(List)을 만들어 안전하게 순회합니다.
+            var cardsToDeselect = new List<Data.HwaTuCard>(SelectedCards);
+            foreach (var card in cardsToDeselect)
+            {
+                DeselectCard(card);
+            }
+            Debug.Log($"[DeckSystem] 모든 카드 선택 해제 완료. (Hand: {Hand.Count}장)");
+        }
+
         #endregion
 
         #region === TurnEndState에서 호출 ===

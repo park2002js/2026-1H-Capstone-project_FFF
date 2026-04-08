@@ -121,7 +121,10 @@ namespace FFF.Battle.Card
             }
 
             // 1. 선택한 카드를 Hand → DrawPile로 반납
-            int returned = _pile.MoveHandToDrawPile(cardsToReturn);
+            int returned = _pile.MoveSelectedCardsToDrawPile(cardsToReturn);
+
+            // 실제로 반납된 카드가 0장이면 리롤을 취소
+            if (returned == 0) return new List<Data.HwaTuCard>();
 
             // 2. 셔플
             _pile.ShuffleDrawPile();
