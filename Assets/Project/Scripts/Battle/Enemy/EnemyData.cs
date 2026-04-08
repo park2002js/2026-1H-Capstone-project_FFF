@@ -54,7 +54,7 @@ namespace FFF.Battle.Enemy
                 HandName = result.DisplayName
             };
 
-            Debug.Log($"[EnemyData] 적 의도 결정됨: {c1.DisplayName} + {c2.DisplayName} = {result.DisplayName} (공격력: {result.BasePower})");
+            Debug.Log($"[EnemyData] 적 의도 결정됨: {c1.DisplayName} + {c2.DisplayName} = {result.DisplayName}\n(공격력: {result.BasePower})");
         }
         
 

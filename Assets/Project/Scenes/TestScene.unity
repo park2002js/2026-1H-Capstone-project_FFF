@@ -989,7 +989,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _onBattleStart: {fileID: 11400000, guid: e2f42644fdf6823499e52e7b3754a7c7, type: 2}
-  _onTurnReady: {fileID: 11400000, guid: 1dc8805eca5ce2e44826e756cd7fa42f, type: 2}
+  _onTurnReady: {fileID: 11400000, guid: cbac6578d4193dd43ab378621c01f674, type: 2}
   _onTurnProceed: {fileID: 11400000, guid: 247e475ed8ae5104e901fe3d20f084a3, type: 2}
   _onTurnEnd: {fileID: 11400000, guid: 7e05a41c30f28804fac46733e7402e85, type: 2}
   _onBattleEnd: {fileID: 11400000, guid: 152ec27c3cbe7a94bb683b4abcd86a5b, type: 2}
@@ -1164,7 +1164,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &731945297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1189,6 +1189,7 @@ MonoBehaviour:
   _enemyIntentText: {fileID: 1280362695}
   _rerollButton: {fileID: 868246768}
   _rerollCountText: {fileID: 1581041274}
+  _rerollComponetsContainer: {fileID: 780730172}
 --- !u!225 &731945298
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2039,7 +2040,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: Enemy Intend
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 72d3f74e05b88a84f8413055dc1d472c, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -2106,7 +2107,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &1501376573
@@ -2286,7 +2287,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Remain Rerolls : '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 72d3f74e05b88a84f8413055dc1d472c, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -2353,7 +2354,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1581041275

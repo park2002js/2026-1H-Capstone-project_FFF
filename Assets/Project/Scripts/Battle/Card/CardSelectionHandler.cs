@@ -18,7 +18,7 @@ namespace FFF.Battle.Card
     public class CardSelectionHandler
     {
         private readonly CardPile _pile;
-        private readonly int _maxSelectCount;
+        public int _maxSelectCount { get; private set; } = 2;
 
         #region === Getter ===
 
@@ -44,6 +44,11 @@ namespace FFF.Battle.Card
         {
             _pile = pile;
             _maxSelectCount = maxSelectCount;
+        }
+
+        public void SetMaxSelectionLimit(int limit)
+        {
+            _maxSelectCount = limit;
         }
 
         #endregion

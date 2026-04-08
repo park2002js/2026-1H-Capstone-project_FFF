@@ -29,6 +29,7 @@ namespace FFF.UI.Battle
         [SerializeField] private TextMeshProUGUI _enemyIntentText; // 적 행동 텍스트
         [SerializeField] private Button _rerollButton;       // 리롤 버튼
         [SerializeField] private TextMeshProUGUI _rerollCountText; // 남은 리롤 횟수 표시
+        [SerializeField] private GameObject _rerollComponetsContainer;     // 리롤 관련 컴포넌트들을 하위 자식으로 갖는 부모 EmptyObject
 
         public void SetPlayerHealth(int current, int max)
         {
@@ -73,6 +74,12 @@ namespace FFF.UI.Battle
             {
                 GameObject cardObj = Instantiate(_cardPrefab, _handLayoutGroup, false);
                 CardUIComponent cardUI = cardObj.GetComponent<CardUIComponent>();
+                if (cardUI == null)
+                {
+                    // 🟢 프리팹에 스크립트가 안 붙어있을 경우 명확히 경고
+                    Debug.LogError("[BattleUIComponent] CardPrefab에 CardUIComponent 스크립트가 부착되어 있지 않습니다!");
+                    continue; 
+                }
                 cardUI.Setup(card, onCardClicked);
             }
         }
@@ -86,6 +93,15 @@ namespace FFF.UI.Battle
             // 요구사항: 선택된 카드가 1장 이상이고, 리롤 횟수가 남아있을 때만 활성화
             if (_rerollButton != null)
                 _rerollButton.interactable = (remainRerolls > 0 && selectedCount > 0);
+        }
+
+        /// <summary>
+        /// 멀리건 페이즈 전용 UI 요소들의 활성화 상태를 제어합니다.
+        /// </summary>
+        public void SetTurnReadyUIVisibility(bool isVisible)
+        {
+            if (_rerollComponetsContainer != null) _rerollComponetsContainer.gameObject.SetActive(isVisible);
+            Debug.Log($"[BattleUI] TurnReady UI 가시성 설정: {isVisible}");
         }
     }
 }

@@ -56,27 +56,45 @@ namespace FFF.Battle.Managers
 
         private async Task RunTurnStartFlowAsync()
         {
-            Debug.Log("[TurnReadyManager] 0. 적 의도 파악 및 표시");
-            _enemyData.GenerateMockIntent();
-            _battleUI.ShowEnemyIntent(_enemyData.CurrentIntent);
+            try {
+                Debug.Log("[TurnReadyManager] 0. 적 의도 파악 및 표시");
+                _enemyData.GenerateMockIntent();
+                _battleUI.ShowEnemyIntent(_enemyData.CurrentIntent);
 
-            Debug.Log("[TurnPhaseManager] 1. 턴 시작 준비 및 드로우");
-            _deckSystem.OnTurnStarted();
-            _deckSystem.DrawCards();
+                Debug.Log("[TurnPhaseManager] 1. 턴 시작 준비 및 드로우");
+                _deckSystem.OnTurnStarted();
+                _deckSystem.DrawCards();
 
-            // UI에 카드 띄우기 (클릭 콜백 연결)
-            _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
-            _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
+                _deckSystem.SetMaxSelectionLimit(5); // 멀리건 페이즈 이므로
 
-            Debug.Log("[TurnPhaseManager] 2. 유저 멀리건 대기 시작...");
-            
-            // TaskCompletionSource를 초기화
-            // TaskCompletionSource -> 누군가 결과를 넣어줄 때까지 Task를 멈추고 기다리게 만듦 (코루틴보다 깔끔)
-            _mulligan = new TaskCompletionSource<bool>();
-            await _mulligan.Task;
+                // UI에 카드 띄우기 (클릭 콜백 연결)
+                _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
+                _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
 
-            Debug.Log("[TurnPhaseManager] 3. 멀리건 종료. 메인 페이즈로 전환합니다.");
-            _battleManager.ChangeState(TurnState.TurnProceed);
+                Debug.Log("[TurnPhaseManager] 2. 유저 멀리건 대기 시작...");
+                
+                // TaskCompletionSource를 초기화
+                // TaskCompletionSource -> 누군가 결과를 넣어줄 때까지 Task를 멈추고 기다리게 만듦 (코루틴보다 깔끔)
+                _mulligan = new TaskCompletionSource<bool>();
+                await _mulligan.Task;
+
+                // 남아있는 선택 카드들을 모두 선택 해제(Hand로 복귀)
+                _deckSystem.DeselectAllCards();
+                // UI를 새로고침 -> 선택된 캬드들의 강조효과 제거 (현재의 크기가 커짐 피드백에 한해서만)
+                _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
+
+                // 멀리건 전용 UI 숨기기
+                _battleUI.SetTurnReadyUIVisibility(false);
+
+                _deckSystem.SetMaxSelectionLimit(2);
+
+                Debug.Log("[TurnPhaseManager] 3. 멀리건 종료. 메인 페이즈로 전환합니다.");
+                _battleManager.ChangeState(TurnState.TurnProceed);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[TurnReadyManager] 비동기 흐름 중 치명적 에러 발생: {ex.Message}\n{ex.StackTrace}");
+            }
         }
 
         // UI에서 특정 카드를 클릭했을 때 실행됨
@@ -132,7 +150,11 @@ namespace FFF.Battle.Managers
         public void OnPlayerMulliganFinished()
         {
             // 기다리고 있던 Task를 완료 상태로 만들어, RunTurnStartFlowAsync의 대기를 풀어줌
-            _mulligan?.TrySetResult(true);
+            if (_mulligan != null && !_mulligan.Task.IsCompleted)
+            {
+                Debug.Log("[TurnReadyManager] 유저가 턴 시작(멀리건 종료) 버튼을 클릭했습니다.");
+                _mulligan.TrySetResult(true);
+            }
         }
     }
 }

@@ -163,6 +163,30 @@ namespace FFF.Battle.Card
         }
 
         /// <summary>
+        /// 지정한 카드들을 SelectedCards에서 제거하고 DrawPile로 되돌린다.
+        /// </summary>
+        /// <returns>실제로 되돌려진 카드 수</returns>
+        public int MoveSelectedCardsToDrawPile(List<Data.HwaTuCard> cards)
+        {
+            int count = 0;
+
+            foreach (var card in cards)
+            {
+                if (_selectedCards.Remove(card))
+                {
+                    _drawPile.Add(card);
+                    count++;
+                }
+                else
+                {
+                    Debug.LogWarning($"[CardPile] Hand에 없는 카드 반납 시도: {card}");
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
         /// Hand에서 카드 하나를 SelectedCards로 이동한다.
         /// </summary>
         /// <returns>이동 성공 여부</returns>
