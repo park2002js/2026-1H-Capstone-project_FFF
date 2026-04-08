@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro; 
+using UnityEngine.UI;
+using FFF.Data;
 using FFF.UI.Core;
+using FFF.Battle.Enemy;
 
 namespace FFF.UI.Battle
 {
@@ -19,6 +22,13 @@ namespace FFF.UI.Battle
         // 아이템 생성 시연용 임시 프리팹 (나중엔 리소스 로드로 변경 가능)
         [SerializeField] private GameObject _tempAccessoryIconPrefab;
         [SerializeField] private GameObject _tempJockerIconPrefab;
+
+        [Header("=== 신규 연결 (TurnReady 용) ===")]
+        [SerializeField] private Transform _handLayoutGroup; // 내 카드가 스폰될 부모
+        [SerializeField] private GameObject _cardPrefab;     // CardUIComponent가 붙은 프리팹
+        [SerializeField] private TextMeshProUGUI _enemyIntentText; // 적 행동 텍스트
+        [SerializeField] private Button _rerollButton;       // 리롤 버튼
+        [SerializeField] private TextMeshProUGUI _rerollCountText; // 남은 리롤 횟수 표시
 
         public void SetPlayerHealth(int current, int max)
         {
@@ -43,6 +53,39 @@ namespace FFF.UI.Battle
                 foreach(var jkr in jokerIds) Instantiate(_tempJockerIconPrefab, _jokerLayoutGroup);
             }
             Debug.Log($"[BattleUI] 🎒 장신구 {accessoryIds.Count}개, 조커 {jokerIds.Count}개 아이콘 생성 (프리팹 기준)");
+        }
+
+        // 1. 적 의도 표시
+        public void ShowEnemyIntent(EnemyIntent intent)
+        {
+            if (_enemyIntentText != null)
+                _enemyIntentText.text = $"적 의도: {intent.Card1.DisplayName} + {intent.Card2.DisplayName}\n(예상 공격력: {intent.BasePower})";
+        }
+
+        // 2. 내 손패 카드들을 화면에 생성
+        public void UpdateHand(IReadOnlyList<HwaTuCard> handCards, System.Action<CardUIComponent> onCardClicked)
+        {
+            // 기존에 있던 카드 UI 전부 삭제 (초기화)
+            foreach (Transform child in _handLayoutGroup) Destroy(child.gameObject);
+
+            // 새 카드 생성 (false를 넣어 스케일 꼬임 방지)
+            foreach (var card in handCards)
+            {
+                GameObject cardObj = Instantiate(_cardPrefab, _handLayoutGroup, false);
+                CardUIComponent cardUI = cardObj.GetComponent<CardUIComponent>();
+                cardUI.Setup(card, onCardClicked);
+            }
+        }
+
+        // 3. 리롤 버튼 및 횟수 텍스트 갱신
+        public void UpdateRerollState(int remainRerolls, int selectedCount)
+        {
+            if (_rerollCountText != null)
+                _rerollCountText.text = $"리롤: {remainRerolls}회 남음";
+
+            // 요구사항: 선택된 카드가 1장 이상이고, 리롤 횟수가 남아있을 때만 활성화
+            if (_rerollButton != null)
+                _rerollButton.interactable = (remainRerolls > 0 && selectedCount > 0);
         }
     }
 }

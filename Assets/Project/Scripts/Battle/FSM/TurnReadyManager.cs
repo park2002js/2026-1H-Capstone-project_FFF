@@ -1,8 +1,12 @@
 using System.Threading.Tasks;
+using System.Linq;
 using UnityEngine;
 using FFF.Battle.Card;
 using FFF.Battle.FSM;
 using FFF.Core.Events;
+using FFF.Battle.Enemy;
+using FFF.UI.Battle;
+using FFF.Data;
 
 namespace FFF.Battle.Managers
 {
@@ -19,6 +23,8 @@ namespace FFF.Battle.Managers
         [Header("=== 시스템 참조 ===")]
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
+        [SerializeField] private EnemyData _enemyData;
+        [SerializeField] private BattleUIComponent _battleUI;
 
         [Header("=== 수신할 이벤트 ===")]
         [Tooltip("BattleManager가 방송하는 TurnReady 이벤트")]
@@ -50,9 +56,17 @@ namespace FFF.Battle.Managers
 
         private async Task RunTurnStartFlowAsync()
         {
+            Debug.Log("[TurnReadyManager] 0. 적 의도 파악 및 표시");
+            _enemyData.GenerateMockIntent();
+            _battleUI.ShowEnemyIntent(_enemyData.CurrentIntent);
+
             Debug.Log("[TurnPhaseManager] 1. 턴 시작 준비 및 드로우");
             _deckSystem.OnTurnStarted();
             _deckSystem.DrawCards();
+
+            // UI에 카드 띄우기 (클릭 콜백 연결)
+            _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
+            _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
 
             Debug.Log("[TurnPhaseManager] 2. 유저 멀리건 대기 시작...");
             
@@ -64,6 +78,52 @@ namespace FFF.Battle.Managers
             Debug.Log("[TurnPhaseManager] 3. 멀리건 종료. 메인 페이즈로 전환합니다.");
             _battleManager.ChangeState(TurnState.TurnProceed);
         }
+
+        // UI에서 특정 카드를 클릭했을 때 실행됨
+        private void OnCardClickedInUI(CardUIComponent cardUI)
+        {
+            var card = cardUI.CardData;
+
+            // 이미 선택된 카드면 해제, 아니면 선택
+            if (_deckSystem.SelectedCards.Contains(card))
+            {
+                _deckSystem.DeselectCard(card);
+                cardUI.SetSelected(false); // 크기 1.0으로 원복
+            }
+            else
+            {
+                _deckSystem.SelectCard(card);
+                cardUI.SetSelected(true);  // 크기 1.1로 뻥튀기
+            }
+
+            // 리롤 버튼 상태 갱신
+            _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
+        }
+
+        // UI의 '리롤' 버튼에서 직접 호출하도록 연결할 public 함수
+        public void OnRerollButtonClicked()
+        {
+            var selected = _deckSystem.SelectedCards.ToList();
+            if (selected.Count == 0) return;
+
+            Debug.Log($"[TurnReadyManager] 리롤 진행 ({selected.Count}장)");
+            var redrawn = _deckSystem.Reroll(selected);
+
+            if (redrawn.Count > 0)
+            {
+                // 리롤에 성공했으니 UI 다시 그리기 (선택 상태는 자동으로 초기화됨)
+                _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
+                _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, 0);
+
+                // 요구사항: 리롤 기회가 1일 때 리롤하면, 그 이후 자동으로 TurnProceed로 넘어간다.
+                if (_deckSystem.RerollsRemaining <= 0)
+                {
+                    Debug.Log("[TurnReadyManager] 리롤 기회 소진! 자동으로 메인 페이즈로 넘어갑니다.");
+                    OnPlayerMulliganFinished();
+                }
+            }
+        }
+
 
         /// <summary>
         /// UI 화면에서 유저가 '리롤 완료(선택 완료)' 버튼을 누를 때 호출해야 하는 함수.
