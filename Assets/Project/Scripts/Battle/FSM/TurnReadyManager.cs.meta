@@ -1,2 +1,14 @@
 fileFormatVersion: 2
 guid: 469df0c1512454b4aa2bdf9f1214d60f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _battleManager: {instanceID: 0}
+  - _deckSystem: {instanceID: 0}
+  - _onTurnReadyEvent: {fileID: 11400000, guid: cbac6578d4193dd43ab378621c01f674, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
