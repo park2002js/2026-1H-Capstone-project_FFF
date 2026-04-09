@@ -20,9 +20,16 @@ namespace FFF.Test
 
         private int _passCount = 0;
         private int _failCount = 0;
+        private bool _hasRun = false;
+
+        private void Start()
+        {
+            if (!_hasRun) RunTest();
+        }
 
         public void RunTest()
         {
+            _hasRun = true;
             Debug.Log("╔══════════════════════════════════════╗");
             Debug.Log("║  [3. ItemSystemTest] 아이템 시스템 테스트 시작     ║");
             Debug.Log("╚══════════════════════════════════════╝\n");
@@ -177,8 +184,10 @@ namespace FFF.Test
             
             // 리롤 2회 진행 검증
             ds.DrawCards();
-            ds.Reroll(new List<HwaTuCard> { ds.Hand[0] });
-            ds.Reroll(new List<HwaTuCard> { ds.Hand[0] });
+            ds.SelectCard(ds.Hand[0]);
+            ds.Reroll(new List<HwaTuCard>(ds.SelectedCards));
+            ds.SelectCard(ds.Hand[0]);
+            ds.Reroll(new List<HwaTuCard>(ds.SelectedCards));
             
             LogResult("장신구 효과로 2회 리롤 정상 사용", ds.RerollsRemaining == 0);
         }
@@ -312,8 +321,8 @@ namespace FFF.Test
             int rerollUses = 0;
             while (ds.CanReroll && ds.Hand.Count > 0)
             {
-                var h = new List<HwaTuCard>(ds.Hand);
-                if (ds.Reroll(new List<HwaTuCard> { h[0] }).Count > 0) rerollUses++;
+                ds.SelectCard(ds.Hand[0]);
+                if (ds.Reroll(new List<HwaTuCard>(ds.SelectedCards)).Count > 0) rerollUses++;
             }
             
             // 5. 턴 종료
