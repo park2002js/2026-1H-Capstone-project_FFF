@@ -110,8 +110,16 @@ namespace FFF.Battle.Managers
             }
             else
             {
-                _deckSystem.SelectCard(card);
-                cardUI.SetSelected(true);  // 크기 1.1로 뻥튀기
+                bool isSuccess = _deckSystem.SelectCard(card);
+                if (isSuccess)
+                {
+                    cardUI.SetSelected(true);  // 크기 1.1로 뻥튀기
+                }
+                else
+                {
+                    // 제한(2장)에 걸려 false가 반환되었다면 아무런 시각적 변화도 주지 않습니다.
+                    Debug.LogWarning("[UI 방어] 최대 선택 개수를 초과하여 카드를 선택할 수 없습니다.");
+                }
             }
 
             // 리롤 버튼 상태 갱신

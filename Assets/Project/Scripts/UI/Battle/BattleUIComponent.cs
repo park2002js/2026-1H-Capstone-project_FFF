@@ -31,6 +31,10 @@ namespace FFF.UI.Battle
         [SerializeField] private TextMeshProUGUI _rerollCountText; // 남은 리롤 횟수 표시
         [SerializeField] private GameObject _rerollComponetsContainer;     // 리롤 관련 컴포넌트들을 하위 자식으로 갖는 부모 EmptyObject
 
+        [Header("=== 신규 연결 (TurnProceed 용) ===")]
+        [SerializeField] private TextMeshProUGUI _expectedStrengthText;
+        [SerializeField] private Button _endTurnButton;
+
         public void SetPlayerHealth(int current, int max)
         {
             if (_playerHpText != null) 
@@ -102,6 +106,25 @@ namespace FFF.UI.Battle
         {
             if (_rerollComponetsContainer != null) _rerollComponetsContainer.gameObject.SetActive(isVisible);
             Debug.Log($"[BattleUI] TurnReady UI 가시성 설정: {isVisible}");
+        }
+
+
+        /// <summary>
+        /// 예상 공격력을 표시합니다. "-"가 들어올 수 있습니다.
+        /// </summary>
+        public void SetExpectedStrengthText(string text)
+        {
+            if (_expectedStrengthText != null)
+                _expectedStrengthText.text = $"예상 공격력: {text}";
+        }
+
+        /// <summary>
+        /// 턴 종료 버튼의 활성화/비활성화 상태를 토글합니다.
+        /// </summary>
+        public void SetEndTurnButtonInteractable(bool isInteractable)
+        {
+            if (_endTurnButton != null)
+                _endTurnButton.interactable = isInteractable;
         }
     }
 }

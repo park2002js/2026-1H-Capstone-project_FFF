@@ -7,8 +7,14 @@ namespace FFF.Battle.Modifier
     /// </summary>
     public enum ModifierType
     {
+        None = 0,
+        
         MaxRerolls,    // 최대 리롤 횟수 증감
         DrawCount,     // 드로우 장수 증감
+
+
+        Strength,  // 공격력(StrengthCal) 계산에만 합산됨
+        Damage,    // 피해량(DamageCal) 계산에만 합산됨
         
         // 추후 기획에 따라 아래와 같은 항목들을 유연하게 추가할 수 있습니다.
         // DamageMultiplier, 

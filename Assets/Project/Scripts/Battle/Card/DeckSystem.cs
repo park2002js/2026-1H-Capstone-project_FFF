@@ -83,6 +83,9 @@ namespace FFF.Battle.Card
 
         #region === Getter (외부 → 데이터 조회) ===
 
+        /// <summary> 임의로 DeckSystem 내부에 만든 Modifier 조회 변수ㅠ </summary>
+        public IReadOnlyList<TurnModifier> ActiveModifiers => _activeModifiers;
+
         // CardPile 데이터를 그대로 노출. 외부는 CardPile의 존재를 모른다.
 
         /// <summary>뽑을 화투패 산. 읽기 전용.</summary>
