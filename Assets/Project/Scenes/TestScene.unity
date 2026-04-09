@@ -1013,6 +1013,7 @@ GameObject:
   - component: {fileID: 550716246}
   - component: {fileID: 550716245}
   - component: {fileID: 550716253}
+  - component: {fileID: 550716254}
   m_Layer: 0
   m_Name: 'System_Battle_Mng '
   m_TagString: Untagged
@@ -1163,6 +1164,23 @@ MonoBehaviour:
   _battleUI: {fileID: 731945297}
   _onTurnProceedEvent: {fileID: 11400000, guid: 247e475ed8ae5104e901fe3d20f084a3, type: 2}
   _onSelectionChangedEvent: {fileID: 11400000, guid: 4b22ab3d8d40f5c4189c25f680d99b86, type: 2}
+--- !u!114 &550716254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 550716244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bec35e9a3c07949468d20c4f1f75f493, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _battleManager: {fileID: 550716251}
+  _deckSystem: {fileID: 550716247}
+  _enemyData: {fileID: 550716248}
+  _battleUI: {fileID: 731945297}
+  _onTurnEndEvent: {fileID: 11400000, guid: 7e05a41c30f28804fac46733e7402e85, type: 2}
 --- !u!1 &710163264
 GameObject:
   m_ObjectHideFlags: 0

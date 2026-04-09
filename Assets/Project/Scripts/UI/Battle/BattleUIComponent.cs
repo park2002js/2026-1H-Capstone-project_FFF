@@ -126,5 +126,25 @@ namespace FFF.UI.Battle
             if (_endTurnButton != null)
                 _endTurnButton.interactable = isInteractable;
         }
+
+        /// <summary>
+        /// TurnProceed 페이즈 전용 UI 요소들의 활성화 상태를 제어합니다.
+        /// </summary>
+        public void SetTurnProceedUIVisibility(bool isVisible)
+        {
+            if (_expectedStrengthText != null) _expectedStrengthText.gameObject.SetActive(isVisible);
+            if (_endTurnButton != null) _endTurnButton.gameObject.SetActive(isVisible);
+        }
+
+        /// <summary>
+        /// 화면에 표시된 내 카드(Clone)들을 전부 삭제하여 뷰를 청소합니다.
+        /// </summary>
+        public void ClearHandUI()
+        {
+            if (_handLayoutGroup != null)
+            {
+                foreach (Transform child in _handLayoutGroup) Destroy(child.gameObject);
+            }
+        }
     }
 }

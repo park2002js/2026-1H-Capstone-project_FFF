@@ -42,6 +42,7 @@ namespace FFF.Battle.FSM
         // 1. TurnProceed 상태 진입 시 초기화
         private void HandleTurnProceedEnter()
         {
+            _battleUI.SetTurnProceedUIVisibility(true);
             Debug.Log("========== [TurnProceed] 메인 행동 페이즈 진입 ==========");
             
             // 처음엔 선택된 카드가 없으므로 "-" 표기 및 버튼 비활성화

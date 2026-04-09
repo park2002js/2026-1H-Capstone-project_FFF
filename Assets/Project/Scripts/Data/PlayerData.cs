@@ -31,5 +31,15 @@ namespace FFF.Data
                 Destroy(gameObject);
             }
         }
+
+        // PlayerData 클래스 내부에 추가
+        public void TakeDamage(int damage)
+        {
+            if (damage <= 0) return;
+            CurrentHealth -= damage;
+            if (CurrentHealth < 0) CurrentHealth = 0;
+            
+            UnityEngine.Debug.Log($"[PlayerData] 플레이어가 {damage}의 피해를 입었습니다! 남은 체력: {CurrentHealth}");
+        }
     }
 }

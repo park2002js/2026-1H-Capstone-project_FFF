@@ -57,6 +57,9 @@ namespace FFF.Battle.Managers
         private async Task RunTurnStartFlowAsync()
         {
             try {
+                // 멀리건 UI 활성화
+                _battleUI.SetTurnReadyUIVisibility(true);
+
                 Debug.Log("[TurnReadyManager] 0. 적 의도 파악 및 표시");
                 _enemyData.GenerateMockIntent();
                 _battleUI.ShowEnemyIntent(_enemyData.CurrentIntent);
