@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using FFF.Core.Events;
+using FFF.Data;
 
 
 namespace FFF.Battle.FSM
@@ -23,6 +24,9 @@ namespace FFF.Battle.FSM
 
         // --- 현재 상태 읽기 전용 프로퍼티 ---
         public TurnState CurrentPhase { get; private set; } = TurnState.None;
+
+        // --- 현재 전투의 데이터를 담을 공용 문맥 객체 (매 전투 스테이지마다 새로 갱신됨) ---
+        public BattleContext Context { get; private set; }
 
         // ==========================================
         // SO Event Channels (상태 변경 시 방송할 채널들)
@@ -58,6 +62,7 @@ namespace FFF.Battle.FSM
         /// </summary>
         public void StartBattle()
         {
+            Context = new BattleContext();
             CurrentPhase = TurnState.None;
             
             // 전투 시작 이벤트 호출 (초기화 관련 로직들이 등록되어 있음)

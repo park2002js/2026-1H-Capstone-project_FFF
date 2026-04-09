@@ -35,6 +35,10 @@ namespace FFF.UI.Battle
         [SerializeField] private TextMeshProUGUI _expectedStrengthText;
         [SerializeField] private Button _endTurnButton;
 
+        [Header("=== 신규 연결 (BattleEnd 결과창) ===")]
+        [SerializeField] private GameObject _battleResultPanel; // 결과창 전체 패널
+        [SerializeField] private TextMeshProUGUI _battleResultText; // 승패 텍스트
+
         public void SetPlayerHealth(int current, int max)
         {
             if (_playerHpText != null) 
@@ -145,6 +149,23 @@ namespace FFF.UI.Battle
             {
                 foreach (Transform child in _handLayoutGroup) Destroy(child.gameObject);
             }
+        }
+
+        /// <summary>
+        /// 결과창을 띄우고 승패 텍스트를 설정합니다.
+        /// </summary>
+        public void ShowBattleResult(string resultMessage)
+        {
+            if (_battleResultPanel != null) _battleResultPanel.SetActive(true);
+            if (_battleResultText != null) _battleResultText.text = resultMessage;
+        }
+
+        /// <summary>
+        /// 결과창을 숨깁니다 (초기화용).
+        /// </summary>
+        public void HideBattleResult()
+        {
+            if (_battleResultPanel != null) _battleResultPanel.SetActive(false);
         }
     }
 }

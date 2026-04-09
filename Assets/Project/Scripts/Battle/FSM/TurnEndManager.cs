@@ -115,6 +115,8 @@ namespace FFF.Battle.Managers
 
             if (isPlayerDead || isEnemyDead)
             {
+                // 1. 🟢 의존성 분리: 바구니에 결과만 기록합니다!
+                _battleManager.Context.IsPlayerWinner = isEnemyDead && !isPlayerDead;
                 Debug.Log($"[TurnEnd] 누군가 쓰러졌습니다! (PlayerDead:{isPlayerDead}, EnemyDead:{isEnemyDead}) -> BattleEnd로 전환.");
                 _battleManager.EndBattle();
             }
