@@ -49,6 +49,34 @@ namespace FFF.Data
         }
 
         /// <summary>
+        /// Resources/Cards/ 폴더의 카드 풀에서 균등 확률로 deckSize장을 복원 추출하여 반환한다.
+        /// 같은 카드가 여러 번 뽑힐 수 있다 (복제 허용).
+        /// 예: 풀이 20종이고 deckSize=20이면, 각 슬롯에 1/20 확률로 한 종이 배치된다.
+        /// </summary>
+        public static List<HwaTuCard> CreateDeck(int deckSize)
+        {
+            HwaTuCardSO[] cardSOs = Resources.LoadAll<HwaTuCardSO>(CARDS_RESOURCE_PATH);
+
+            if (cardSOs == null || cardSOs.Length == 0)
+            {
+                Debug.LogError($"[HwaTuCardDatabase] Resources/{CARDS_RESOURCE_PATH}/ 에 카드 SO 에셋이 없습니다!");
+                return new List<HwaTuCard>();
+            }
+
+            var rng = new System.Random();
+            var deck = new List<HwaTuCard>(deckSize);
+
+            for (int i = 0; i < deckSize; i++)
+            {
+                int index = rng.Next(cardSOs.Length);
+                deck.Add(cardSOs[index].ToHwaTuCard());
+            }
+
+            Debug.Log($"[HwaTuCardDatabase] {cardSOs.Length}종 풀에서 균등 확률로 {deckSize}장 덱 생성 완료.");
+            return deck;
+        }
+
+        /// <summary>
         /// CardId로 카드를 찾는다.
         /// 매번 전체 로드하므로, 반복 호출 시에는 CreateAllCards() 결과를 캐싱하여 사용할 것.
         /// </summary>

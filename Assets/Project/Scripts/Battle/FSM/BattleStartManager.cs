@@ -27,6 +27,10 @@ namespace FFF.Battle.Managers
         [SerializeField] private EnemyData _enemyData;
         [SerializeField] private BattleUIComponent _battleUI;
 
+        [Header("=== 덱 설정 ===")]
+        [Tooltip("전투 시작 시 구성할 덱 장수")]
+        [SerializeField] private int _deckSize = 20;
+
         [Header("=== 수신할 이벤트 ===")]
         [Tooltip("BattleManager가 방송하는 BattleStart 이벤트")]
         [SerializeField] private GameEvent _onBattleStartEvent;
@@ -54,10 +58,10 @@ namespace FFF.Battle.Managers
                 // 1. 플레이어 데이터 로드
                 PlayerData player = PlayerData.Instance;
 
-                // 2. 덱 시스템 초기화 (시연용으로 전체 카드 로드)
-                // 현재: Resources 폴더의 모든 카드(20장)를 로드.
-                // 미래: GameManager나 SaveData에서 '현재 플레이어가 보유한 덱'을 가져오도록 수정.
-                List<HwaTuCard> playerDeck = HwaTuCardDatabase.CreateAllCards();
+                // 2. 덱 시스템 초기화
+                // 카드 풀(SO 에셋 전체)에서 균등 확률로 _deckSize장을 뽑아 덱을 구성한다.
+                // 미래: GameManager나 SaveData에서 '플레이어 보유 카드 풀'을 가져오도록 수정.
+                List<HwaTuCard> playerDeck = HwaTuCardDatabase.CreateDeck(_deckSize);
 
                 // 3. DeckSystem 초기화 (시드값을 고정하고 싶다면 두 번째 인자로 전달)
                 _deckSystem.Initialize(playerDeck);
