@@ -1,9 +1,12 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro; 
 using UnityEngine.UI;
 using FFF.Data;
 using FFF.UI.Core;
+using FFF.UI.Animation;
 using FFF.Battle.Enemy;
 
 namespace FFF.UI.Battle
@@ -39,6 +42,16 @@ namespace FFF.UI.Battle
         [SerializeField] private GameObject _battleResultPanel; // 결과창 전체 패널
         [SerializeField] private TextMeshProUGUI _battleResultText; // 승패 텍스트
 
+        [Header("=== 애니메이션 연출 참조 ===")]
+        [Tooltip("덱(뽑을 산) UI의 RectTransform — 드로우 출발점")]
+        [SerializeField] private RectTransform _deckAreaRect;
+
+        [Tooltip("카드 간 드로우 시차 (초)")]
+        [SerializeField] private float _drawStaggerDelay = 0.1f;
+
+        [Tooltip("양끝 카드의 최대 기울기 (도)")]
+        [SerializeField] private float _maxTiltAngle = 4f;
+
         public void SetPlayerHealth(int current, int max)
         {
             if (_playerHpText != null) 
@@ -71,24 +84,47 @@ namespace FFF.UI.Battle
                 _enemyIntentText.text = $"적 의도: {intent.Card1.DisplayName} + {intent.Card2.DisplayName}\n(예상 공격력: {intent.BasePower})";
         }
 
-        // 2. 내 손패 카드들을 화면에 생성
-        public void UpdateHand(IReadOnlyList<HwaTuCard> handCards, System.Action<CardUIComponent> onCardClicked)
+        // 2. 내 손패 카드들을 화면에 생성 + 드로우 연출
+        public void UpdateHand(IReadOnlyList<HwaTuCard> handCards, Action<CardUIComponent> onCardClicked)
         {
             // 기존에 있던 카드 UI 전부 삭제 (초기화)
             foreach (Transform child in _handLayoutGroup) Destroy(child.gameObject);
 
-            // 새 카드 생성 (false를 넣어 스케일 꼬임 방지)
-            foreach (var card in handCards)
+            int totalCards = handCards.Count;
+
+            // 새 카드 생성 + 드로우 연출
+            for (int i = 0; i < totalCards; i++)
             {
+                var card = handCards[i];
                 GameObject cardObj = Instantiate(_cardPrefab, _handLayoutGroup, false);
                 CardUIComponent cardUI = cardObj.GetComponent<CardUIComponent>();
                 if (cardUI == null)
                 {
-                    // 🟢 프리팹에 스크립트가 안 붙어있을 경우 명확히 경고
                     Debug.LogError("[BattleUIComponent] CardPrefab에 CardUIComponent 스크립트가 부착되어 있지 않습니다!");
                     continue; 
                 }
                 cardUI.Setup(card, onCardClicked);
+
+                // ── 애니메이션 연출 추가 ──
+                // CardAnimator가 프리팹에 붙어있으면 드로우 연출, 없으면 기존처럼 즉시 배치
+                CardAnimator animator = cardObj.GetComponent<CardAnimator>();
+                if (animator != null)
+                {
+                    RectTransform cardRect = cardObj.GetComponent<RectTransform>();
+                    Vector2 targetPos = cardRect.anchoredPosition;
+                    float targetRot = CalculateCardRotation(i, totalCards);
+
+                    Vector3 deckWorldPos = _deckAreaRect != null
+                        ? _deckAreaRect.position
+                        : _handLayoutGroup.position + Vector3.left * 300f;
+
+                    animator.PlayDrawFromDeck(
+                        deckWorldPos,
+                        targetPos,
+                        targetRot,
+                        delay: i * _drawStaggerDelay
+                    );
+                }
             }
         }
 
@@ -141,13 +177,50 @@ namespace FFF.UI.Battle
         }
 
         /// <summary>
-        /// 화면에 표시된 내 카드(Clone)들을 전부 삭제하여 뷰를 청소합니다.
+        /// 화면에 표시된 내 카드(Clone)들을 폐기 연출 후 삭제합니다.
+        /// CardAnimator가 없으면 기존처럼 즉시 삭제합니다.
+        /// onComplete는 모든 카드가 사라진 뒤 호출됩니다.
         /// </summary>
-        public void ClearHandUI()
+        public void ClearHandUI(Action onComplete = null)
         {
-            if (_handLayoutGroup != null)
+            if (_handLayoutGroup == null || _handLayoutGroup.childCount == 0)
             {
-                foreach (Transform child in _handLayoutGroup) Destroy(child.gameObject);
+                onComplete?.Invoke();
+                return;
+            }
+
+            // CardAnimator가 하나라도 있으면 연출 후 삭제
+            bool hasAnimator = false;
+            int remaining = _handLayoutGroup.childCount;
+
+            // childCount는 Destroy 호출 후에도 같은 프레임에서 바뀌지 않으므로 미리 저장
+            List<Transform> children = new List<Transform>();
+            foreach (Transform child in _handLayoutGroup) children.Add(child);
+
+            foreach (Transform child in children)
+            {
+                CardAnimator animator = child.GetComponent<CardAnimator>();
+                if (animator != null)
+                {
+                    hasAnimator = true;
+                    animator.PlayDiscardToBottom(() =>
+                    {
+                        Destroy(child.gameObject);
+                        remaining--;
+                        if (remaining <= 0) onComplete?.Invoke();
+                    });
+                }
+                else
+                {
+                    Destroy(child.gameObject);
+                    remaining--;
+                }
+            }
+
+            // CardAnimator가 하나도 없었으면 즉시 콜백
+            if (!hasAnimator)
+            {
+                onComplete?.Invoke();
             }
         }
 
@@ -166,6 +239,16 @@ namespace FFF.UI.Battle
         public void HideBattleResult()
         {
             if (_battleResultPanel != null) _battleResultPanel.SetActive(false);
+        }
+
+        /// <summary>
+        /// 부채꼴 배치 기울기 계산. 양끝 ±maxTilt, 중앙 0도.
+        /// </summary>
+        private float CalculateCardRotation(int index, int totalCards)
+        {
+            if (totalCards <= 1) return 0f;
+            float center = (totalCards - 1) / 2f;
+            return ((index - center) / center) * _maxTiltAngle;
         }
     }
 }

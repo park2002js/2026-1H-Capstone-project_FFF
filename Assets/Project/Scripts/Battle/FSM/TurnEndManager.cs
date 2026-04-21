@@ -56,11 +56,15 @@ namespace FFF.Battle.Managers
             _battleUI.SetPlayerHealth(PlayerData.Instance.CurrentHealth, PlayerData.Instance.MaxHealth);
             _battleUI.SetEnemyHealth(_enemyData.CurrentHealth, _enemyData.MaxHealth);
 
-            // 4. 턴 정리 및 전환
+            // 4. 턴 정리
             _deckSystem.CleanupForNextTurn();
-            _battleUI.ClearHandUI();
-            
-            CheckDeathAndTransition();
+
+            // 5. 카드 폐기 연출 → 완료 후 전환 판정
+            //    ClearHandUI가 콜백을 받으므로, 연출이 끝나야 다음 턴으로 넘어간다.
+            _battleUI.ClearHandUI(onComplete: () =>
+            {
+                CheckDeathAndTransition();
+            });
         }
 
         private int GetPlayerStrength()
