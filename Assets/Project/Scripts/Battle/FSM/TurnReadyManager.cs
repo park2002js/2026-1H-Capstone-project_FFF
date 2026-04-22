@@ -50,6 +50,12 @@ namespace FFF.Battle.Managers
         /// </summary>
         private void HandleTurnReady()
         {
+            // 턴 번호 증가 : BattleManager에 있는 배달통 갱신
+            _battleManager.CurrentModifierContext.CurrentTurnNumber++;
+            
+            int currentTurn = _battleManager.CurrentModifierContext.CurrentTurnNumber;
+            Debug.Log($"=== {currentTurn} 턴 시작 ===");
+
             // 비동기 흐름 시작 (Fire and Forget)
             _ = RunTurnStartFlowAsync();
         }

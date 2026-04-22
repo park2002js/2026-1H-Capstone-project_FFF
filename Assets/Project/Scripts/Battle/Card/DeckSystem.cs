@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using FFF.Core.Events;
-using FFF.Battle.Modifier;
 
 namespace FFF.Battle.Card
 {
@@ -70,21 +69,19 @@ namespace FFF.Battle.Card
         private CardDrawHandler _drawHandler;
         private CardSelectionHandler _selectionHandler;
 
-        /// <summary> 적용 중인 버프/디버프 관리 리스트 </summary>
-        private List<TurnModifier> _activeModifiers = new List<TurnModifier>();
-
         /// <summary> 이번 턴에 '실제로 사용한' 리롤 횟수 </summary>
         private int _usedRerollsThisTurn = 0;
  
         /// <summary>장신구 등 외부 효과에 의한 가중치 드로우 함수.</summary>
         private Func<Data.HwaTuCard, float> _drawWeightFunc = null;
+
+        /// <summary> ModifierManager로부터 주입받을 보너스 수치들 </summary>
+        private int _bonusMaxRerolls = 0;
+        private int _bonusDrawCount = 0;
  
         #endregion
 
         #region === Getter (외부 → 데이터 조회) ===
-
-        /// <summary> 임의로 DeckSystem 내부에 만든 Modifier 조회 변수ㅠ </summary>
-        public IReadOnlyList<TurnModifier> ActiveModifiers => _activeModifiers;
 
         // CardPile 데이터를 그대로 노출. 외부는 CardPile의 존재를 모른다.
 
@@ -101,39 +98,11 @@ namespace FFF.Battle.Card
         public IReadOnlyList<Data.HwaTuCard> DiscardPile => _pile.DiscardPile;
 
 
-        /// <summary>
-        /// 현재 활성화된 모디파이어를 모두 합산한 '최종 최대 리롤 횟수' (실시간 연산)
-        /// </summary>
-        public int TotalMaxRerolls
-        {
-            get
-            {
-                int total = _baseMaxRerolls;
-                foreach (var mod in _activeModifiers)
-                {
-                    if (mod.Type == ModifierType.MaxRerolls)
-                        total += mod.Value;
-                }
-                return total;
-            }
-        }
+        /// <summary> 최종 최대 리롤 횟수 (기본값 + 외부 주입 보너스) </summary>
+        public int TotalMaxRerolls => _baseMaxRerolls + _bonusMaxRerolls;
 
-        /// <summary>
-        /// 현재 활성화된 모디파이어를 모두 합산한 '최종 드로우 장수' (실시간 연산)
-        /// </summary>
-        public int TotalDrawCount
-        {
-            get
-            {
-                int total = _baseDrawCount;
-                foreach (var mod in _activeModifiers)
-                {
-                    if (mod.Type == ModifierType.DrawCount)
-                        total += mod.Value;
-                }
-                return total;
-            }
-        }
+        /// <summary> 최종 드로우 장수 (기본값 + 외부 주입 보너스) </summary>
+        public int TotalDrawCount => _baseDrawCount + _bonusDrawCount;
 
         /// <summary> 남은 리롤 횟수 = (최종 최대 리롤) - (이번 턴에 쓴 횟수) </summary>
         public int RerollsRemaining => TotalMaxRerolls - _usedRerollsThisTurn;
@@ -152,22 +121,22 @@ namespace FFF.Battle.Card
         #region === Setter: 외부 효과 적용 (장신구/조커 매니저가 호출) ===
 
         /// <summary>
-        /// 모디파이어(버프/디버프)를 추가합니다. (장신구, 조커 등)
+        /// 외부(ModifierManager)에서 계산된 최종 리롤 보너스 수치를 덮어씌웁니다.
+        /// DeckSystem은 이 값이 왜 늘었는지/줄었는지 모릅니다.
         /// </summary>
-        public void AddModifier(TurnModifier modifier)
+        public void SetBonusMaxRerolls(int bonus)
         {
-            _activeModifiers.Add(modifier);
-            Debug.Log($"[DeckSystem] 버프 추가: {modifier.Type} +{modifier.Value} " +
-                      $"({(modifier.IsPermanent ? "영구" : $"{modifier.TurnsRemaining}턴 남음")})");
+            _bonusMaxRerolls = bonus;
+            Debug.Log($"[DeckSystem] 보너스 리롤 수치 갱신: +{bonus} (최종: {TotalMaxRerolls})");
         }
 
         /// <summary>
-        /// 특정 모디파이어를 제거합니다. (장신구 해제, 판매, 제거 등)
+        /// 외부(ModifierManager)에서 계산된 최종 드로우 보너스 수치를 덮어씌웁니다.
         /// </summary>
-        public void RemoveModifier(TurnModifier modifier)
+        public void SetBonusDrawCount(int bonus)
         {
-            _activeModifiers.Remove(modifier);
-            Debug.Log($"[DeckSystem] 버프 제거: {modifier.Type}");
+            _bonusDrawCount = bonus;
+            Debug.Log($"[DeckSystem] 보너스 드로우 수치 갱신: +{bonus} (최종: {TotalDrawCount})");
         }
 
         /// <summary>
@@ -198,7 +167,10 @@ namespace FFF.Battle.Card
             _drawHandler = new CardDrawHandler(_pile, _drawWeightFunc);
             _selectionHandler = new CardSelectionHandler(_pile, _maxSelectCount);
 
-            _activeModifiers.Clear(); // 재시작 시 버프 초기화
+            // 초기화 시 보너스 수치 리셋
+            _bonusMaxRerolls = 0;
+            _bonusDrawCount = 0;
+
             // CardPile 초기화 (셔플 포함)
             _pile.Initialize(allCards, seed);
 
@@ -318,16 +290,6 @@ namespace FFF.Battle.Card
         {
             // 1. 카드 묘지로 이동
             _drawHandler.MoveAllToDiscard(); 
-
-            // 2. 모디파이어 턴 차감 및 만료된 항목 제거 (역순 순회)
-            for (int i = _activeModifiers.Count - 1; i >= 0; i--)
-            {
-                if (_activeModifiers[i].TickTurn())
-                {
-                    Debug.Log($"[DeckSystem] 버프 만료(제거됨): {_activeModifiers[i].Type}");
-                    _activeModifiers.RemoveAt(i);
-                }
-            }
 
             _onTurnCleanedUp?.Raise();
             Debug.Log($"[DeckSystem] 턴 정리 완료. {this}");

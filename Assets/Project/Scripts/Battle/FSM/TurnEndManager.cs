@@ -6,6 +6,7 @@ using FFF.Battle.Damage;
 using FFF.Data;
 using FFF.Battle.Enemy;
 using FFF.Core.Events;
+using FFF.Battle.Modifier;
 
 namespace FFF.Battle.Managers
 {
@@ -14,6 +15,7 @@ namespace FFF.Battle.Managers
         [Header("=== 시스템 참조 ===")]
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
+        [SerializeField] private ModifierManager _modifierManager;
         [SerializeField] private EnemyData _enemyData;
         [SerializeField] private BattleUIComponent _battleUI;
 
@@ -59,7 +61,10 @@ namespace FFF.Battle.Managers
             // 4. 턴 정리
             _deckSystem.CleanupForNextTurn();
 
-            // 5. 카드 폐기 연출 → 완료 후 전환 판정
+            // 5. 턴 종료에 따른 Modifier들의 수명 업데이트
+            _modifierManager.TickModifiers();
+
+            // 6. 카드 폐기 연출 → 완료 후 전환 판정
             //    ClearHandUI가 콜백을 받으므로, 연출이 끝나야 다음 턴으로 넘어간다.
             _battleUI.ClearHandUI(onComplete: () =>
             {
