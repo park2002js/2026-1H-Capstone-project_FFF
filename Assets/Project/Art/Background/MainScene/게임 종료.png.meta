@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1aa98d344119f8247b497a61e06cc19a
+guid: 05a3a4e7db2673241b22721ce2a7607d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4405368491117698828
-    second: NewGameButton_0
+      213: -6980285085247870034
+    second: "\uAC8C\uC784 \uC885\uB8CC_0"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,17 +96,43 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: NewGameButton_0
+      name: "\uAC8C\uC784 \uC885\uB8CC_0"
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1505
-        height: 1024
+        x: 92
+        y: 73
+        width: 1073
+        height: 203
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c0fd4c15d43032d30800000000000000
-      internalID: 4405368491117698828
+      spriteID: eabe7d6b2bb012f90800000000000000
+      internalID: -6980285085247870034
       vertices: []
       indices: 
       edges: []
@@ -135,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      NewGameButton_0: 4405368491117698828
+      "\uAC8C\uC784 \uC885\uB8CC_0": -6980285085247870034
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
