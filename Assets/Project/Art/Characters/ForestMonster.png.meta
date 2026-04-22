@@ -1,13 +1,13 @@
 fileFormatVersion: 2
-guid: e423cf8f4c40aef4f9ba230e1edad7ac
+guid: 354774b67154f65489eb35eaa962ed37
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7874712841489459036
-    second: WaterGhost_0
+      213: 324699193658112605
+    second: ForestMonster_0
   - first:
-      213: -1607687700194169720
-    second: WaterGhost_1
+      213: -5458445457414281187
+    second: ForestMonster_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -99,17 +99,43 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: WaterGhost_0
+      name: ForestMonster_0
       rect:
         serializedVersion: 2
-        x: 255
-        y: 95
-        width: 8
-        height: 7
+        x: 159
+        y: 57
+        width: 840
+        height: 888
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -118,20 +144,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c57af297b99984d60800000000000000
-      internalID: 7874712841489459036
+      spriteID: d5af8d04230918400800000000000000
+      internalID: 324699193658112605
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: WaterGhost_1
+      name: ForestMonster_1
       rect:
         serializedVersion: 2
-        x: 260
-        y: 79
-        width: 581
-        height: 804
+        x: 442
+        y: 103
+        width: 10
+        height: 9
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -140,8 +166,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 88c6928fd8850b9e0800000000000000
-      internalID: -1607687700194169720
+      spriteID: d182afcc6c4bf34b0800000000000000
+      internalID: -5458445457414281187
       vertices: []
       indices: 
       edges: []
@@ -160,8 +186,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      WaterGhost_0: 7874712841489459036
-      WaterGhost_1: -1607687700194169720
+      ForestMonster_0: 324699193658112605
+      ForestMonster_1: -5458445457414281187
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
