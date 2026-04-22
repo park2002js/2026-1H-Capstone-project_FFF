@@ -1,3 +1,4 @@
+using FFF.Battle.Modifier;
 namespace FFF.Battle.Item.Joker
 {
     /// <summary>
@@ -34,17 +35,9 @@ namespace FFF.Battle.Item.Joker
         /// <returns>사용 성공 여부</returns>
         public bool Use(JokerContext context)
         {
-            if (IsUsed)
-            {
-                UnityEngine.Debug.LogWarning($"[JokerBase] 이미 사용된 조커: {DisplayName}");
-                return false;
-            }
-
+            if (IsUsed) return false;
             Activate(context);
             IsUsed = true;
-
-            UnityEngine.Debug.Log($"[JokerBase] 조커 사용: {DisplayName} → 소멸");
-
             return true;
         }
 
@@ -60,10 +53,10 @@ namespace FFF.Battle.Item.Joker
     /// </summary>
     public class JokerContext
     {
-        /// <summary>카드 시스템 (리롤 등 카드 관련 효과).</summary>
+        /// <summary> 카드 시스템 (리롤 등 카드 관련 효과).</summary>
         public Card.DeckSystem DeckSystem { get; set; }
 
-        /// <summary>조커 매니저 (데미지 배율 등 등록).</summary>
-        public JokerManager JokerManager { get; set; }
+        /// <summary> 조립된 ItemModifier를 파이프라인에 꽂아넣기 위해 사용</summary>
+        public ModifierManager ModifierManager { get; set; }
     }
 }

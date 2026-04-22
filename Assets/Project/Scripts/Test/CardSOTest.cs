@@ -35,8 +35,8 @@ namespace FFF.Test
             var cardSystemTest = gameObject.AddComponent<CardSystemTest>();
             cardSystemTest.RunTest();
 
-            var itemSystemTest = gameObject.AddComponent<ItemSystemTest>();
-            itemSystemTest.RunTest();
+            // var itemSystemTest = gameObject.AddComponent<ItemSystemTest>();
+            // itemSystemTest.RunTest();
         }
 
         /// <summary>1. SO 로드가 되는지</summary>

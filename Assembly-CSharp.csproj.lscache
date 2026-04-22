@@ -2,12 +2,10 @@ version=1
 
 # This file caches language service data to improve the performance of C# Dev Kit.
 # It is not intended for manual editing. It can safely be deleted and will be
-# regenerated automatically.
+# regenerated automatically. For more information, see https://aka.ms/lscache
 #
-# To exclude from version control, add *.lscache to your .gitignore file.
-#
-# To disable caching, add the following to your VS Code settings:
-#   "dotnet.projectsystem.enableLanguageServiceCache": false
+# To control where cache files are stored, use the following VS Code setting:
+#   "dotnet.projectsystem.cacheInProjectFolder": true
 
 [project]
 language=C#
@@ -23,7 +21,7 @@ ProjectAssetsFile=<PATH>Temp/obj/Assembly-CSharp/project.assets.json
 RootNamespace=
 RunAnalyzers=
 RunAnalyzersDuringLiveAnalysis=
-SolutionPath=<PATH>2026-1H-Capstone-project_FFF.slnx
+SolutionPath=<PATH>Capstone.slnx
 TargetFrameworkIdentifier=.NETStandard
 TargetPath=<PATH>Temp/bin/Debug/Assembly-CSharp.dll
 TargetRefPath=
@@ -57,23 +55,39 @@ Assets/Project/Scripts/Battle/Card/
  CardPile.cs
  CardSelectionHandler.cs
  DeckSystem.cs
+Assets/Project/Scripts/Battle/Damage/
+ CombatCalculator.cs
+ DamageCal.cs
+ StrengthCal.cs
 Assets/Project/Scripts/Battle/
  Enemy/EnemyData.cs
  FSM/
+  BattleEndManager.cs
   BattleManager.cs
   BattleStartManager.cs
+  TurnEndManager.cs
+  TurnProceedManager.cs
   TurnReadyManager.cs
  Item/Accessory/
   AccessoryBase.cs
   AccessoryManager.cs
-  HighCardWeightAccessory.cs
-  RerollBonusAccessory.cs
  Item/Joker/
-  EvenHandDoubleJoker.cs
   JokerBase.cs
   JokerManager.cs
-  RerollBurstJoker.cs
- Modifier/TurnModifier.cs
+ Modifier/Conditions/Base/
+  AlwaysTrueCondition.cs
+  AndCondition.cs
+  OrConditions.cs
+ Modifier/
+  Conditions/Specific/TargetTurnCondition.cs
+  Core/
+   IModifierCondition.cs
+   IModifierEffect.cs
+   ItemModifier.cs
+   ModifierContext.cs
+   ModifierManager.cs
+   ModifierValueType.cs
+  Effects/AddValueEffect.cs
 Assets/Project/Scripts/Core/
  BootSceneSetup.cs
  Events/
@@ -86,6 +100,7 @@ Assets/Project/Scripts/Core/
  SceneLoader.cs
  Singleton.cs
 Assets/Project/Scripts/Data/
+ BattleContext.cs
  HwaTuCard.cs
  HwaTuCardDatabase.cs
  PlayerData.cs
@@ -97,9 +112,15 @@ Assets/Project/Scripts/Test/
  CardSOTest.cs
  CardSystemTest.cs
  ItemSystemTest.cs
+Assets/Project/Scripts/UI/Animation/
+ BattleAnimationController.cs
+ CardAnimator.cs
+ UITweenHelper.cs
 Assets/Project/Scripts/UI/Battle/
+ BattleSceneSetup.cs
  BattleUIComponent.cs
  CardUIComponent.cs
+ StatusBarUI.cs
 Assets/Project/Scripts/UI/Core/
  BaseUIComponent.cs
  UIManager.cs

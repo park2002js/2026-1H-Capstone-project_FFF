@@ -17,9 +17,16 @@ namespace FFF.Test
         private DeckSystem _deckSystem;
         private int _passCount = 0;
         private int _failCount = 0;
+        private bool _hasRun = false;
+
+        private void Start()
+        {
+            if (!_hasRun) RunTest();
+        }
 
         public void RunTest()
         {
+            _hasRun = true;
             Debug.Log("========================================");
             Debug.Log("  [2. CardSystemTest] 카드 시스템 테스트 시작");
             Debug.Log("========================================\n");
@@ -89,11 +96,14 @@ namespace FFF.Test
             Debug.Log("\n── 테스트 3: 리롤 ──");
 
             var handBefore = new List<HwaTuCard>(_deckSystem.Hand);
-            var toReturn = new List<HwaTuCard> { handBefore[0], handBefore[1] };
 
             Debug.Log($"  리롤 전 Hand: {_deckSystem.Hand.Count}장");
-            Debug.Log($"  리롤 대상: {toReturn[0]}, {toReturn[1]}");
+            Debug.Log($"  리롤 대상: {handBefore[0]}, {handBefore[1]}");
             Debug.Log($"  남은 리롤 횟수: {_deckSystem.RerollsRemaining}");
+
+            _deckSystem.SelectCard(handBefore[0]);
+            _deckSystem.SelectCard(handBefore[1]);
+            var toReturn = new List<HwaTuCard>(_deckSystem.SelectedCards);
 
             var redrawn = _deckSystem.Reroll(toReturn);
 

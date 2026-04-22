@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using FFF.Core.Events;
+using FFF.Data;
+using FFF.Battle.Modifier;
 
 
 namespace FFF.Battle.FSM
@@ -23,6 +25,14 @@ namespace FFF.Battle.FSM
 
         // --- 현재 상태 읽기 전용 프로퍼티 ---
         public TurnState CurrentPhase { get; private set; } = TurnState.None;
+
+        // --- 현재 전투의 데이터를 담을 공용 문맥 객체 (매 전투 스테이지마다 새로 갱신됨) ---
+        public BattleContext Context { get; private set; }
+
+        // ---  Modifier Manager 연결 ---
+        [SerializeField] private ModifierManager _modifierManager;
+        // --- 전투 내내 유지될 종합 배달통 ---
+        public ModifierContext CurrentModifierContext { get; private set; }
 
         // ==========================================
         // SO Event Channels (상태 변경 시 방송할 채널들)
@@ -58,6 +68,16 @@ namespace FFF.Battle.FSM
         /// </summary>
         public void StartBattle()
         {
+            // 배달통 생성 및 초기화
+            CurrentModifierContext = new ModifierContext
+            {
+                CurrentTurnNumber = 1, // 1턴부터 시작
+                Player = PlayerData.Instance,
+                //Enemy = EnemyManager.Instance.CurrentEnemy, 아직 적 시스템이 구현되지 않아서 임시로 주석화
+                ActionHandResult = null
+            };
+
+            Context = new BattleContext();
             CurrentPhase = TurnState.None;
             
             // 전투 시작 이벤트 호출 (초기화 관련 로직들이 등록되어 있음)
@@ -93,7 +113,6 @@ namespace FFF.Battle.FSM
             switch (CurrentPhase)
             {
                 case TurnState.TurnReady:
-                    Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
                     _onTurnReady?.Raise();
                     break;
                 case TurnState.TurnProceed:

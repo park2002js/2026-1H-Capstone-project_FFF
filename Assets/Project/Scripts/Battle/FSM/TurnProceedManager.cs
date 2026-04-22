@@ -4,6 +4,7 @@ using FFF.Battle.Card;
 using FFF.UI.Battle;
 using FFF.Battle.Damage;
 using FFF.Core.Events;
+using FFF.Battle.Modifier;
 
 namespace FFF.Battle.FSM
 {
@@ -13,6 +14,7 @@ namespace FFF.Battle.FSM
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
         [SerializeField] private BattleUIComponent _battleUI;
+        [SerializeField] private ModifierManager _modifierManager;
 
         [Header("=== 수신할 이벤트 ===")]
         [SerializeField] private GameEvent _onTurnProceedEvent;
@@ -42,6 +44,7 @@ namespace FFF.Battle.FSM
         // 1. TurnProceed 상태 진입 시 초기화
         private void HandleTurnProceedEnter()
         {
+            _battleUI.SetTurnProceedUIVisibility(true);
             Debug.Log("========== [TurnProceed] 메인 행동 페이즈 진입 ==========");
             
             // 처음엔 선택된 카드가 없으므로 "-" 표기 및 버튼 비활성화
@@ -60,11 +63,13 @@ namespace FFF.Battle.FSM
             // 정책 1: 딱 2장이 선택되었을 때만 계산
             if (selected.Count == 2)
             {
-                // DeckSystem에 ActiveModifiers 프로퍼티가 있다고 가정
-                // (없다면 null을 넣어도 동작하도록 StrengthCal을 방어해 두었습니다)
-                var modifiers = _deckSystem.ActiveModifiers; 
-                
-                int expectedPower = _combatCalculator.Strength.CalculateExpectedStrength(selected[0], selected[1], modifiers);
+                // Manager와 Context를 넘겨서 예상 데미지를 계산합니다.
+                int expectedPower = _combatCalculator.Strength.CalculateExpectedStrength(
+                    selected[0], 
+                    selected[1], 
+                    _modifierManager, 
+                    _battleManager.CurrentModifierContext
+                );
                 
                 _battleUI.SetExpectedStrengthText(expectedPower.ToString());
                 _battleUI.SetEndTurnButtonInteractable(true);

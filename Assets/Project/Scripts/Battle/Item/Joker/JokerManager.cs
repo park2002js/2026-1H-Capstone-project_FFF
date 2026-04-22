@@ -4,6 +4,7 @@ using UnityEngine;
 using FFF.Battle.FSM;
 using FFF.Data;
 using FFF.Core.Events;
+using FFF.Battle.Modifier;
 
 namespace FFF.Battle.Item.Joker
 {
@@ -26,6 +27,7 @@ namespace FFF.Battle.Item.Joker
         [Header("=== 참조 ===")]
         [Tooltip("카드 시스템. 조커 효과 적용 대상.")]
         [SerializeField] private Card.DeckSystem _deckSystem;
+        [SerializeField] private ModifierManager _modifierManager;
 
         /// <summary>플레이어가 보유한 조커 목록.</summary>
         private readonly List<JokerBase> _heldJokers = new();
@@ -99,7 +101,7 @@ namespace FFF.Battle.Item.Joker
             var context = new JokerContext
             {
                 DeckSystem = _deckSystem,
-                JokerManager = this
+                ModifierManager = _modifierManager 
             };
 
             bool success = joker.Use(context);

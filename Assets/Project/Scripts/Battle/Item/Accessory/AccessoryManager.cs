@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using FFF.Battle.FSM;
+using FFF.Battle.Modifier;
 
 namespace FFF.Battle.Item.Accessory
 {
@@ -20,8 +21,8 @@ namespace FFF.Battle.Item.Accessory
     public class AccessoryManager : MonoBehaviour
     {
         [Header("=== 참조 ===")]
-        [Tooltip("카드 시스템. 장신구 효과 적용 대상.")]
-        [SerializeField] private Card.DeckSystem _deckSystem;
+        [Tooltip("장신구 효과 적용 및 해제를 위한 참조")]
+        [SerializeField] private ModifierManager _modifierManager;
 
         /// <summary>현재 장착된 장신구 목록. 전투 외부(상점/맵)에서 세팅된다.</summary>
         private readonly List<AccessoryBase> _equippedAccessories = new();
@@ -60,11 +61,11 @@ namespace FFF.Battle.Item.Accessory
         /// 장착된 모든 장신구의 효과를 DeckSystem에 적용한다.
         /// 어떤 장신구가 어떤 효과를 주는지는 알빠노. 그냥 Apply 호출.
         /// </summary>
-        public void ApplyAllAccessories(Card.DeckSystem deckSystem)
+        public void ApplyAllAccessories()
         {
             foreach (var accessory in _equippedAccessories)
             {
-                accessory.Apply(deckSystem);
+                accessory.Apply(_modifierManager);
                 Debug.Log($"[AccessoryManager] 장신구 효과 적용: {accessory.DisplayName}");
             }
         }
@@ -81,7 +82,7 @@ namespace FFF.Battle.Item.Accessory
         {
             foreach (var accessory in _equippedAccessories)
             {
-                accessory.Remove(_deckSystem);
+                accessory.Remove(_modifierManager);
             }
 
             Debug.Log($"[AccessoryManager] 모든 장신구 효과 해제. 총 {_equippedAccessories.Count}개");
