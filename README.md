@@ -130,17 +130,17 @@ Assets/
 │   │   │   ├── SeotdaHand.cs        # 섯다 족보 enum + 공격력 테이블
 │   │   │   └── SeotdaJudge.cs       # 족보 판정 시스템
 │   │   │
-│   │   └── Test/                    # 테스트 자동화 (신규 추가)
+│   │   └── Test/                    # 테스트 자동화
 │   │       ├── BattleTestStarter.cs
 │   │       ├── CardSOTest.cs
 │   │       ├── CardSystemTest.cs
 │   │       └── ItemSystemTest.cs
 │   │
-│   ├── ScriptableObjects/           # 실제 S.O 에셋 인스턴스 (유추)
-│   ├── Prefabs/                     # UI, 카드 프리팹 (유추)
-│   ├── Scenes/                      # Boot, Title, Main, Map, Battle (유추)
-│   ├── Art/                         # 스프라이트, UI 리소스 (유추)
-│   └── Animations/                  # 애니메이션 파일 (유추)
+│   ├── ScriptableObjects/           # 실제 S.O 에셋 인스턴스
+│   ├── Prefabs/                     # UI, 카드 프리팹
+│   ├── Scenes/                      # Boot, Title, Main, Map, Battle
+│   ├── Art/                         # 스프라이트, UI 리소스
+│   └── Animations/                  # 애니메이션 파일
 ```
 
 ## 폴더 구조 설계 근거
