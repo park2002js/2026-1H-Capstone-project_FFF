@@ -259,7 +259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.68235296}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -335,7 +335,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ReferenceResolution: {x: 2560, y: 1440}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
@@ -417,11 +417,11 @@ RectTransform:
   - {fileID: 244118636}
   m_Father: {fileID: 72214977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -992.13, y: 1304.0151}
-  m_SizeDelta: {x: 1984.2, y: 2424.0588}
-  m_Pivot: {x: 0, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: -1280, y: 0}
+  m_SizeDelta: {x: 2560, y: 4000}
+  m_Pivot: {x: 0, y: 0}
 --- !u!1 &775309988
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,17 +474,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _canvasGroup: {fileID: 775309991}
   _mapContainer: {fileID: 474847669}
-  _nodeSpacingX: 100
-  _nodeSpacingY: 80
-  _nodeSize: 60
-  _edgeThickness: 4
-  _iconMonster: {fileID: 0}
-  _iconElite: {fileID: 0}
-  _iconEvent: {fileID: 0}
-  _iconTreasure: {fileID: 0}
-  _iconRest: {fileID: 0}
-  _iconShop: {fileID: 0}
-  _iconBoss: {fileID: 0}
+  _nodeBackgroundSprite: {fileID: 0}
+  _nodeSpacingX: 200
+  _nodeSpacingY: 200
+  _nodeSize: 100
+  _edgeThickness: 10
+  _iconScaleRatio: 1
+  _iconMonster: {fileID: 4644523113532460279, guid: bac8e72eec1b6274d9238a0c24567d71, type: 3}
+  _iconElite: {fileID: 1082636897498741918, guid: fdf2a6072ec074845908cc165b0e5075, type: 3}
+  _iconEvent: {fileID: 21300000, guid: 57b899eff8e884b4b9b31a1469a49286, type: 3}
+  _iconTreasure: {fileID: 21300000, guid: 732f9656d7eeaff4a8e7ccd4d8d0754b, type: 3}
+  _iconRest: {fileID: 8654233391807914804, guid: 522509cfb1b7b5e4ca6004fc7bbef6e9, type: 3}
+  _iconShop: {fileID: 6840857970483876212, guid: 335f218da72bc594bb88b1991da5521f, type: 3}
+  _iconBoss: {fileID: -2424553518018739129, guid: 916b48a9a08e4c642b2c1d6e6a62834a, type: 3}
 --- !u!225 &775309991
 CanvasGroup:
   m_ObjectHideFlags: 0
