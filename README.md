@@ -1,4 +1,7 @@
 # 🎮 2026 Capstone Design Project: FFF
+##브랜치 구조 안내
+Main-Dev-Feature 형식을 따라, Feature 단계에서 기능 개발 후 검토, 각 feature 완료 시 Dev 브랜치로 병합합니다.
+<img width="264" height="150" alt="feature-branch" src="https://github.com/user-attachments/assets/14ff024a-2094-4b85-8336-d6c80d5bdf74" />
 
 
 ## ✨ 주요 특징
