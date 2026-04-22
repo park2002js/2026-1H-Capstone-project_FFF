@@ -546,10 +546,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _canvasGroup: {fileID: 0}
-  _newGameButton: {fileID: 0}
-  _continueButton: {fileID: 0}
-  _settingsButton: {fileID: 0}
-  _quitButton: {fileID: 0}
+  _newGameButton: {fileID: 858164164}
+  _continueButton: {fileID: 2108010677}
+  _settingsButton: {fileID: 225218852}
+  _quitButton: {fileID: 2013776049}
 --- !u!1 &1330871206
 GameObject:
   m_ObjectHideFlags: 0
