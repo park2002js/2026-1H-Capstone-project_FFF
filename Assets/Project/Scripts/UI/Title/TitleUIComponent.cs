@@ -1,7 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using FFF.UI.Core;
-using FFF.Core;
 
 namespace FFF.UI.Title
 {
@@ -19,6 +19,9 @@ namespace FFF.UI.Title
     /// </summary>
     public class TitleUIComponent : BaseUIComponent
     {
+        /// <summary>GameManager가 연결하는 씬 탈출 델리게이트.</summary>
+        public Action OnExit;
+
         [Header("=== 타이틀 화면 요소 ===")]
         [Tooltip("'Press Any Key' 텍스트")]
         [SerializeField] private Text _pressAnyKeyText;
@@ -121,8 +124,8 @@ namespace FFF.UI.Title
         /// </summary>
         private void OnAnyKeyPressed()
         {
-            Debug.Log("[TitleUI] 아무 키 입력 감지 → MainScene 전환 요청");
-            SceneLoader.LoadScene(SceneLoader.SceneNames.MAIN);
+            Debug.Log("[TitleUI] 아무 키 입력 감지 → GameManager에 전달");
+            OnExit?.Invoke();
         }
     }
 }
