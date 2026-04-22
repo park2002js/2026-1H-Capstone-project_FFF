@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +13,9 @@ namespace FFF.UI.Map
     /// </summary>
     public class MapUIComponent : BaseUIComponent
     {
+        /// <summary>GameManager가 연결하는 노드 선택 델리게이트.</summary>
+        public Action<int> OnNodeSelected;
+
         [Header("레이아웃")]
         [SerializeField] private RectTransform _mapContainer;
         [SerializeField] private float _nodeSpacingX = 100f;
@@ -151,7 +155,7 @@ namespace FFF.UI.Map
                 ? MapData.FLOORS * MapData.COLUMNS
                 : node.Floor * MapData.COLUMNS + node.Column;
 
-            UIManager.Instance.RequestStageSelect(nodeId);
+            OnNodeSelected?.Invoke(nodeId);
         }
 
         // ====================================================================
@@ -197,6 +201,9 @@ namespace FFF.UI.Map
 
         private void ClearMap()
         {
+            // 컨테이너가 할당되지 않았을 때의 NullReferenceException 방지
+            if (_mapContainer == null) return;
+
             foreach (Transform child in _mapContainer)
             {
                 if (child.name == "Background") continue;

@@ -21,7 +21,7 @@ namespace FFF.Core
             public const string BOOT = "BootScene";
             public const string TITLE = "TitleScene";
             public const string MAIN = "MainScene";
-            public const string MAP = "MapScene";
+            public const string MAP = "StageScene";
             public const string BATTLE = "BattleScene";
             public const string SHOP = "ShopScene";
         }
