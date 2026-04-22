@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 using FFF.Data;
 using FFF.Battle.Modifier;
-using FFF.Battle.Damage;
 
 namespace FFF.Battle.Damage
 {

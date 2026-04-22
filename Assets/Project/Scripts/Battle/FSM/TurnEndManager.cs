@@ -59,10 +59,10 @@ namespace FFF.Battle.Managers
             _battleUI.SetEnemyHealth(_enemyData.CurrentHealth, _enemyData.MaxHealth);
 
             // 4. 턴 정리
-            _deckSystem.CleanupForNextTurn();
+            _deckSystem.CleanupForNextTurn(); // 카드 무덤으로 보내기
 
             // 5. 턴 종료에 따른 Modifier들의 수명 업데이트
-            _modifierManager.TickModifiers();
+            _modifierManager.TickModifiers(); // 버프 수명 차감 및 파기
 
             // 6. 카드 폐기 연출 → 완료 후 전환 판정
             //    ClearHandUI가 콜백을 받으므로, 연출이 끝나야 다음 턴으로 넘어간다.
@@ -77,7 +77,13 @@ namespace FFF.Battle.Managers
             var selected = _deckSystem.SelectedCards;
             if (selected.Count == 2)
             {
-                return _combatCalculator.Strength.CalculateExpectedStrength(selected[0], selected[1], _deckSystem.ActiveModifiers);
+                // 매니저와 배달통을 넘김
+                return _combatCalculator.Strength.CalculateExpectedStrength(
+                    selected[0], 
+                    selected[1], 
+                    _modifierManager, 
+                    _battleManager.CurrentModifierContext
+                );
             }
             return 0;
         }
@@ -89,25 +95,23 @@ namespace FFF.Battle.Managers
         {
             if (playerStrength > enemyStrength)
             {
-                // 플레이어 승리: 플레이어의 정보와 버프를 기반으로 최종 데미지 산출
+                // 플레이어 승리: 플레이어의 데미지 파이프라인 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
-                    winnerBaseStrength: playerStrength, 
-                    attackerModifiers: _deckSystem.ActiveModifiers, 
-                    defenderModifiers: null // 추후 적의 방어 버프가 생기면 전달
+                    playerStrength, 
+                    _modifierManager, 
+                    _battleManager.CurrentModifierContext
                 );
-                
                 _enemyData.TakeDamage(finalDamage);
                 Debug.Log($"[TurnEnd] 💥 플레이어 승리! 적에게 {finalDamage}의 최종 피해를 입혔습니다.");
             }
             else if (enemyStrength > playerStrength)
             {
-                // 적 승리: 적의 정보와 버프를 기반으로 최종 데미지 산출
+                // 적 승리: 적이 플레이어를 때릴 때도 플레이어의 파이프라인(방어력 등) 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
-                    winnerBaseStrength: enemyStrength, 
-                    attackerModifiers: null, // 추후 적의 공격 버프가 생기면 전달 
-                    defenderModifiers: _deckSystem.ActiveModifiers // 플레이어의 방어 버프가 있다면 적용됨
+                    enemyStrength, 
+                    _modifierManager, 
+                    _battleManager.CurrentModifierContext
                 );
-                
                 PlayerData.Instance.TakeDamage(finalDamage);
                 Debug.Log($"[TurnEnd] 🩸 적 승리! 플레이어가 {finalDamage}의 최종 피해를 입었습니다.");
             }
@@ -124,7 +128,6 @@ namespace FFF.Battle.Managers
 
             if (isPlayerDead || isEnemyDead)
             {
-                // 1. 🟢 의존성 분리: 바구니에 결과만 기록합니다!
                 _battleManager.Context.IsPlayerWinner = isEnemyDead && !isPlayerDead;
                 Debug.Log($"[TurnEnd] 누군가 쓰러졌습니다! (PlayerDead:{isPlayerDead}, EnemyDead:{isEnemyDead}) -> BattleEnd로 전환.");
                 _battleManager.EndBattle();

@@ -1,3 +1,5 @@
+using FFF.Battle.Modifier;
+
 namespace FFF.Battle.Item.Accessory
 {
     /// <summary>
@@ -29,12 +31,12 @@ namespace FFF.Battle.Item.Accessory
         /// AccessoryManager가 호출. 대상 시스템의 속성을 직접 변경한다.
         /// </summary>
         /// <param name="deckSystem">카드 시스템 (드로우/리롤 관련 효과 적용 대상)</param>
-        public abstract void Apply(Card.DeckSystem deckSystem);
+        public abstract void Apply(ModifierManager modifierManager);
 
         /// <summary>
         /// 전투 종료 시 효과를 되돌린다.
         /// </summary>
         /// <param name="deckSystem">카드 시스템</param>
-        public abstract void Remove(Card.DeckSystem deckSystem);
+        public abstract void Remove(ModifierManager modifierManager);
     }
 }

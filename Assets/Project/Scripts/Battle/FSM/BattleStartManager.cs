@@ -62,18 +62,6 @@ namespace FFF.Battle.Managers
                 // 3. DeckSystem 초기화 (시드값을 고정하고 싶다면 두 번째 인자로 전달)
                 _deckSystem.Initialize(playerDeck);
 
-                // 4. 아이템 세팅
-                // 실제 구현 시에는 player.EquippedAccessoryIds 를 순회하며 팩토리에서 찍어냅니다.
-                _accessoryManager.Equip(new RerollBonusAccessory());
-                _jokerManager.AddJoker(new RerollBurstJoker());
-
-                // 장신구(영구 버프) 일괄 적용
-                // 전투가 시작될 때 플레이어가 장착 중인 장신구의 모디파이어를 DeckSystem에 등록합니다.
-                if (_accessoryManager != null)
-                {
-                    _accessoryManager.ApplyAllAccessories(_deckSystem);
-                }
-
                 _battleUI.Show();
 
                 // 5. UI 초기화

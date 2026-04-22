@@ -71,13 +71,9 @@ Assets/Project/Scripts/Battle/
  Item/Accessory/
   AccessoryBase.cs
   AccessoryManager.cs
-  HighCardWeightAccessory.cs
-  RerollBonusAccessory.cs
  Item/Joker/
-  EvenHandDoubleJoker.cs
   JokerBase.cs
   JokerManager.cs
-  RerollBurstJoker.cs
  Modifier/Conditions/Base/
   AlwaysTrueCondition.cs
   AndCondition.cs

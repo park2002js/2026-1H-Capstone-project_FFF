@@ -1016,6 +1016,7 @@ GameObject:
   - component: {fileID: 550716253}
   - component: {fileID: 550716254}
   - component: {fileID: 550716255}
+  - component: {fileID: 550716256}
   m_Layer: 0
   m_Name: 'System_Battle_Mng '
   m_TagString: Untagged
@@ -1129,6 +1130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f8539c19f82c77499cf48bed29abbc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _modifierManager: {fileID: 550716256}
   _onBattleStart: {fileID: 11400000, guid: e2f42644fdf6823499e52e7b3754a7c7, type: 2}
   _onTurnReady: {fileID: 11400000, guid: cbac6578d4193dd43ab378621c01f674, type: 2}
   _onTurnProceed: {fileID: 11400000, guid: 247e475ed8ae5104e901fe3d20f084a3, type: 2}
@@ -1164,6 +1166,7 @@ MonoBehaviour:
   _battleManager: {fileID: 550716251}
   _deckSystem: {fileID: 550716247}
   _battleUI: {fileID: 731945297}
+  _modifierManager: {fileID: 550716256}
   _onTurnProceedEvent: {fileID: 11400000, guid: 247e475ed8ae5104e901fe3d20f084a3, type: 2}
   _onSelectionChangedEvent: {fileID: 11400000, guid: 4b22ab3d8d40f5c4189c25f680d99b86, type: 2}
 --- !u!114 &550716254
@@ -1180,6 +1183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _battleManager: {fileID: 550716251}
   _deckSystem: {fileID: 550716247}
+  _modifierManager: {fileID: 550716256}
   _enemyData: {fileID: 550716248}
   _battleUI: {fileID: 731945297}
   _onTurnEndEvent: {fileID: 11400000, guid: 7e05a41c30f28804fac46733e7402e85, type: 2}
@@ -1198,6 +1202,19 @@ MonoBehaviour:
   _battleManager: {fileID: 550716251}
   _battleUI: {fileID: 731945297}
   _onBattleEndEvent: {fileID: 11400000, guid: 152ec27c3cbe7a94bb683b4abcd86a5b, type: 2}
+--- !u!114 &550716256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 550716244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f21d33ebd25c05642bb3377f301b7b39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _deckSystem: {fileID: 550716247}
 --- !u!1 &590561397
 GameObject:
   m_ObjectHideFlags: 0
@@ -1654,6 +1671,9 @@ MonoBehaviour:
   _endTurnButton: {fileID: 1968216146}
   _battleResultPanel: {fileID: 1436821180}
   _battleResultText: {fileID: 1814946726}
+  _deckAreaRect: {fileID: 0}
+  _drawStaggerDelay: 0.1
+  _maxTiltAngle: 4
 --- !u!225 &731945298
 CanvasGroup:
   m_ObjectHideFlags: 0
