@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement; // 씬 전환용
 using FFF.Battle.FSM;
 using FFF.UI.Battle;
 using FFF.Core.Events;
+using FFF.Battle.Data;
 
 namespace FFF.Battle.FSM
 {
@@ -58,6 +59,20 @@ namespace FFF.Battle.FSM
             Debug.Log("[BattleEnd] 타이틀로 돌아갑니다.");
             // 씬 이름은 실제 프로젝트의 Title 씬 이름("TitleScene" 등)으로 맞춰주세요.
             SceneManager.LoadScene("TitleScene"); 
+        }
+
+        /// <summary>
+        /// "맵으로 돌아가기" 또는 "계속하기" 버튼에 연결할 콜백입니다.
+        /// </summary>
+        public void OnReturnToMapButtonClicked()
+        {
+            Debug.Log("[BattleEnd] 맵으로 귀환을 요청합니다.");
+
+            // 현재 BattleContext에 저장되어 있는 최종 로컬 데이터를 꺼냅니다.
+            PlayerDataBattle finalData = _battleManager.Context.PlayerData;
+
+            // GameManager에게 맵으로 돌아가면서 이 데이터를 원본에 반영해달라고 요청합니다.
+            FFF.Core.GameManager.Instance.HandleReturnToMap(finalData);
         }
 
         #endregion

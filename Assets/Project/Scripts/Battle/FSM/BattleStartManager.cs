@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using FFF.Battle.Data;
 using FFF.Battle.FSM;
 using FFF.Battle.Card;
 using FFF.Battle.Enemy;
@@ -51,8 +52,10 @@ namespace FFF.Battle.Managers
         {
             try{
                 Debug.Log("[BattleStartManager] 전투 초기화 시작...");
+
                 // 1. 플레이어 데이터 로드
-                PlayerData player = PlayerData.Instance;
+                // BattleManager의 Context에 있는 로컬 데이터를 가져옴
+                PlayerDataBattle player = BattleManager.Instance.Context.PlayerData;
 
                 // 2. 덱 시스템 초기화 (시연용으로 전체 카드 로드)
                 // 현재: Resources 폴더의 모든 카드(20장)를 로드.
@@ -64,9 +67,9 @@ namespace FFF.Battle.Managers
 
                 _battleUI.Show();
 
-                // 5. UI 초기화
                 _enemyData.InitializeMockData();
-                Debug.Log($"{_enemyData.CurrentHealth} dlqslek tq");
+
+                // 5. UI 초기화
                 _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
                 _battleUI.SetEnemyHealth(_enemyData.CurrentHealth, _enemyData.MaxHealth);
                 _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);

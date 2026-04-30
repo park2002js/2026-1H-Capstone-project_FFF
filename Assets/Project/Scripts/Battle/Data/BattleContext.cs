@@ -6,9 +6,9 @@ namespace FFF.Battle.Data
     /// </summary>
     public class BattleContext
     {
-        // MVP: 누가 이겼는지만 저장
         public bool IsPlayerWinner { get; set; }
         
-        // 💡 훗날 여기에 턴 수, 사용 조커, 획득 점수 등을 자유롭게 추가할 수 있습니다.
+        // 추가: 이번 스테이지 전용 로컬 플레이어 데이터
+        public PlayerDataBattle PlayerData { get; set; } 
     }
 }

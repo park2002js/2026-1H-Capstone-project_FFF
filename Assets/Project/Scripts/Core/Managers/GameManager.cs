@@ -5,6 +5,8 @@ using FFF.UI.Main;
 using FFF.UI.Map;
 using FFF.Map;
 using FFF.UI.Battle;
+using FFF.Data;
+using FFF.Battle.Data;
 
 namespace FFF.Core
 {
@@ -21,6 +23,13 @@ namespace FFF.Core
     /// </summary>
     public class GameManager : Singleton<GameManager>
     {
+
+        [Header("=== Master Data ===")]
+        [Tooltip("Map 및 게임 전반에서 원본으로 사용할 플레이어 데이터 SO")]
+        [SerializeField] private PlayerDataSO _masterPlayerData;
+        public PlayerDataSO MasterPlayerData => _masterPlayerData;
+
+
         // ================================================================
         // 씬별 준비 완료 알림 (SceneSetup → GameManager)
         // ================================================================
@@ -79,11 +88,32 @@ namespace FFF.Core
             SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
         }
 
+        /// <summary>
+        /// 특정 스테이지로 이동할 때 호출됩니다.
+        /// </summary>
         private void HandleStageSelect(int nodeId)
         {
             Debug.Log($"[GameManager] 스테이지 선택: nodeId={nodeId}");
             // TODO: nodeId를 바탕으로 BattleContext 구성 후 BattleScene으로
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
+        }
+
+        /// <summary>
+        /// 전투가 끝나고 Map으로 돌아갈 때 호출됩니다.
+        /// </summary>
+        public void HandleReturnToMap(PlayerDataBattle finalBattleData)
+        {
+            Debug.Log("[GameManager] 전투 종료. 맵으로 귀환하며 데이터를 동기화합니다.");
+
+            // 1. PlayerDataUpdater 객체 생성
+            PlayerDataUpdater updater = new PlayerDataUpdater();
+            
+            // 2. 동기화 실행 (로컬 데이터 -> SO 데이터)
+            updater.SyncBattleDataToMaster(finalBattleData, _masterPlayerData);
+
+            // 3. 동기화 완료 후 Map 씬으로 이동
+            // (updater 객체는 이 메서드가 끝나면 지역 변수이므로 가비지 컬렉터에 의해 자동으로 메모리에서 제거됨)
+            SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
         }
     }
 }

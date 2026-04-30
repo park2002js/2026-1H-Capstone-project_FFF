@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using FFF.Core;
 using FFF.Core.Events;
 using FFF.Data;
 using FFF.Battle.Data;
@@ -69,16 +70,24 @@ namespace FFF.Battle.FSM
         /// </summary>
         public void StartBattle()
         {
+            // Battle내에서 사용할 BattleContext 생성
+            Context = new BattleContext();
+            
+            // GameManager에서 Master Data(SO)를 가져와 복제 생성
+            var masterData = GameManager.Instance.MasterPlayerData;
+
+            // 로컬 플레이어 데이터(PlayerDataBattle) 초기화
+            Context.PlayerData = new PlayerDataBattle(masterData);
+
             // 배달통 생성 및 초기화
             CurrentModifierContext = new ModifierContext
             {
                 CurrentTurnNumber = 1, // 1턴부터 시작
-                Player = PlayerData.Instance,
+                Player = Context.PlayerData, // 복제된 로컬 데이터 할당
                 //Enemy = EnemyManager.Instance.CurrentEnemy, 아직 적 시스템이 구현되지 않아서 임시로 주석화
                 ActionHandResult = null
             };
 
-            Context = new BattleContext();
             CurrentPhase = TurnState.None;
             
             // 전투 시작 이벤트 호출 (초기화 관련 로직들이 등록되어 있음)
