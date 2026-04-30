@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using FFF.Data;
 
 namespace FFF.Battle.Card
 {
@@ -23,7 +24,7 @@ namespace FFF.Battle.Card
 
         #region === Getter ===
         /// <summary>가중치 드로우 함수. null이면 균등 드로우 (기존 동작).</summary>
-        private readonly Func<Data.HwaTuCard, float> _drawWeightFunc;
+        private readonly Func<HwaTuCard, float> _drawWeightFunc;
 
         #endregion
 
@@ -34,7 +35,7 @@ namespace FFF.Battle.Card
         /// </summary>
         /// <param name="pile">카드 데이터를 관리하는 CardPile</param>
         /// <param name="drawWeightFunc">가중치 드로우 함수. null이면 균등 드로우.</param>
-        public CardDrawHandler(CardPile pile, Func<Data.HwaTuCard, float> drawWeightFunc = null)
+        public CardDrawHandler(CardPile pile, Func<HwaTuCard, float> drawWeightFunc = null)
         {
             _pile = pile;
             _drawWeightFunc = drawWeightFunc;
@@ -54,11 +55,11 @@ namespace FFF.Battle.Card
         /// 백로그 4번: "'화투패 산'에서 k장(초기 값 5)의 카드가 손패로 들어온다."
         /// </summary>
         /// <returns>새로 뽑힌 카드 목록</returns>
-        public List<Data.HwaTuCard> DrawCards(int count)
+        public List<HwaTuCard> DrawCards(int count)
         {
 
             // 가중치 함수가 있으면 가중치 드로우, 없으면 기존 균등 드로우
-            List<Data.HwaTuCard> drawn = new List<Data.HwaTuCard>();
+            List<HwaTuCard> drawn = new List<HwaTuCard>();
             int remainDrawCardsCount = count;
 
             // 1차 드로우: 현재 뽑을 산에 있는 카드를 가능한 만큼 모두 뽑기
@@ -112,19 +113,19 @@ namespace FFF.Battle.Card
         /// </summary>
         /// <param name="cardsToReturn">손패에서 되돌릴 카드 목록</param>
         /// <returns>새로 뽑은 카드 목록. 리롤 불가 시 빈 목록.</returns>
-        public List<Data.HwaTuCard> Reroll(List<Data.HwaTuCard> cardsToReturn)
+        public List<HwaTuCard> Reroll(List<HwaTuCard> cardsToReturn)
         {
             if (cardsToReturn == null || cardsToReturn.Count == 0)
             {
                 Debug.LogWarning("[CardDrawHandler] 리롤할 카드가 없습니다.");
-                return new List<Data.HwaTuCard>();
+                return new List<HwaTuCard>();
             }
 
             // 1. 선택한 카드를 Hand → DrawPile로 반납
             int returned = _pile.MoveSelectedCardsToDrawPile(cardsToReturn);
 
             // 실제로 반납된 카드가 0장이면 리롤을 취소
-            if (returned == 0) return new List<Data.HwaTuCard>();
+            if (returned == 0) return new List<HwaTuCard>();
 
             // 2. 셔플
             _pile.ShuffleDrawPile();

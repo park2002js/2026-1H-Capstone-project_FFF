@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using FFF.Core.Events;
 using FFF.Data;
+using FFF.Battle.Data;
 using FFF.Battle.Modifier;
 
 

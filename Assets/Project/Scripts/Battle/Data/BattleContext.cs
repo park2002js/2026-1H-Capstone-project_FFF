@@ -1,4 +1,4 @@
-namespace FFF.Data
+namespace FFF.Battle.Data
 {
     /// <summary>
     /// 단일 전투 세션의 모든 휘발성 데이터를 저장하는 공용 바구니 (Blackboard).
