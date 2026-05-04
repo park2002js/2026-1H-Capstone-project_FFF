@@ -7,6 +7,7 @@ using FFF.Core.Events;
 using FFF.Battle.Enemy;
 using FFF.UI.Battle;
 using FFF.Data;
+using FFF.Audio;
 
 namespace FFF.Battle.Managers
 {
@@ -140,6 +141,7 @@ namespace FFF.Battle.Managers
         {
             var selected = _deckSystem.SelectedCards.ToList();
             if (selected.Count == 0) return;
+            SoundManager.PlayDefaultUiClick();
 
             Debug.Log($"[TurnReadyManager] 리롤 진행 ({selected.Count}장)");
             var redrawn = _deckSystem.Reroll(selected);
@@ -154,7 +156,7 @@ namespace FFF.Battle.Managers
                 if (_deckSystem.RerollsRemaining <= 0)
                 {
                     Debug.Log("[TurnReadyManager] 리롤 기회 소진! 자동으로 메인 페이즈로 넘어갑니다.");
-                    OnPlayerMulliganFinished();
+                    CompletePlayerMulligan();
                 }
             }
         }
@@ -166,10 +168,17 @@ namespace FFF.Battle.Managers
         /// </summary>
         public void OnPlayerMulliganFinished()
         {
+            SoundManager.PlayDefaultUiClick();
+
             // 기다리고 있던 Task를 완료 상태로 만들어, RunTurnStartFlowAsync의 대기를 풀어줌
+            CompletePlayerMulligan();
+        }
+
+        private void CompletePlayerMulligan()
+        {
             if (_mulligan != null && !_mulligan.Task.IsCompleted)
             {
-                Debug.Log("[TurnReadyManager] 유저가 턴 시작(멀리건 종료) 버튼을 클릭했습니다.");
+                Debug.Log("[TurnReadyManager] Player finished mulligan.");
                 _mulligan.TrySetResult(true);
             }
         }

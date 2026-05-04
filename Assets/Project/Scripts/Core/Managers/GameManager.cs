@@ -7,6 +7,7 @@ using FFF.Map;
 using FFF.UI.Battle;
 using FFF.Data;
 using FFF.Battle.Data;
+using FFF.Audio;
 
 namespace FFF.Core
 {
@@ -39,6 +40,7 @@ namespace FFF.Core
             view.OnExit = HandleTitleExit;
             UIManager.Instance.RegisterScreen(UIScreenNames.TITLE, view);
             UIManager.Instance.ShowScreen(UIScreenNames.TITLE);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.TITLE);
         }
 
         public void OnMainSceneReady(MainUIComponent view)
@@ -47,6 +49,7 @@ namespace FFF.Core
             view.OnContinue = HandleContinue;
             UIManager.Instance.RegisterScreen(UIScreenNames.MAIN, view);
             UIManager.Instance.ShowScreen(UIScreenNames.MAIN);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.MAIN);
         }
 
         public void OnMapSceneReady(MapUIComponent view, MapData mapData)
@@ -55,12 +58,14 @@ namespace FFF.Core
             view.OnNodeSelected = HandleStageSelect;
             UIManager.Instance.RegisterScreen(UIScreenNames.MAP, view);
             UIManager.Instance.ShowScreen(UIScreenNames.MAP);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.MAP);
         }
 
         public void OnBattleSceneReady(BattleUIComponent view)
         {
             UIManager.Instance.RegisterScreen(UIScreenNames.BATTLE, view);
             UIManager.Instance.ShowScreen(UIScreenNames.BATTLE);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.BATTLE);
         }
 
         public void UnregisterScreen(string screenName)

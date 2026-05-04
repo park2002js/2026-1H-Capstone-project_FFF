@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using FFF.Data;
 using FFF.UI.Animation;
+using FFF.Audio;
 using System;
 
 namespace FFF.UI.Battle
@@ -27,7 +28,7 @@ namespace FFF.UI.Battle
                 _cardNameText.text = cardData.DisplayName;
 
             _cardButton.onClick.RemoveAllListeners();
-            _cardButton.onClick.AddListener(() => _onClickCallback?.Invoke(this));
+            _cardButton.onClick.AddListener(HandleClick);
             
             SetSelected(false); // 초기 상태는 선택 해제 (크기 1.0)
         }
@@ -44,6 +45,12 @@ namespace FFF.UI.Battle
                 if (isSelected) animator.PlaySelect();
                 else animator.PlayDeselect();
             }
+        }
+
+        private void HandleClick()
+        {
+            SoundManager.PlayDefaultUiClick();
+            _onClickCallback?.Invoke(this);
         }
     }
 }

@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.Audio;
 using FFF.Core;
+using FFF.Audio;
 
 namespace FFF.Core
 {
@@ -16,9 +18,22 @@ namespace FFF.Core
     /// </summary>
     public class BootSceneSetup : MonoBehaviour
     {
+        [SerializeField] private SoundCatalogSO _soundCatalog;
+        [SerializeField] private AudioMixer _audioMixer;
+        [SerializeField] private AudioMixerGroup _masterMixerGroup;
+        [SerializeField] private AudioMixerGroup _bgmMixerGroup;
+        [SerializeField] private AudioMixerGroup _sfxMixerGroup;
+        [SerializeField] private AudioMixerGroup _uiMixerGroup;
+
         private void Start()
         {
             // SceneLoader 초기화 (Scene 로드 이벤트 등록)
+            SoundManager soundManager = SoundManager.EnsureExists();
+            if (_soundCatalog != null)
+                soundManager.SetCatalog(_soundCatalog);
+            if (_audioMixer != null || _masterMixerGroup != null || _bgmMixerGroup != null || _sfxMixerGroup != null || _uiMixerGroup != null)
+                soundManager.ConfigureAudioMixer(_audioMixer, _masterMixerGroup, _bgmMixerGroup, _sfxMixerGroup, _uiMixerGroup);
+
             SceneLoader.Initialize();
 
             Debug.Log("[Boot] 초기화 완료 → TitleScene 전환");

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using FFF.Map;
+using FFF.Audio;
 
 namespace FFF.UI.Map
 {
@@ -51,6 +52,7 @@ namespace FFF.UI.Map
 
         private void HandleClick()
         {
+            SoundManager.PlayDefaultUiClick();
             _onClick?.Invoke(_node);
         }
 

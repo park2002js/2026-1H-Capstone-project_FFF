@@ -5,6 +5,7 @@ using FFF.UI.Battle;
 using FFF.Battle.Damage;
 using FFF.Core.Events;
 using FFF.Battle.Modifier;
+using FFF.Audio;
 
 namespace FFF.Battle.FSM
 {
@@ -93,6 +94,7 @@ namespace FFF.Battle.FSM
             }
 
             Debug.Log("[TurnProceed] 플레이어 행동 확정. TurnEnd로 넘어갑니다.");
+            SoundManager.PlayDefaultUiClick();
             _battleManager.ChangeState(TurnState.TurnEnd);
         }
     }
