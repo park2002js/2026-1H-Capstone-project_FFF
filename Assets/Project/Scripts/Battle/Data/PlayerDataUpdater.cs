@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using FFF.Battle.Data;
 
@@ -21,12 +22,19 @@ namespace FFF.Data
             masterData.CurrentHealth = battleData.CurrentHealth;
 
             // 2. 조커 갱신 (전투 중 소비되어 리스트에서 빠진 내역을 덮어씌움)
+            masterData.HeldJokerIds ??= new List<string>();
             masterData.HeldJokerIds.Clear();
             masterData.HeldJokerIds.AddRange(battleData.HeldJokerIds);
 
             // 3. 장신구 갱신 (전투 중 파괴되거나 변경되는 기믹을 대비)
+            masterData.EquippedAccessoryIds ??= new List<string>();
             masterData.EquippedAccessoryIds.Clear();
             masterData.EquippedAccessoryIds.AddRange(battleData.EquippedAccessoryIds);
+
+            // 4. 덱 갱신 (보상/상점으로 같은 카드를 여러 장 얻는 경우를 보존)
+            masterData.DeckCardIds ??= new List<string>();
+            masterData.DeckCardIds.Clear();
+            masterData.DeckCardIds.AddRange(battleData.DeckCardIds);
 
             Debug.Log($"[PlayerDataUpdater] 전투 결과를 Master Data에 갱신 완료. (남은 체력: {masterData.CurrentHealth})");
         }

@@ -39,6 +39,12 @@ namespace FFF.UI.Animation
         [Tooltip("적 캐릭터의 RectTransform (돌진/피격 연출 대상)")]
         [SerializeField] private RectTransform _enemyCharacter;
 
+        [Tooltip("플레이어 idle/attack 스프라이트 토글 컴포넌트")]
+        [SerializeField] private CharacterAttackVisual _playerVisual;
+
+        [Tooltip("적 idle/attack 스프라이트 토글 컴포넌트 (스테이지에 따라 동적 변경 가능)")]
+        [SerializeField] private CharacterAttackVisual _enemyVisual;
+
         [Header("=== 화면 흔들림 ===")]
         [Tooltip("흔들릴 최상위 Canvas 또는 전투 영역 RectTransform")]
         [SerializeField] private RectTransform _shakeTarget;
@@ -65,9 +71,21 @@ namespace FFF.UI.Animation
 
         [Header("=== 캐릭터 연출 설정 ===")]
         [Tooltip("공격 돌진 거리 (px)")]
-        [SerializeField] private float _lungeDistance = 40f;
+        [SerializeField] private float _lungeDistance = 60f;
 
-        [Tooltip("돌진 소요 시간")]
+        [Tooltip("[1단계] 앞으로 이동하는 시간 (idle 포즈 유지)")]
+        [SerializeField] private float _moveForwardDuration = 0.5f;
+
+        [Tooltip("[2단계] attack 포즈로 전환 후 유지하는 시간")]
+        [SerializeField] private float _attackHoldDuration = 0.6f;
+
+        [Tooltip("[3단계] idle 포즈로 복귀 후 유지하는 시간")]
+        [SerializeField] private float _idleHoldDuration = 0.3f;
+
+        [Tooltip("[4단계] 원위치로 복귀하는 시간")]
+        [SerializeField] private float _moveBackDuration = 0.5f;
+
+        [Tooltip("(legacy) PlayLunge용. 새 시퀀스는 사용 안 함.")]
         [SerializeField] private float _lungeDuration = 0.3f;
 
         [Tooltip("피격 흔들림 강도")]
@@ -152,68 +170,77 @@ namespace FFF.UI.Animation
         #region === 공격 시퀀스 ===
 
         /// <summary>
-        /// 데모v3의 플레이어 공격 연출 전체 시퀀스.
-        /// 플레이어 돌진 → (딜레이) → 화면 흔들림 + 적 피격 + 데미지 숫자
+        /// 플레이어 공격 시퀀스. 단계별로 충분히 보이도록 분리:
+        /// [1] 앞으로 이동(idle) → [2] attack 포즈 + 임팩트 → [3] idle 포즈 복귀 → [4] 원위치 복귀
         /// </summary>
         private IEnumerator PlayerAttackSequence(int damage)
         {
-            // 1. 플레이어 돌진 (오른쪽으로)
-            if (_playerCharacter != null)
-            {
-                yield return PlayLunge(_playerCharacter, Vector2.right * _lungeDistance);
-            }
-
-            // 2. 화면 흔들림
-            if (_shakeTarget != null)
-            {
-                StartCoroutine(UITweenHelper.ShakeRect(_shakeTarget, _shakeDuration, _shakeMagnitude));
-            }
-
-            // 3. 적 피격 흔들림
-            if (_enemyCharacter != null)
-            {
-                StartCoroutine(UITweenHelper.ShakeRect(_enemyCharacter, _hitShakeDuration, _hitShakeMagnitude));
-            }
-
-            // 4. 데미지 숫자 팝업
-            if (_enemyCharacter != null)
-            {
-                SpawnDamageNumber(_enemyCharacter, damage);
-            }
-
-            yield return new WaitForSeconds(0.5f);
+            yield return AttackSequence(
+                attacker: _playerCharacter,
+                attackerVisual: _playerVisual,
+                target: _enemyCharacter,
+                lungeDirection: Vector2.right,
+                damage: damage
+            );
         }
 
         /// <summary>
-        /// 데모v3의 적 공격 연출 시퀀스.
+        /// 적 공격 시퀀스. 방향만 반대.
         /// </summary>
         private IEnumerator EnemyAttackSequence(int damage)
         {
-            // 1. 적 돌진 (왼쪽으로)
-            if (_enemyCharacter != null)
+            yield return AttackSequence(
+                attacker: _enemyCharacter,
+                attackerVisual: _enemyVisual,
+                target: _playerCharacter,
+                lungeDirection: Vector2.left,
+                damage: damage
+            );
+        }
+
+        /// <summary>
+        /// 공격자/피격자 방향에 무관한 공통 4단계 공격 시퀀스.
+        /// </summary>
+        private IEnumerator AttackSequence(
+            RectTransform attacker,
+            CharacterAttackVisual attackerVisual,
+            RectTransform target,
+            Vector2 lungeDirection,
+            int damage)
+        {
+            Vector2 originalPos = attacker != null ? attacker.anchoredPosition : Vector2.zero;
+            Vector2 lungeTarget = originalPos + lungeDirection * _lungeDistance;
+
+            // [1] 앞으로 이동 (idle 포즈 유지)
+            if (attacker != null)
             {
-                yield return PlayLunge(_enemyCharacter, Vector2.left * _lungeDistance);
+                yield return UITweenHelper.MoveTo(attacker, lungeTarget,
+                    _moveForwardDuration, UITweenHelper.EaseType.OutQuad);
             }
 
-            // 2. 화면 흔들림
+            // [2] attack 포즈로 전환 + 임팩트(화면 흔들림 + 피격 + 데미지 숫자)
+            if (attackerVisual != null) attackerVisual.SwitchToAttack();
             if (_shakeTarget != null)
-            {
                 StartCoroutine(UITweenHelper.ShakeRect(_shakeTarget, _shakeDuration, _shakeMagnitude));
-            }
-
-            // 3. 플레이어 피격 흔들림
-            if (_playerCharacter != null)
+            if (target != null)
             {
-                StartCoroutine(UITweenHelper.ShakeRect(_playerCharacter, _hitShakeDuration, _hitShakeMagnitude));
+                StartCoroutine(UITweenHelper.ShakeRect(target, _hitShakeDuration, _hitShakeMagnitude));
+                SpawnDamageNumber(target, damage);
             }
 
-            // 4. 데미지 숫자 팝업
-            if (_playerCharacter != null)
+            // attack 포즈 유지
+            yield return new WaitForSeconds(_attackHoldDuration);
+
+            // [3] idle 포즈로 복귀 + 잠시 유지
+            if (attackerVisual != null) attackerVisual.SwitchToIdle();
+            yield return new WaitForSeconds(_idleHoldDuration);
+
+            // [4] 원위치로 복귀
+            if (attacker != null)
             {
-                SpawnDamageNumber(_playerCharacter, damage);
+                yield return UITweenHelper.MoveTo(attacker, originalPos,
+                    _moveBackDuration, UITweenHelper.EaseType.OutCubic);
             }
-
-            yield return new WaitForSeconds(0.5f);
         }
 
         /// <summary>
@@ -301,6 +328,26 @@ namespace FFF.UI.Animation
             }
 
             Destroy(dmgObj);
+        }
+
+        #endregion
+
+        #region === 외부 주입 (스테이지에서 적 외형 동적 변경) ===
+
+        /// <summary>
+        /// 스테이지 시작 시 활성화된 적의 idle/attack 외형 토글 컴포넌트를 주입한다.
+        /// </summary>
+        public void SetEnemyVisual(CharacterAttackVisual visual)
+        {
+            _enemyVisual = visual;
+        }
+
+        /// <summary>
+        /// 적 RectTransform도 스테이지마다 다르면 함께 갱신한다.
+        /// </summary>
+        public void SetEnemyCharacter(RectTransform rect)
+        {
+            _enemyCharacter = rect;
         }
 
         #endregion

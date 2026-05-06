@@ -16,5 +16,6 @@ MonoBehaviour:
   Type: 2
   CardId: M4_Yeolkkeut
   DisplayName: "4\uC6D4 \uC5F4\uB057"
+  Artwork: {fileID: 21300026, guid: 1ce4d65b6ced9e049b853d9fe817e9b1, type: 3}
   IsSpecial: 0
   EffectId: 

@@ -80,6 +80,7 @@ namespace FFF.Battle.Managers
                 // UI에 카드 띄우기 (클릭 콜백 연결)
                 _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
                 _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
+                _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
 
                 Debug.Log("[TurnPhaseManager] 2. 유저 멀리건 대기 시작...");
                 
@@ -151,6 +152,7 @@ namespace FFF.Battle.Managers
                 // 리롤에 성공했으니 UI 다시 그리기 (선택 상태는 자동으로 초기화됨)
                 _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
                 _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, 0);
+                _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
 
                 // 요구사항: 리롤 기회가 1일 때 리롤하면, 그 이후 자동으로 TurnProceed로 넘어간다.
                 if (_deckSystem.RerollsRemaining <= 0)

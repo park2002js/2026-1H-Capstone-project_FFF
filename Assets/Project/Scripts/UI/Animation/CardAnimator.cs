@@ -35,10 +35,10 @@ namespace FFF.UI.Animation
 
         [Header("=== 애니메이션 설정 ===")]
         [Tooltip("드로우 시 이동 시간")]
-        [SerializeField] private float _drawDuration = 0.45f;
+        [SerializeField] private float _drawDuration = 0.8f;
 
         [Tooltip("손패 정렬 시 이동 시간")]
-        [SerializeField] private float _arrangeDuration = 0.25f;
+        [SerializeField] private float _arrangeDuration = 0.35f;
 
         [Tooltip("호버 시 상승 거리 (px)")]
         [SerializeField] private float _hoverRiseAmount = 15f;
