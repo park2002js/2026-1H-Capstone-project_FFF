@@ -96,10 +96,14 @@ namespace FFF.Core
         /// <summary>
         /// 특정 스테이지로 이동할 때 호출됩니다.
         /// </summary>
+        public string TargetEnemyId { get; private set; } // 전투로 넘길 적 ID 임시 보관소
         private void HandleStageSelect(int nodeId)
         {
             Debug.Log($"[GameManager] 스테이지 선택: nodeId={nodeId}");
             // TODO: nodeId를 바탕으로 BattleContext 구성 후 BattleScene으로
+            // TODO: MapNode 정보를 기반으로 해당 노드에 배치된 적 ID를 배정해야 함
+            // 현재는 시스템 뼈대 완성을 위해 임의의 몬스터 ID를 넘긴다고 가정합니다.
+            TargetEnemyId = "Enemy_001";
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
         }
 

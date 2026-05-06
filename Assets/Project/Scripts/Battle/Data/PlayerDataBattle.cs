@@ -38,6 +38,8 @@ namespace FFF.Battle.Data
             // 전투 중 조커를 사용해 리스트 항목을 제거하더라도 SO 원본이 손상되지 않도록 합니다.
             EquippedAccessoryIds = new List<string>(masterData.EquippedAccessoryIds);
             HeldJokerIds = new List<string>(masterData.HeldJokerIds);
+
+            Debug.Log($"[PlayerDataBattle] Player 세팅 완료: (HP: {CurrentHealth}/{MaxHealth})");
         }
 
         public void TakeDamage(int damage)

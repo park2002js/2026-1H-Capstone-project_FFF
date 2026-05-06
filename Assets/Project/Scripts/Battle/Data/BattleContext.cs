@@ -10,5 +10,8 @@ namespace FFF.Battle.Data
         
         // 추가: 이번 스테이지 전용 로컬 플레이어 데이터
         public PlayerDataBattle PlayerData { get; set; } 
+
+        // 추가 : 이번 전투에서 상대할 적의 고유 ID
+        public string TargetEnemyId { get; set; }
     }
 }

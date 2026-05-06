@@ -25,7 +25,7 @@ namespace FFF.Battle.Managers
         [SerializeField] private DeckSystem _deckSystem;
         [SerializeField] private AccessoryManager _accessoryManager;
         [SerializeField] private JokerManager _jokerManager;
-        [SerializeField] private EnemyData _enemyData;
+        [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
 
         [Header("=== 수신할 이벤트 ===")]
@@ -64,14 +64,19 @@ namespace FFF.Battle.Managers
 
                 // 3. DeckSystem 초기화 (시드값을 고정하고 싶다면 두 번째 인자로 전달)
                 _deckSystem.Initialize(playerDeck);
-
                 _battleUI.Show();
 
-                _enemyData.InitializeMockData();
+                // 4. 적 데이터 연동 및 초기화
+                // BattleContext에서 타겟 EnemyId 로드
+                string targetEnemyId = BattleManager.Instance.Context.TargetEnemyId;
+                // 데이터베이스에서 해당 ID를 가진 SO 파일을 로드
+                EnemyDataSO enemySO = EnemyDatabase.FindById(targetEnemyId);
+                // 해당 SO로 배틀 전용 객체를 초기화
+                _enemyDataBattle.Initialize(enemySO);
 
                 // 5. UI 초기화
                 _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
-                _battleUI.SetEnemyHealth(_enemyData.CurrentHealth, _enemyData.MaxHealth);
+                _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
                 _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
 
                 Debug.Log("[BattleStartManager] 전투 초기화 완료. 턴 시작 준비 끝!");

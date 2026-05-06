@@ -149,6 +149,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _soundCatalog: {fileID: 11400000, guid: 5f75dafb05124f4482df88641796eca5, type: 2}
+  _audioMixer: {fileID: 0}
+  _masterMixerGroup: {fileID: 0}
+  _bgmMixerGroup: {fileID: 0}
+  _sfxMixerGroup: {fileID: 0}
+  _uiMixerGroup: {fileID: 0}
 --- !u!4 &100341515
 Transform:
   m_ObjectHideFlags: 0
@@ -193,6 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d638780036bfcdf4fb1ce17a0f4b67a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _masterPlayerData: {fileID: 11400000, guid: 3b20e2c3d97e4914b92d28ff928d9002, type: 2}
 --- !u!4 &443842804
 Transform:
   m_ObjectHideFlags: 0

@@ -31,7 +31,7 @@ namespace FFF.Battle.Modifier
         
         // === 전투 개체 정보 ===
         public PlayerDataBattle Player { get; set; }
-        public EnemyData Enemy { get; set; }
+        public EnemyDataBattle Enemy { get; set; }
         
         // === 액션 결과 정보 ===
         /// <summary> 방금 제출한 카드의 족보 (공격 연산 시에만 존재, 평소엔 null) </summary>

@@ -24,7 +24,7 @@ namespace FFF.Battle.Managers
         [Header("=== 시스템 참조 ===")]
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
-        [SerializeField] private EnemyData _enemyData;
+        [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
 
         [Header("=== 수신할 이벤트 ===")]
@@ -68,8 +68,8 @@ namespace FFF.Battle.Managers
                 _battleUI.SetTurnReadyUIVisibility(true);
 
                 Debug.Log("[TurnReadyManager] 0. 적 의도 파악 및 표시");
-                _enemyData.GenerateMockIntent();
-                _battleUI.ShowEnemyIntent(_enemyData.CurrentIntent);
+                _enemyDataBattle.GenerateIntent();
+                _battleUI.ShowEnemyIntent(_enemyDataBattle.CurrentIntent);
 
                 Debug.Log("[TurnPhaseManager] 1. 턴 시작 준비 및 드로우");
                 _deckSystem.OnTurnStarted();

@@ -17,7 +17,7 @@ namespace FFF.Battle.Managers
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
         [SerializeField] private ModifierManager _modifierManager;
-        [SerializeField] private EnemyData _enemyData;
+        [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
 
         [Header("=== 수신할 이벤트 ===")]
@@ -48,7 +48,7 @@ namespace FFF.Battle.Managers
 
             // 1. 양측의 기본 공격력 산출
             int playerStrength = GetPlayerStrength();
-            int enemyStrength = _enemyData.CurrentIntent.BasePower;
+            int enemyStrength = _enemyDataBattle.CurrentIntent.BasePower;
 
             Debug.Log($"[TurnEnd] ⚔️ 플레이어 공격력({playerStrength}) vs 적 공격력({enemyStrength})");
 
@@ -58,7 +58,7 @@ namespace FFF.Battle.Managers
             // 3. UI 체력 갱신
             PlayerDataBattle player = _battleManager.Context.PlayerData; // 체력 갱신을 위해 참조 객체 생성(원본 연결됨)
             _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
-            _battleUI.SetEnemyHealth(_enemyData.CurrentHealth, _enemyData.MaxHealth);
+            _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
 
             // 4. 턴 정리
             _deckSystem.CleanupForNextTurn(); // 카드 무덤으로 보내기
@@ -105,7 +105,7 @@ namespace FFF.Battle.Managers
                     _modifierManager, 
                     _battleManager.CurrentModifierContext
                 );
-                _enemyData.TakeDamage(finalDamage);
+                _enemyDataBattle.TakeDamage(finalDamage);
                 Debug.Log($"[TurnEnd] 💥 플레이어 승리! 적에게 {finalDamage}의 최종 피해를 입혔습니다.");
             }
             else if (enemyStrength > playerStrength)
@@ -131,7 +131,7 @@ namespace FFF.Battle.Managers
             PlayerDataBattle player = _battleManager.Context.PlayerData;
 
             bool isPlayerDead = player.CurrentHealth <= 0;
-            bool isEnemyDead = _enemyData.CurrentHealth <= 0;
+            bool isEnemyDead = _enemyDataBattle.CurrentHealth <= 0;
 
             if (isPlayerDead || isEnemyDead)
             {

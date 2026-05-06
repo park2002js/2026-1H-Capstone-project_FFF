@@ -73,12 +73,19 @@ namespace FFF.Battle.FSM
             // Battle내에서 사용할 BattleContext 생성
             Context = new BattleContext();
             
+            /// ----------  Player Data ---------------
             // GameManager에서 Master Data(SO)를 가져와 복제 생성
             var masterData = GameManager.Instance.MasterPlayerData;
 
             // 로컬 플레이어 데이터(PlayerDataBattle) 초기화
             Context.PlayerData = new PlayerDataBattle(masterData);
-
+            /// --------------------------------------
+            
+            /// ----------  Enemy Data ---------------
+            // GameManager로부터 전달받은 적 ID를 이번 전투 Context에 할당
+            Context.TargetEnemyId = GameManager.Instance.TargetEnemyId;
+            /// --------------------------------------
+            
             // 배달통 생성 및 초기화
             CurrentModifierContext = new ModifierContext
             {
