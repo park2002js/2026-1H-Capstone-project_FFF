@@ -85,11 +85,12 @@ namespace FFF.Battle.FSM
             // GameManager로부터 전달받은 적 ID를 이번 전투 Context에 할당
             Context.TargetEnemyId = GameManager.Instance.TargetEnemyId;
             /// --------------------------------------
-            
+            Debug.Log($"적 아이디 : {Context.TargetEnemyId}");
+
             // 배달통 생성 및 초기화
             CurrentModifierContext = new ModifierContext
             {
-                CurrentTurnNumber = 1, // 1턴부터 시작
+                CurrentTurnNumber = 0, // 0턴부터 시작 : TurnReady를 거칠 때마다 1씩 증가하므로, 1턴시작을 위해선 0으로 시작
                 Player = Context.PlayerData, // 복제된 로컬 데이터 할당
                 //Enemy = EnemyManager.Instance.CurrentEnemy, 아직 적 시스템이 구현되지 않아서 임시로 주석화
                 ActionHandResult = null

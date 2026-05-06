@@ -21,11 +21,12 @@ namespace FFF.Battle.Data
         /// </summary>
         public PlayerDataBattle(PlayerDataSO masterData)
         {
+            Debug.Log("[PlayerDataBattle] 생성자 호출됨");
             if (masterData == null)
             {
-                Debug.LogError("[PlayerDataBattle] Master Data가 null입니다! 기본값으로 초기화합니다.");
-                MaxHealth = 10000;
-                CurrentHealth = 10000;
+                Debug.LogError("[PlayerDataBattle] Master Data가 null입니다! 테스트 값으로 초기화합니다.");
+                MaxHealth = 11;
+                CurrentHealth = 11;
                 EquippedAccessoryIds = new List<string>();
                 HeldJokerIds = new List<string>();
                 return;
