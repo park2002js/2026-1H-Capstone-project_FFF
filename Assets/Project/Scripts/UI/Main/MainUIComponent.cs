@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using FFF.UI.Core;
+using FFF.Audio;
 
 namespace FFF.UI.Main
 {
@@ -32,12 +33,14 @@ namespace FFF.UI.Main
         private void OnNewGameButton_Clicked()
         {
             Debug.Log("[MainUI] New Game 버튼 클릭! GameManager로 이벤트를 전달합니다.");
+            SoundManager.PlayDefaultUiClick();
             OnNewGame?.Invoke();
         }
 
         private void OnContinueButton_Clicked()
         {
             Debug.Log("[MainUI] Continue 버튼 클릭! GameManager로 이벤트를 전달합니다.");
+            SoundManager.PlayDefaultUiClick();
             OnContinue?.Invoke();
         }
     }

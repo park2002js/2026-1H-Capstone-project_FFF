@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ba02f3b13e9454b998132f4259c22b, type: 3}
+  m_Name: M10_Yeolkkeut
+  m_EditorClassIdentifier: 
+  Month: 10
+  Type: 2
+  CardId: M10_Yeolkkeut
+  DisplayName: "10\uC6D4 \uC5F4\uB057"
+  Artwork: {fileID: 21300080, guid: 1ce4d65b6ced9e049b853d9fe817e9b1, type: 3}
+  IsSpecial: 0
+  EffectId: 

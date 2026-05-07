@@ -1,12 +1,13 @@
 using UnityEngine;
+using FFF.Battle.Data;
 using FFF.Battle.FSM;
 using FFF.Battle.Card;
-using FFF.UI.Battle;
-using FFF.Battle.Damage;
-using FFF.Data;
 using FFF.Battle.Enemy;
-using FFF.Core.Events;
 using FFF.Battle.Modifier;
+using FFF.Battle.Damage;
+using FFF.Core.Events;
+using FFF.UI.Battle;
+using FFF.Data;
 
 namespace FFF.Battle.Managers
 {
@@ -16,11 +17,17 @@ namespace FFF.Battle.Managers
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
         [SerializeField] private ModifierManager _modifierManager;
-        [SerializeField] private EnemyData _enemyData;
+        [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
 
         [Header("=== 수신할 이벤트 ===")]
         [SerializeField] private GameEvent _onTurnEndEvent;
+
+        [Header("=== 발행 이벤트 (애니메이션 트리거) ===")]
+        [Tooltip("플레이어 공격 시 BattleAnimationController가 구독")]
+        [SerializeField] private IntEvent _onPlayerAttack;
+        [Tooltip("적 공격 시 BattleAnimationController가 구독")]
+        [SerializeField] private IntEvent _onEnemyAttack;
 
         private CombatCalculator _combatCalculator;
 
@@ -47,7 +54,7 @@ namespace FFF.Battle.Managers
 
             // 1. 양측의 기본 공격력 산출
             int playerStrength = GetPlayerStrength();
-            int enemyStrength = _enemyData.CurrentIntent.BasePower;
+            int enemyStrength = _enemyDataBattle.CurrentIntent.BasePower;
 
             Debug.Log($"[TurnEnd] ⚔️ 플레이어 공격력({playerStrength}) vs 적 공격력({enemyStrength})");
 
@@ -55,11 +62,13 @@ namespace FFF.Battle.Managers
             ApplyCombatResult(playerStrength, enemyStrength);
 
             // 3. UI 체력 갱신
-            _battleUI.SetPlayerHealth(PlayerData.Instance.CurrentHealth, PlayerData.Instance.MaxHealth);
-            _battleUI.SetEnemyHealth(_enemyData.CurrentHealth, _enemyData.MaxHealth);
+            PlayerDataBattle player = _battleManager.Context.PlayerData; // 체력 갱신을 위해 참조 객체 생성(원본 연결됨)
+            _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
+            _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
 
             // 4. 턴 정리
             _deckSystem.CleanupForNextTurn(); // 카드 무덤으로 보내기
+            _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
 
             // 5. 턴 종료에 따른 Modifier들의 수명 업데이트
             _modifierManager.TickModifiers(); // 버프 수명 차감 및 파기
@@ -93,26 +102,31 @@ namespace FFF.Battle.Managers
         /// </summary>
         private void ApplyCombatResult(int playerStrength, int enemyStrength)
         {
+            PlayerDataBattle player = _battleManager.Context.PlayerData;
+
             if (playerStrength > enemyStrength)
             {
                 // 플레이어 승리: 플레이어의 데미지 파이프라인 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
-                    playerStrength, 
-                    _modifierManager, 
+                    playerStrength,
+                    _modifierManager,
                     _battleManager.CurrentModifierContext
                 );
-                _enemyData.TakeDamage(finalDamage);
+                _enemyDataBattle.TakeDamage(finalDamage);
+                _onPlayerAttack?.Raise(finalDamage);
                 Debug.Log($"[TurnEnd] 💥 플레이어 승리! 적에게 {finalDamage}의 최종 피해를 입혔습니다.");
             }
             else if (enemyStrength > playerStrength)
             {
                 // 적 승리: 적이 플레이어를 때릴 때도 플레이어의 파이프라인(방어력 등) 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
-                    enemyStrength, 
-                    _modifierManager, 
+                    enemyStrength,
+                    _modifierManager,
                     _battleManager.CurrentModifierContext
                 );
-                PlayerData.Instance.TakeDamage(finalDamage);
+
+                player.TakeDamage(finalDamage);
+                _onEnemyAttack?.Raise(finalDamage);
                 Debug.Log($"[TurnEnd] 🩸 적 승리! 플레이어가 {finalDamage}의 최종 피해를 입었습니다.");
             }
             else
@@ -123,8 +137,10 @@ namespace FFF.Battle.Managers
 
         private void CheckDeathAndTransition()
         {
-            bool isPlayerDead = PlayerData.Instance.CurrentHealth <= 0;
-            bool isEnemyDead = _enemyData.CurrentHealth <= 0;
+            PlayerDataBattle player = _battleManager.Context.PlayerData;
+
+            bool isPlayerDead = player.CurrentHealth <= 0;
+            bool isEnemyDead = _enemyDataBattle.CurrentHealth <= 0;
 
             if (isPlayerDead || isEnemyDead)
             {

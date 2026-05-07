@@ -40,6 +40,12 @@ namespace FFF.Battle.Enemy
         public void GenerateMockIntent()
         {
             List<HwaTuCard> allCards = HwaTuCardDatabase.CreateAllCards();
+            if (allCards.Count == 0)
+            {
+                Debug.LogError("[EnemyData] 적 의도를 만들 카드가 없습니다. 카드 SO 설정을 확인하세요.");
+                return;
+            }
+
             // 시연용이므로 대충 0번, 1번 카드를 뽑아서 족보를 만듭니다. (나중엔 EnemyBrain이 담당)
             HwaTuCard c1 = allCards[UnityEngine.Random.Range(0, allCards.Count)];
             HwaTuCard c2 = allCards[UnityEngine.Random.Range(0, allCards.Count)];

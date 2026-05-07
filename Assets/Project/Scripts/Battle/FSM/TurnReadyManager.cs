@@ -7,6 +7,7 @@ using FFF.Core.Events;
 using FFF.Battle.Enemy;
 using FFF.UI.Battle;
 using FFF.Data;
+using FFF.Audio;
 
 namespace FFF.Battle.Managers
 {
@@ -23,7 +24,7 @@ namespace FFF.Battle.Managers
         [Header("=== 시스템 참조 ===")]
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
-        [SerializeField] private EnemyData _enemyData;
+        [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
 
         [Header("=== 수신할 이벤트 ===")]
@@ -67,8 +68,8 @@ namespace FFF.Battle.Managers
                 _battleUI.SetTurnReadyUIVisibility(true);
 
                 Debug.Log("[TurnReadyManager] 0. 적 의도 파악 및 표시");
-                _enemyData.GenerateMockIntent();
-                _battleUI.ShowEnemyIntent(_enemyData.CurrentIntent);
+                _enemyDataBattle.GenerateIntent();
+                _battleUI.ShowEnemyIntent(_enemyDataBattle.CurrentIntent);
 
                 Debug.Log("[TurnPhaseManager] 1. 턴 시작 준비 및 드로우");
                 _deckSystem.OnTurnStarted();
@@ -79,6 +80,7 @@ namespace FFF.Battle.Managers
                 // UI에 카드 띄우기 (클릭 콜백 연결)
                 _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
                 _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
+                _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
 
                 Debug.Log("[TurnPhaseManager] 2. 유저 멀리건 대기 시작...");
                 
@@ -140,6 +142,7 @@ namespace FFF.Battle.Managers
         {
             var selected = _deckSystem.SelectedCards.ToList();
             if (selected.Count == 0) return;
+            SoundManager.PlayDefaultUiClick();
 
             Debug.Log($"[TurnReadyManager] 리롤 진행 ({selected.Count}장)");
             var redrawn = _deckSystem.Reroll(selected);
@@ -149,12 +152,13 @@ namespace FFF.Battle.Managers
                 // 리롤에 성공했으니 UI 다시 그리기 (선택 상태는 자동으로 초기화됨)
                 _battleUI.UpdateHand(_deckSystem.Hand, OnCardClickedInUI);
                 _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, 0);
+                _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
 
                 // 요구사항: 리롤 기회가 1일 때 리롤하면, 그 이후 자동으로 TurnProceed로 넘어간다.
                 if (_deckSystem.RerollsRemaining <= 0)
                 {
                     Debug.Log("[TurnReadyManager] 리롤 기회 소진! 자동으로 메인 페이즈로 넘어갑니다.");
-                    OnPlayerMulliganFinished();
+                    CompletePlayerMulligan();
                 }
             }
         }
@@ -166,10 +170,17 @@ namespace FFF.Battle.Managers
         /// </summary>
         public void OnPlayerMulliganFinished()
         {
+            SoundManager.PlayDefaultUiClick();
+
             // 기다리고 있던 Task를 완료 상태로 만들어, RunTurnStartFlowAsync의 대기를 풀어줌
+            CompletePlayerMulligan();
+        }
+
+        private void CompletePlayerMulligan()
+        {
             if (_mulligan != null && !_mulligan.Task.IsCompleted)
             {
-                Debug.Log("[TurnReadyManager] 유저가 턴 시작(멀리건 종료) 버튼을 클릭했습니다.");
+                Debug.Log("[TurnReadyManager] Player finished mulligan.");
                 _mulligan.TrySetResult(true);
             }
         }

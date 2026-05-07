@@ -28,6 +28,9 @@ namespace FFF.Data
         [Tooltip("카드 표시 이름 (한글). 예: 1월 광 (송학)")]
         public string DisplayName;
 
+        [Tooltip("전투 UI에서 표시할 카드 앞면 이미지")]
+        public Sprite Artwork;
+
         [Header("=== 특수 카드 ===")]
 
         [Tooltip("11~12월 특수 카드 여부")]
