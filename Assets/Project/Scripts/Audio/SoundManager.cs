@@ -164,7 +164,16 @@ namespace FFF.Audio
 
             AudioSource activeSource = _bgmSources[_activeBgmIndex];
             if (_currentBgmId == soundId && activeSource.isPlaying)
+            {
+                if (_bgmFadeRoutine != null)
+                {
+                    StopCoroutine(_bgmFadeRoutine);
+                    _bgmSources[1 - _activeBgmIndex].Stop();
+                    _bgmFadeRoutine = StartCoroutine(RestoreCurrentBgm(activeSource, soundId, Mathf.Max(0f, fadeSeconds)));
+                }
+
                 return true;
+            }
 
             int nextIndex = 1 - _activeBgmIndex;
             AudioSource nextSource = _bgmSources[nextIndex];
@@ -403,6 +412,35 @@ namespace FFF.Audio
             to.volume = toTarget;
             _activeBgmIndex = nextIndex;
             _currentBgmId = nextBgmId;
+            _bgmFadeRoutine = null;
+        }
+
+        private IEnumerator RestoreCurrentBgm(AudioSource source, string bgmId, float duration)
+        {
+            float startVolume = source != null ? source.volume : 0f;
+            float targetVolume = GetCurrentBgmTargetVolume(bgmId);
+
+            if (duration <= 0f)
+            {
+                if (source != null)
+                    source.volume = targetVolume;
+                _currentBgmId = bgmId;
+                _bgmFadeRoutine = null;
+                yield break;
+            }
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                if (source != null)
+                    source.volume = Mathf.Lerp(startVolume, targetVolume, elapsed / duration);
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            if (source != null)
+                source.volume = targetVolume;
+            _currentBgmId = bgmId;
             _bgmFadeRoutine = null;
         }
 

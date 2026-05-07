@@ -9,6 +9,7 @@ namespace FFF.UI.Battle
     public class BattleSceneSetup : MonoBehaviour
     {
         [SerializeField] private BattleUIComponent _battleUI;
+        [SerializeField] private bool _startBattleOnReady = true;
 
         /// <summary>
         /// 다른 모든 스크립트의 Awake와 Start가 끝나기를 기다리기 위해 코루틴 사용
@@ -30,7 +31,7 @@ namespace FFF.UI.Battle
             yield return null; 
 
             // 3. 모든 준비가 끝났으므로 BattleManager의 StartBattle 호출
-            if (BattleManager.Instance != null)
+            if (_startBattleOnReady && BattleManager.Instance != null)
             {
                 BattleManager.Instance.StartBattle();
             }

@@ -16,5 +16,6 @@ MonoBehaviour:
   Type: 3
   CardId: M9_Pi
   DisplayName: "9\uC6D4 \uD53C"
+  Artwork: {fileID: 21300078, guid: 1ce4d65b6ced9e049b853d9fe817e9b1, type: 3}
   IsSpecial: 0
   EffectId: 

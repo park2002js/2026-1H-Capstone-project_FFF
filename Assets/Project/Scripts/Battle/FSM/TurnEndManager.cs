@@ -23,6 +23,12 @@ namespace FFF.Battle.Managers
         [Header("=== 수신할 이벤트 ===")]
         [SerializeField] private GameEvent _onTurnEndEvent;
 
+        [Header("=== 발행 이벤트 (애니메이션 트리거) ===")]
+        [Tooltip("플레이어 공격 시 BattleAnimationController가 구독")]
+        [SerializeField] private IntEvent _onPlayerAttack;
+        [Tooltip("적 공격 시 BattleAnimationController가 구독")]
+        [SerializeField] private IntEvent _onEnemyAttack;
+
         private CombatCalculator _combatCalculator;
 
         private void Awake()
@@ -62,6 +68,7 @@ namespace FFF.Battle.Managers
 
             // 4. 턴 정리
             _deckSystem.CleanupForNextTurn(); // 카드 무덤으로 보내기
+            _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
 
             // 5. 턴 종료에 따른 Modifier들의 수명 업데이트
             _modifierManager.TickModifiers(); // 버프 수명 차감 및 파기
@@ -101,23 +108,25 @@ namespace FFF.Battle.Managers
             {
                 // 플레이어 승리: 플레이어의 데미지 파이프라인 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
-                    playerStrength, 
-                    _modifierManager, 
+                    playerStrength,
+                    _modifierManager,
                     _battleManager.CurrentModifierContext
                 );
                 _enemyDataBattle.TakeDamage(finalDamage);
+                _onPlayerAttack?.Raise(finalDamage);
                 Debug.Log($"[TurnEnd] 💥 플레이어 승리! 적에게 {finalDamage}의 최종 피해를 입혔습니다.");
             }
             else if (enemyStrength > playerStrength)
             {
                 // 적 승리: 적이 플레이어를 때릴 때도 플레이어의 파이프라인(방어력 등) 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
-                    enemyStrength, 
-                    _modifierManager, 
+                    enemyStrength,
+                    _modifierManager,
                     _battleManager.CurrentModifierContext
                 );
-                
+
                 player.TakeDamage(finalDamage);
+                _onEnemyAttack?.Raise(finalDamage);
                 Debug.Log($"[TurnEnd] 🩸 적 승리! 플레이어가 {finalDamage}의 최종 피해를 입었습니다.");
             }
             else

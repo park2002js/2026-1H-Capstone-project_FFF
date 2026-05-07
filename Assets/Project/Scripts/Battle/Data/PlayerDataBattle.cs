@@ -15,6 +15,7 @@ namespace FFF.Battle.Data
         
         public List<string> EquippedAccessoryIds { get; private set; }
         public List<string> HeldJokerIds { get; private set; }
+        public List<string> DeckCardIds { get; private set; }
 
         /// <summary>
         /// Master 데이터인 PlayerDataSO를 기반으로 전투용 로컬 데이터를 초기화합니다.
@@ -29,6 +30,7 @@ namespace FFF.Battle.Data
                 CurrentHealth = 11;
                 EquippedAccessoryIds = new List<string>();
                 HeldJokerIds = new List<string>();
+                DeckCardIds = new List<string>();
                 return;
             }
 
@@ -37,9 +39,16 @@ namespace FFF.Battle.Data
             
             // List는 새 인스턴스로 복사 생성하여(Shallow Copy), 
             // 전투 중 조커를 사용해 리스트 항목을 제거하더라도 SO 원본이 손상되지 않도록 합니다.
-            EquippedAccessoryIds = new List<string>(masterData.EquippedAccessoryIds);
-            HeldJokerIds = new List<string>(masterData.HeldJokerIds);
-
+            EquippedAccessoryIds = masterData.EquippedAccessoryIds != null
+                ? new List<string>(masterData.EquippedAccessoryIds)
+                : new List<string>();
+            HeldJokerIds = masterData.HeldJokerIds != null
+                ? new List<string>(masterData.HeldJokerIds)
+                : new List<string>();
+            DeckCardIds = masterData.DeckCardIds != null
+                ? new List<string>(masterData.DeckCardIds)
+                : new List<string>();
+            
             Debug.Log($"[PlayerDataBattle] Player 세팅 완료: (HP: {CurrentHealth}/{MaxHealth})");
         }
 
@@ -63,11 +72,17 @@ namespace FFF.Battle.Data
 
         public void ConsumeAccessory(string accessoryId)
         {
-            if (HeldJokerIds.Contains(accessoryId))
+            if (EquippedAccessoryIds.Contains(accessoryId))
             {
-                HeldJokerIds.Remove(accessoryId);
-                Debug.Log($"[PlayerDataBattle] 악세서리({accessoryId})가 제거되었습니다. 남은 조커: {HeldJokerIds.Count}개");
+                EquippedAccessoryIds.Remove(accessoryId);
+                Debug.Log($"[PlayerDataBattle] 악세서리({accessoryId})가 제거되었습니다. 남은 악세서리: {EquippedAccessoryIds.Count}개");
             }
+        }
+
+        public void AddDeckCard(string cardId)
+        {
+            if (string.IsNullOrEmpty(cardId)) return;
+            DeckCardIds.Add(cardId);
         }
     }
 }
