@@ -84,9 +84,6 @@ namespace FFF.UI.Animation
         /// <summary>현재 선택 상태인지.</summary>
         private bool _isSelected;
 
-        /// <summary>현재 호버 상태인지.</summary>
-        private bool _isHovered;
-
         #endregion
 
         #region === 초기화 ===
@@ -151,7 +148,6 @@ namespace FFF.UI.Animation
         public void PlayHoverEnter()
         {
             if (_isSelected) return; // 선택 상태면 호버 무시
-            _isHovered = true;
 
             StopCurrentTween();
             Vector2 hoverPos = _handPosition + Vector2.up * _hoverRiseAmount;
@@ -164,7 +160,6 @@ namespace FFF.UI.Animation
         public void PlayHoverExit()
         {
             if (_isSelected) return;
-            _isHovered = false;
 
             StopCurrentTween();
             _currentTween = StartCoroutine(HoverSequence(_handPosition, 1f, _handRotation));
@@ -177,7 +172,6 @@ namespace FFF.UI.Animation
         public void PlaySelect()
         {
             _isSelected = true;
-            _isHovered = false;
 
             if (_borderImage != null)
                 _borderImage.color = _selectedBorderColor;

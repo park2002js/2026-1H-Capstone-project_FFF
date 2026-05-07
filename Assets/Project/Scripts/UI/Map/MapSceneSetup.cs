@@ -15,15 +15,30 @@ namespace FFF.UI.Map
 
         private void Start()
         {
-            if (GameManager.Instance == null || _mapUI == null)
+            if (_mapUI == null)
             {
-                Debug.LogWarning("[MapSceneSetup] GameManager 또는 MapUI가 null입니다. 씬 단독 테스트 모드로 진행할 수 있습니다.");
+                Debug.LogWarning("[MapSceneSetup] MapUI가 null입니다.");
+                return;
             }
-            
+
+            var gameManager = GameManager.Instance;
+            if (gameManager != null)
+            {
+                var mapData = gameManager.GetOrCreateRunMap(_useRandomSeed, _fixedSeed);
+                gameManager.OnMapSceneReady(_mapUI, mapData);
+                return;
+            }
+
+            Debug.LogWarning("[MapSceneSetup] GameManager가 null입니다. 씬 단독 테스트 모드로 진행합니다.");
             int seed = _useRandomSeed ? Random.Range(1, int.MaxValue) : _fixedSeed;
-            var mapData = new MapGenerator().Generate(seed);
-            
-            GameManager.Instance?.OnMapSceneReady(_mapUI, mapData);
+            var standaloneMapData = new MapGenerator().Generate(seed);
+            foreach (var node in standaloneMapData.GetFloor(0))
+            {
+                node.IsReachable = true;
+            }
+
+            _mapUI.SetMapData(standaloneMapData);
+            _mapUI.Show();
         }
 
         private void OnDestroy()

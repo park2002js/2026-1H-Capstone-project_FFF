@@ -347,7 +347,27 @@ namespace FFF.UI.Animation
         /// </summary>
         public void SetEnemyCharacter(RectTransform rect)
         {
-            _enemyCharacter = rect;
+            _enemyCharacter = ResolveEnemyAnimationRoot(rect);
+        }
+
+        private RectTransform ResolveEnemyAnimationRoot(RectTransform candidate)
+        {
+            if (candidate == null)
+                return _enemyCharacter;
+
+            if (candidate.gameObject.activeInHierarchy)
+                return candidate;
+
+            Transform current = candidate.transform.parent;
+            while (current != null)
+            {
+                if (current.gameObject.activeInHierarchy && current is RectTransform rectTransform)
+                    return rectTransform;
+
+                current = current.parent;
+            }
+
+            return candidate;
         }
 
         #endregion

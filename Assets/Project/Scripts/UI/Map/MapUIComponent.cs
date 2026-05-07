@@ -38,6 +38,9 @@ namespace FFF.UI.Map
         [SerializeField] private Sprite _iconShop;
         [SerializeField] private Sprite _iconBoss;
 
+        private static Sprite _visitedRingShadowSprite;
+        private static Sprite _visitedRingHighlightSprite;
+
         private MapData _mapData;
         private readonly Dictionary<MapNode, MapNodeView> _nodeViews = new Dictionary<MapNode, MapNodeView>();
 
@@ -158,10 +161,97 @@ namespace FFF.UI.Map
             else
                 iconGo.SetActive(false);
 
+            var markerGo = new GameObject("VisitedMarker");
+            markerGo.transform.SetParent(go.transform, false);
+            var markerRect = markerGo.AddComponent<RectTransform>();
+            markerRect.anchorMin = new Vector2(0.5f, 0.5f);
+            markerRect.anchorMax = new Vector2(0.5f, 0.5f);
+            markerRect.pivot = new Vector2(0.5f, 0.5f);
+            markerRect.sizeDelta = new Vector2(_nodeSize * 1.42f, _nodeSize * 1.42f);
+            markerRect.anchoredPosition = Vector2.zero;
+            markerGo.transform.SetAsLastSibling();
+
+            CreateVisitedRingImage(markerGo.transform, "VisitedRingShadow", _nodeSize * 1.42f,
+                GetVisitedRingSprite(ref _visitedRingShadowSprite, new Color(0.04f, 0.02f, 0.01f, 1f), 20));
+            markerGo.SetActive(node.IsVisited);
+
             var view = go.AddComponent<MapNodeView>();
             view.Setup(node, OnNodeClicked);
+            view.SetState(node.IsReachable, node.IsVisited);
 
             _nodeViews[node] = view;
+        }
+
+        private void CreateVisitedRingImage(Transform parent, string name, float size, Sprite sprite)
+        {
+            var ringGo = new GameObject(name);
+            ringGo.transform.SetParent(parent, false);
+
+            var ringRect = ringGo.AddComponent<RectTransform>();
+            ringRect.anchorMin = new Vector2(0.5f, 0.5f);
+            ringRect.anchorMax = new Vector2(0.5f, 0.5f);
+            ringRect.pivot = new Vector2(0.5f, 0.5f);
+            ringRect.sizeDelta = new Vector2(size, size);
+            ringRect.anchoredPosition = Vector2.zero;
+
+            var image = ringGo.AddComponent<Image>();
+            image.sprite = sprite;
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+        }
+
+        private static Sprite GetVisitedRingSprite(ref Sprite cache, Color color, int thickness)
+        {
+            if (cache != null)
+                return cache;
+
+            cache = CreateVisitedRingSprite(color, thickness);
+            return cache;
+        }
+
+        private static Sprite CreateVisitedRingSprite(Color color, int thickness)
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.hideFlags = HideFlags.HideAndDontSave;
+
+            Color clear = new Color(0f, 0f, 0f, 0f);
+            float center = (size - 1f) * 0.5f;
+            float outerRadius = center - 2f;
+            float innerRadius = Mathf.Max(0f, outerRadius - thickness);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - center;
+                    float dy = y - center;
+                    float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                    float outerAlpha = Mathf.Clamp01(outerRadius - distance + 1f);
+                    float innerAlpha = Mathf.Clamp01(distance - innerRadius + 1f);
+                    float alpha = Mathf.Min(outerAlpha, innerAlpha);
+
+                    if (alpha <= 0f)
+                    {
+                        texture.SetPixel(x, y, clear);
+                    }
+                    else
+                    {
+                        Color pixel = color;
+                        pixel.a *= alpha;
+                        texture.SetPixel(x, y, pixel);
+                    }
+                }
+            }
+
+            texture.Apply();
+
+            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+            sprite.hideFlags = HideFlags.HideAndDontSave;
+            return sprite;
         }
 
         // ====================================================================

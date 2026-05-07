@@ -4,14 +4,6 @@ using System.Collections.Generic;
 
 namespace FFF.Battle.Enemy
 {
-    public struct EnemyIntent
-    {
-        public HwaTuCard Card1;
-        public HwaTuCard Card2;
-        public int BasePower;
-        public string HandName;
-    }
-
     /// <summary>
     /// 전투 씬에 배치되어 현재 상대하는 적의 상태를 관리합니다.
     /// </summary>

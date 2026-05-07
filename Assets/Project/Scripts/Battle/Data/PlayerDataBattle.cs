@@ -12,6 +12,7 @@ namespace FFF.Battle.Data
     {
         public int MaxHealth { get; private set; }
         public int CurrentHealth { get; private set; }
+        public int CurrentGold { get; private set; }
         
         public List<string> EquippedAccessoryIds { get; private set; }
         public List<string> HeldJokerIds { get; private set; }
@@ -28,6 +29,7 @@ namespace FFF.Battle.Data
                 Debug.LogError("[PlayerDataBattle] Master Data가 null입니다! 테스트 값으로 초기화합니다.");
                 MaxHealth = 11;
                 CurrentHealth = 11;
+                CurrentGold = 0;
                 EquippedAccessoryIds = new List<string>();
                 HeldJokerIds = new List<string>();
                 DeckCardIds = new List<string>();
@@ -36,6 +38,7 @@ namespace FFF.Battle.Data
 
             MaxHealth = masterData.MaxHealth;
             CurrentHealth = masterData.CurrentHealth;
+            CurrentGold = masterData.CurrentGold;
             
             // List는 새 인스턴스로 복사 생성하여(Shallow Copy), 
             // 전투 중 조커를 사용해 리스트 항목을 제거하더라도 SO 원본이 손상되지 않도록 합니다.
@@ -45,6 +48,7 @@ namespace FFF.Battle.Data
             HeldJokerIds = masterData.HeldJokerIds != null
                 ? new List<string>(masterData.HeldJokerIds)
                 : new List<string>();
+            TrimJokersToLimit();
             DeckCardIds = masterData.DeckCardIds != null
                 ? new List<string>(masterData.DeckCardIds)
                 : new List<string>();
@@ -83,6 +87,51 @@ namespace FFF.Battle.Data
         {
             if (string.IsNullOrEmpty(cardId)) return;
             DeckCardIds.Add(cardId);
+        }
+
+        public void AddJoker(string jokerId)
+        {
+            if (string.IsNullOrEmpty(jokerId)) return;
+            if (HeldJokerIds.Count >= PlayerDataSO.MaxHeldJokerCount)
+            {
+                Debug.LogWarning($"[PlayerDataBattle] 조커는 최대 {PlayerDataSO.MaxHeldJokerCount}장까지만 보유할 수 있습니다.");
+                return;
+            }
+
+            HeldJokerIds.Add(jokerId);
+        }
+
+        public void AddAccessory(string accessoryId)
+        {
+            if (string.IsNullOrEmpty(accessoryId)) return;
+            EquippedAccessoryIds.Add(accessoryId);
+        }
+
+        public bool SpendGold(int amount)
+        {
+            if (amount <= 0) return true;
+            if (CurrentGold < amount) return false;
+
+            CurrentGold -= amount;
+            return true;
+        }
+
+        public void AddGold(int amount)
+        {
+            if (amount <= 0) return;
+            CurrentGold += amount;
+        }
+
+        private void TrimJokersToLimit()
+        {
+            if (HeldJokerIds == null)
+            {
+                HeldJokerIds = new List<string>();
+                return;
+            }
+
+            if (HeldJokerIds.Count > PlayerDataSO.MaxHeldJokerCount)
+                HeldJokerIds.RemoveRange(PlayerDataSO.MaxHeldJokerCount, HeldJokerIds.Count - PlayerDataSO.MaxHeldJokerCount);
         }
     }
 }

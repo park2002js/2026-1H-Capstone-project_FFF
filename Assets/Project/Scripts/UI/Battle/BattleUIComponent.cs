@@ -9,6 +9,7 @@ using FFF.Data;
 using FFF.UI.Core;
 using FFF.UI.Animation;
 using FFF.Battle.Enemy;
+using FFF.Audio;
 
 namespace FFF.UI.Battle
 {
@@ -37,6 +38,24 @@ namespace FFF.UI.Battle
 
             public string CardId => _cardId;
             public Sprite Artwork => _artwork;
+        }
+
+        public enum RewardKind
+        {
+            HwaTuCard,
+            Joker,
+            Accessory
+        }
+
+        public sealed class RewardOption
+        {
+            public string Id;
+            public RewardKind Kind;
+            public string PayloadId;
+            public string DisplayName;
+            public string Category;
+            public string Description;
+            public Sprite Artwork;
         }
 
         [Header("=== UI 연결 ===")]
@@ -71,6 +90,16 @@ namespace FFF.UI.Battle
         [SerializeField] private GameObject _battleResultPanel; // 결과창 전체 패널
         [SerializeField] private TextMeshProUGUI _battleResultText; // 승패 텍스트
 
+        private GameObject _rewardPanel;
+        private Transform _rewardBoxContainer;
+        private TextMeshProUGUI _rewardFeedbackText;
+        private Button _nextStageButton;
+        private Action<RewardOption> _onRewardSelected;
+        private Action _onRewardNextStage;
+        private bool _hasSelectedReward;
+        private bool _isFinalRewardSelection;
+        private bool _hideRewardDetailsUntilSelection;
+
         [Header("=== 신규 연결 (덱 카운트) ===")]
         [Tooltip("'뽑을 산 : N' 텍스트 — DrawingCard 오브젝트에 연결")]
         [SerializeField] private TextMeshProUGUI _drawPileCountText;
@@ -86,6 +115,12 @@ namespace FFF.UI.Battle
 
         [Tooltip("양끝 카드의 최대 기울기 (도)")]
         [SerializeField] private float _maxTiltAngle = 4f;
+
+        protected override void OnInitialize()
+        {
+            HideBattleResult();
+            HideRewardSelection();
+        }
 
         public void SetDrawPileCount(int count)
         {
@@ -475,6 +510,7 @@ namespace FFF.UI.Battle
         /// </summary>
         public void ShowBattleResult(string resultMessage)
         {
+            HideRewardSelection();
             if (_battleResultPanel != null) _battleResultPanel.SetActive(true);
             if (_battleResultText != null) _battleResultText.text = resultMessage;
         }
@@ -485,6 +521,312 @@ namespace FFF.UI.Battle
         public void HideBattleResult()
         {
             if (_battleResultPanel != null) _battleResultPanel.SetActive(false);
+        }
+
+        public void ShowRewardSelection(
+            IReadOnlyList<RewardOption> options,
+            Action<RewardOption> onRewardSelected,
+            Action onNextStage,
+            string promptMessage = "물음표 보따리 하나를 선택하세요.",
+            bool isFinalRewardSelection = true,
+            bool hideRewardDetailsUntilSelection = true)
+        {
+            HideBattleResult();
+
+            if (_rewardPanel == null)
+                BuildRewardPanel();
+
+            _onRewardSelected = onRewardSelected;
+            _onRewardNextStage = onNextStage;
+            _hasSelectedReward = false;
+            _isFinalRewardSelection = isFinalRewardSelection;
+            _hideRewardDetailsUntilSelection = hideRewardDetailsUntilSelection;
+
+            if (_rewardPanel != null)
+            {
+                _rewardPanel.SetActive(true);
+                _rewardPanel.transform.SetAsLastSibling();
+            }
+
+            if (_rewardFeedbackText != null)
+                _rewardFeedbackText.text = promptMessage;
+
+            if (_nextStageButton != null)
+                _nextStageButton.gameObject.SetActive(false);
+
+            ClearChildren(_rewardBoxContainer);
+            if (options == null) return;
+
+            foreach (RewardOption option in options)
+            {
+                CreateRewardBox(option);
+            }
+        }
+
+        public void HideRewardSelection()
+        {
+            if (_rewardPanel != null)
+                _rewardPanel.SetActive(false);
+        }
+
+        private void BuildRewardPanel()
+        {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            _rewardPanel = CreateUIObject("RewardSelectionPanel", parent);
+            RectTransform rootRect = _rewardPanel.GetComponent<RectTransform>();
+            rootRect.anchorMin = Vector2.zero;
+            rootRect.anchorMax = Vector2.one;
+            rootRect.offsetMin = Vector2.zero;
+            rootRect.offsetMax = Vector2.zero;
+
+            Image dim = _rewardPanel.AddComponent<Image>();
+            dim.color = new Color(0.04f, 0.05f, 0.07f, 0.86f);
+
+            TextMeshProUGUI title = CreateRewardText("Text_RewardTitle", _rewardPanel.transform, "보상 선택", 44,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(680f, 72f), new Vector2(0f, -82f));
+
+            _rewardFeedbackText = CreateRewardText("Text_RewardFeedback", _rewardPanel.transform,
+                "물음표 보따리 하나를 선택하세요.", 24, TextAlignmentOptions.Center, FontStyles.Normal);
+            SetStretch(_rewardFeedbackText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(760f, 58f), new Vector2(0f, -152f));
+
+            GameObject container = CreateUIObject("RewardBoxes", _rewardPanel.transform);
+            _rewardBoxContainer = container.transform;
+            RectTransform containerRect = container.GetComponent<RectTransform>();
+            SetStretch(containerRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(900f, 270f), new Vector2(0f, 12f));
+
+            HorizontalLayoutGroup layout = container.AddComponent<HorizontalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.spacing = 42f;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            _nextStageButton = CreateRewardButton("Button_NextStage", _rewardPanel.transform, "다음 스테이지로",
+                new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(230f, 58f), new Vector2(-166f, 58f),
+                new Color(0.19f, 0.52f, 0.28f, 1f));
+            _nextStageButton.onClick.AddListener(() =>
+            {
+                _onRewardNextStage?.Invoke();
+            });
+            _nextStageButton.gameObject.SetActive(false);
+
+            _rewardPanel.SetActive(false);
+        }
+
+        private void CreateRewardBox(RewardOption option)
+        {
+            GameObject box = CreateUIObject($"RewardBox_{option?.Id ?? "Unknown"}", _rewardBoxContainer);
+            RectTransform rect = box.GetComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(240f, 260f);
+
+            Image background = box.AddComponent<Image>();
+            background.color = new Color(0.18f, 0.19f, 0.23f, 0.98f);
+
+            Button button = box.AddComponent<Button>();
+            button.targetGraphic = background;
+
+            LayoutElement layout = box.AddComponent<LayoutElement>();
+            layout.preferredWidth = 240f;
+            layout.preferredHeight = 260f;
+            layout.minWidth = 240f;
+            layout.minHeight = 260f;
+
+            TextMeshProUGUI question = CreateRewardText("Text_Question", box.transform, "?", 96,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(question.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            Image artwork = null;
+            if (option != null && option.Artwork != null)
+            {
+                GameObject artObject = CreateUIObject("Image_Reward", box.transform);
+                RectTransform artRect = artObject.GetComponent<RectTransform>();
+                SetStretch(artRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                    new Vector2(132f, 132f), new Vector2(0f, -78f));
+                artwork = artObject.AddComponent<Image>();
+                artwork.sprite = option.Artwork;
+                artwork.preserveAspect = true;
+                artwork.gameObject.SetActive(false);
+            }
+
+            TextMeshProUGUI category = CreateRewardText("Text_Category", box.transform, "", 18,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(category.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(190f, 32f), new Vector2(0f, -156f));
+            category.gameObject.SetActive(false);
+
+            TextMeshProUGUI name = CreateRewardText("Text_Name", box.transform, "", 22,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(200f, 44f), new Vector2(0f, 88f));
+            name.gameObject.SetActive(false);
+
+            TextMeshProUGUI description = CreateRewardText("Text_Description", box.transform, "", 16,
+                TextAlignmentOptions.Center, FontStyles.Normal);
+            SetStretch(description.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(200f, 44f), new Vector2(0f, 37f));
+            bool showDetails = !_hideRewardDetailsUntilSelection;
+            question.gameObject.SetActive(!showDetails);
+            if (artwork != null)
+                artwork.gameObject.SetActive(showDetails);
+            category.text = option != null ? option.Category : "";
+            category.gameObject.SetActive(showDetails);
+            name.text = option != null ? option.DisplayName : "";
+            name.gameObject.SetActive(showDetails);
+            description.text = option != null ? option.Description : "";
+            description.gameObject.SetActive(showDetails);
+
+            TextMeshProUGUI selectedLabel = CreateRewardText("Text_Selected", box.transform, "선택 완료", 20,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            selectedLabel.color = new Color(1f, 0.92f, 0.35f, 1f);
+            SetStretch(selectedLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(160f, 34f), new Vector2(0f, -28f));
+            selectedLabel.gameObject.SetActive(false);
+
+            button.onClick.AddListener(() =>
+            {
+                if (_hasSelectedReward || option == null)
+                    return;
+
+                SoundManager.PlayDefaultUiClick();
+                _hasSelectedReward = true;
+                bool isFinalSelection = _isFinalRewardSelection;
+
+                question.gameObject.SetActive(false);
+                if (artwork != null)
+                    artwork.gameObject.SetActive(true);
+                background.color = isFinalSelection
+                    ? new Color(0.25f, 0.38f, 0.25f, 0.98f)
+                    : new Color(0.25f, 0.29f, 0.39f, 0.98f);
+                selectedLabel.gameObject.SetActive(true);
+
+                category.text = option.Category;
+                category.gameObject.SetActive(true);
+                name.text = option.DisplayName;
+                name.gameObject.SetActive(true);
+                description.text = option.Description;
+                description.gameObject.SetActive(true);
+
+                foreach (Transform sibling in _rewardBoxContainer)
+                {
+                    Button siblingButton = sibling.GetComponent<Button>();
+                    if (siblingButton != null)
+                        siblingButton.interactable = sibling == box.transform;
+
+                    if (sibling != box.transform)
+                    {
+                        Image siblingBackground = sibling.GetComponent<Image>();
+                        if (siblingBackground != null)
+                            siblingBackground.color = new Color(0.09f, 0.1f, 0.12f, 0.62f);
+                    }
+                }
+
+                if (_rewardFeedbackText != null)
+                {
+                    _rewardFeedbackText.text = isFinalSelection
+                        ? $"{option.DisplayName} 획득!"
+                        : $"{option.Category} 보상을 발견했습니다.";
+                }
+
+                if (isFinalSelection && _nextStageButton != null)
+                {
+                    _nextStageButton.gameObject.SetActive(true);
+                    _nextStageButton.interactable = true;
+                    _nextStageButton.transform.SetAsLastSibling();
+                }
+
+                _onRewardSelected?.Invoke(option);
+                Debug.Log($"[BattleUI] 보상 선택 UI 처리 완료: {option.Category} / {option.DisplayName}");
+            });
+        }
+
+        private GameObject CreateUIObject(string name, Transform parent)
+        {
+            GameObject go = new GameObject(name);
+            go.layer = gameObject.layer;
+            go.transform.SetParent(parent, false);
+            go.AddComponent<RectTransform>();
+            return go;
+        }
+
+        private TextMeshProUGUI CreateRewardText(
+            string name,
+            Transform parent,
+            string text,
+            int fontSize,
+            TextAlignmentOptions alignment,
+            FontStyles style)
+        {
+            GameObject go = CreateUIObject(name, parent);
+            TextMeshProUGUI label = go.AddComponent<TextMeshProUGUI>();
+            label.text = text;
+            TMP_FontAsset rewardFont = ResolveRewardFont();
+            if (rewardFont != null)
+                label.font = rewardFont;
+            label.fontSize = fontSize;
+            label.fontStyle = style;
+            label.alignment = alignment;
+            label.color = Color.white;
+            label.raycastTarget = false;
+            label.textWrappingMode = TextWrappingModes.Normal;
+            label.overflowMode = TextOverflowModes.Ellipsis;
+            return label;
+        }
+
+        private TMP_FontAsset ResolveRewardFont()
+        {
+            if (_battleResultText != null && _battleResultText.font != null)
+                return _battleResultText.font;
+
+            if (_playerHpText != null && _playerHpText.font != null)
+                return _playerHpText.font;
+
+            if (_enemyHpText != null && _enemyHpText.font != null)
+                return _enemyHpText.font;
+
+            return null;
+        }
+
+        private Button CreateRewardButton(
+            string name,
+            Transform parent,
+            string label,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 size,
+            Vector2 position,
+            Color color)
+        {
+            GameObject go = CreateUIObject(name, parent);
+            RectTransform rect = go.GetComponent<RectTransform>();
+            SetStretch(rect, anchorMin, anchorMax, size, position);
+
+            Image image = go.AddComponent<Image>();
+            image.color = color;
+
+            Button button = go.AddComponent<Button>();
+            button.targetGraphic = image;
+
+            TextMeshProUGUI text = CreateRewardText($"Text_{name}", go.transform, label, 21,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            return button;
+        }
+
+        private void SetStretch(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 size, Vector2 position)
+        {
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = position;
         }
 
         /// <summary>
