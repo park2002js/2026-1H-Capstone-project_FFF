@@ -76,6 +76,11 @@ namespace FFF.Battle.Item.Joker
         public void AddJoker(JokerBase joker)
         {
             if (joker == null) return;
+            if (_heldJokers.Count >= PlayerDataSO.MaxHeldJokerCount)
+            {
+                Debug.LogWarning($"[JokerManager] 조커는 최대 {PlayerDataSO.MaxHeldJokerCount}장까지만 보유할 수 있습니다.");
+                return;
+            }
 
             _heldJokers.Add(joker);
             Debug.Log($"[JokerManager] 조커 획득: {joker.DisplayName}");

@@ -42,11 +42,31 @@ namespace FFF.UI.Map
         private static Sprite _visitedRingHighlightSprite;
 
         private MapData _mapData;
+        private bool _nodeSelectionEnabled = true;
         private readonly Dictionary<MapNode, MapNodeView> _nodeViews = new Dictionary<MapNode, MapNodeView>();
 
         public void SetMapData(MapData data)
         {
             _mapData = data;
+        }
+
+        public void SetNodeSelectionEnabled(bool enabled)
+        {
+            _nodeSelectionEnabled = enabled;
+
+            foreach (KeyValuePair<MapNode, MapNodeView> pair in _nodeViews)
+            {
+                if (pair.Value != null && pair.Key != null)
+                    pair.Value.SetState(enabled && pair.Key.IsReachable, pair.Key.IsVisited);
+            }
+        }
+
+        public void BuildReadOnlyMap(RectTransform mapContainer, MapData data)
+        {
+            _mapContainer = mapContainer;
+            _mapData = data;
+            _nodeSelectionEnabled = false;
+            BuildMap();
         }
 
         protected override void OnShow()
@@ -139,11 +159,13 @@ namespace FFF.UI.Map
             }
             else
             {
-                // 배경 이미지가 지정되지 않았을 때 나타나는 기본 '하얀색 네모'를 투명하게 숨깁니다.
-                bg.color = Color.clear;
+                bg.color = GetFallbackNodeColor(node.RoomType);
             }
             
-            go.AddComponent<Button>();
+            bg.raycastTarget = _nodeSelectionEnabled;
+
+            Button button = go.AddComponent<Button>();
+            button.interactable = _nodeSelectionEnabled;
 
             // 아이콘 자식 오브젝트
             var iconGo = new GameObject("Icon");
@@ -157,9 +179,16 @@ namespace FFF.UI.Map
 
             Sprite sprite = GetIcon(node.RoomType);
             if (sprite != null)
+            {
                 iconImg.sprite = sprite;
+                iconImg.color = Color.white;
+            }
             else
-                iconGo.SetActive(false);
+            {
+                iconImg.sprite = null;
+                iconImg.color = GetFallbackNodeColor(node.RoomType);
+                iconGo.SetActive(_nodeBackgroundSprite != null);
+            }
 
             var markerGo = new GameObject("VisitedMarker");
             markerGo.transform.SetParent(go.transform, false);
@@ -176,8 +205,8 @@ namespace FFF.UI.Map
             markerGo.SetActive(node.IsVisited);
 
             var view = go.AddComponent<MapNodeView>();
-            view.Setup(node, OnNodeClicked);
-            view.SetState(node.IsReachable, node.IsVisited);
+            view.Setup(node, _nodeSelectionEnabled ? OnNodeClicked : null);
+            view.SetState(_nodeSelectionEnabled && node.IsReachable, node.IsVisited);
 
             _nodeViews[node] = view;
         }
@@ -285,6 +314,9 @@ namespace FFF.UI.Map
 
         private void OnNodeClicked(MapNode node)
         {
+            if (!_nodeSelectionEnabled || node == null)
+                return;
+
             int nodeId = node.RoomType == RoomType.Boss
                 ? MapData.FLOORS * MapData.COLUMNS
                 : node.Floor * MapData.COLUMNS + node.Column;
@@ -317,6 +349,21 @@ namespace FFF.UI.Map
                 RoomType.Shop     => _iconShop,
                 RoomType.Boss     => _iconBoss,
                 _                 => null
+            };
+        }
+
+        private static Color GetFallbackNodeColor(RoomType type)
+        {
+            return type switch
+            {
+                RoomType.Monster => new Color(0.72f, 0.16f, 0.14f, 1f),
+                RoomType.Elite => new Color(0.86f, 0.32f, 0.18f, 1f),
+                RoomType.Event => new Color(0.45f, 0.28f, 0.74f, 1f),
+                RoomType.Treasure => new Color(0.94f, 0.72f, 0.2f, 1f),
+                RoomType.Rest => new Color(0.25f, 0.56f, 0.78f, 1f),
+                RoomType.Shop => new Color(0.28f, 0.68f, 0.36f, 1f),
+                RoomType.Boss => new Color(0.56f, 0.08f, 0.08f, 1f),
+                _ => new Color(0.42f, 0.46f, 0.5f, 1f)
             };
         }
 

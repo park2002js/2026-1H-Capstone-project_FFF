@@ -1560,6 +1560,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _battleUI: {fileID: 731945297}
+  _startBattleOnReady: 1
 --- !u!1 &590561397
 GameObject:
   m_ObjectHideFlags: 0
@@ -2069,6 +2070,7 @@ MonoBehaviour:
   _enemyHpText: {fileID: 410541276}
   _accessoryLayoutGroup: {fileID: 1119089599}
   _jokerLayoutGroup: {fileID: 1750964192}
+  _playerPortraitSprite: {fileID: 0}
   _tempAccessoryIconPrefab: {fileID: 5032530346131345919, guid: ca2aec7849c29ac4cb66df390273099a, type: 3}
   _jokerIconPrefab: {fileID: 241555248878021352, guid: 849e01543fe8b4744a2e6446f1503a68, type: 3}
   _accessoryIconDefinitions: []
@@ -2196,8 +2198,8 @@ RectTransform:
   - {fileID: 1119089599}
   - {fileID: 1750964192}
   - {fileID: 187381284}
-  - {fileID: 780730173}
   - {fileID: 1796221159}
+  - {fileID: 780730173}
   - {fileID: 710163265}
   - {fileID: 1247294128}
   - {fileID: 930000001}
@@ -4059,6 +4061,10 @@ MonoBehaviour:
   _fadeOverlay: {fileID: 0}
   _fadeDuration: 0.5
   _lungeDistance: 40
+  _moveForwardDuration: 0.5
+  _attackHoldDuration: 0.6
+  _idleHoldDuration: 0.3
+  _moveBackDuration: 0.5
   _lungeDuration: 0.3
   _hitShakeMagnitude: 15
   _hitShakeDuration: 0.4
@@ -5662,3 +5668,5 @@ SceneRoots:
   - {fileID: 132614110}
   - {fileID: 550716252}
   - {fileID: 1350996646}
+  - {fileID: 380622016}
+  - {fileID: 1433758542}

@@ -33,6 +33,7 @@ namespace FFF.Core
         public PlayerDataSO MasterPlayerData => _masterPlayerData;
 
         private MapData _currentMapData;
+        public MapData CurrentMapData => _currentMapData;
 
         // ================================================================
         // 씬별 준비 완료 알림 (SceneSetup → GameManager)

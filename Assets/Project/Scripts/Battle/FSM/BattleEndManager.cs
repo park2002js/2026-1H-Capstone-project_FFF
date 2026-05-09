@@ -100,24 +100,32 @@ namespace FFF.Battle.FSM
                     DisplayName = "화투 카드 보상",
                     Category = "화투 카드",
                     Description = "랜덤 화투 카드\n3장 중 1장 선택"
-                },
-                new BattleUIComponent.RewardOption
+                }
+            };
+
+            PlayerDataBattle player = _battleManager != null && _battleManager.Context != null
+                ? _battleManager.Context.PlayerData
+                : null;
+            if (player == null || player.HeldJokerIds.Count < PlayerDataSO.MaxHeldJokerCount)
+            {
+                rewards.Add(new BattleUIComponent.RewardOption
                 {
                     Id = "RewardCategory_Joker",
                     Kind = BattleUIComponent.RewardKind.Joker,
                     DisplayName = "조커 카드 보상",
                     Category = "조커 카드",
                     Description = "랜덤 조커 카드\n3장 중 1장 선택"
-                },
-                new BattleUIComponent.RewardOption
-                {
-                    Id = "RewardCategory_Accessory",
-                    Kind = BattleUIComponent.RewardKind.Accessory,
-                    DisplayName = "장신구 보상",
-                    Category = "장신구",
-                    Description = "랜덤 장신구\n3개 중 1개 선택"
-                }
-            };
+                });
+            }
+
+            rewards.Add(new BattleUIComponent.RewardOption
+            {
+                Id = "RewardCategory_Accessory",
+                Kind = BattleUIComponent.RewardKind.Accessory,
+                DisplayName = "장신구 보상",
+                Category = "장신구",
+                Description = "랜덤 장신구\n3개 중 1개 선택"
+            });
 
             Shuffle(rewards);
             return rewards;
@@ -257,6 +265,12 @@ namespace FFF.Battle.FSM
                     player.AddDeckCard(reward.PayloadId);
                     break;
                 case BattleUIComponent.RewardKind.Joker:
+                    if (player.HeldJokerIds.Count >= PlayerDataSO.MaxHeldJokerCount)
+                    {
+                        Debug.LogWarning("[BattleEnd] 조커 보유 한도에 도달하여 조커 보상을 받을 수 없습니다.");
+                        return;
+                    }
+
                     player.AddJoker(reward.PayloadId);
                     break;
                 case BattleUIComponent.RewardKind.Accessory:
@@ -265,6 +279,7 @@ namespace FFF.Battle.FSM
             }
 
             _rewardClaimed = true;
+            _battleUI.SetDeckCards(player.DeckCardIds);
             _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
             Debug.Log($"[BattleEnd] 보상 획득: {reward.Category} / {reward.DisplayName} ({reward.PayloadId})");
         }

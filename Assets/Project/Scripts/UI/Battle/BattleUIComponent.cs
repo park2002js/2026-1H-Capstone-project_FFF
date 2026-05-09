@@ -10,6 +10,9 @@ using FFF.UI.Core;
 using FFF.UI.Animation;
 using FFF.Battle.Enemy;
 using FFF.Audio;
+using FFF.Core;
+using FFF.Map;
+using FFF.UI.Map;
 
 namespace FFF.UI.Battle
 {
@@ -63,6 +66,7 @@ namespace FFF.UI.Battle
         [SerializeField] private TextMeshProUGUI _enemyHpText;
         [SerializeField] private Transform _accessoryLayoutGroup; // 장신구 아이콘 부모
         [SerializeField] private Transform _jokerLayoutGroup;     // 조커 아이콘 부모
+        [SerializeField] private Sprite _playerPortraitSprite;
 
         // 아이템 생성 시연용 임시 프리팹 (나중엔 리소스 로드로 변경 가능)
         [SerializeField] private GameObject _tempAccessoryIconPrefab;
@@ -116,8 +120,19 @@ namespace FFF.UI.Battle
         [Tooltip("양끝 카드의 최대 기울기 (도)")]
         [SerializeField] private float _maxTiltAngle = 4f;
 
+        private GameObject _topHudRoot;
+        private TextMeshProUGUI _topHealthText;
+        private TextMeshProUGUI _topGoldText;
+        private Transform _topJokerSlotRoot;
+        private Transform _topAccessorySlotRoot;
+        private GameObject _deckOverlay;
+        private GameObject _mapOverlay;
+        private GameObject _settingsOverlay;
+        private readonly List<string> _currentDeckCardIds = new List<string>();
+
         protected override void OnInitialize()
         {
+            EnsureTopHud();
             HideBattleResult();
             HideRewardSelection();
         }
@@ -142,9 +157,29 @@ namespace FFF.UI.Battle
 
         public void SetPlayerHealth(int current, int max)
         {
+            EnsureTopHud();
+
             if (_playerHpText != null) 
                 _playerHpText.text = $"Player HP: {current} / {max}";
+            if (_topHealthText != null)
+                _topHealthText.text = $"{current}/{max}";
+
             Debug.Log($"[BattleUI] 플레이어 체력 갱신: {current} / {max}");
+        }
+
+        public void SetPlayerGold(int gold)
+        {
+            EnsureTopHud();
+
+            if (_topGoldText != null)
+                _topGoldText.text = gold.ToString();
+        }
+
+        public void SetDeckCards(IReadOnlyList<string> deckCardIds)
+        {
+            _currentDeckCardIds.Clear();
+            if (deckCardIds != null)
+                _currentDeckCardIds.AddRange(deckCardIds);
         }
 
         public void SetEnemyHealth(int current, int max)
@@ -156,6 +191,8 @@ namespace FFF.UI.Battle
 
         public void SetupItemIcons(List<string> accessoryIds, List<string> jokerIds)
         {
+            EnsureTopHud();
+
             accessoryIds ??= new List<string>();
             jokerIds ??= new List<string>();
 
@@ -163,7 +200,14 @@ namespace FFF.UI.Battle
             ClearChildren(_jokerLayoutGroup);
 
             CreateOrderedItemIcons(accessoryIds, _tempAccessoryIconPrefab, _accessoryLayoutGroup, _accessoryIconDefinitions);
-            CreateOrderedItemIcons(jokerIds, _jokerIconPrefab, _jokerLayoutGroup, _jokerIconDefinitions);
+
+            int jokerCount = Mathf.Min(jokerIds.Count, PlayerDataSO.MaxHeldJokerCount);
+            for (int i = 0; i < jokerCount; i++)
+            {
+                CreateItemIcon(jokerIds[i], _jokerIconPrefab, _jokerLayoutGroup, _jokerIconDefinitions);
+            }
+
+            CreateJokerSlotPlaceholders(PlayerDataSO.MaxHeldJokerCount - jokerCount);
 
             Debug.Log($"[BattleUI] 🎒 장신구 {accessoryIds.Count}개, 조커 {jokerIds.Count}개 아이콘 생성 (프리팹 기준)");
         }
@@ -178,13 +222,23 @@ namespace FFF.UI.Battle
 
             foreach (string itemId in itemIds)
             {
-                if (string.IsNullOrEmpty(itemId)) continue;
-
-                GameObject icon = Instantiate(iconPrefab, parent, false);
-                icon.name = itemId;
-                icon.transform.SetAsLastSibling();
-                ApplyItemIconDefinition(icon, itemId, iconDefinitions);
+                CreateItemIcon(itemId, iconPrefab, parent, iconDefinitions);
             }
+        }
+
+        private void CreateItemIcon(
+            string itemId,
+            GameObject iconPrefab,
+            Transform parent,
+            IReadOnlyList<ItemIconDefinition> iconDefinitions)
+        {
+            if (string.IsNullOrEmpty(itemId) || iconPrefab == null || parent == null) return;
+
+            GameObject icon = Instantiate(iconPrefab, parent, false);
+            icon.name = itemId;
+            icon.transform.SetAsLastSibling();
+            ApplyItemIconDefinition(icon, itemId, iconDefinitions);
+            ConfigureHudIcon(icon);
         }
 
         private void ApplyItemIconDefinition(
@@ -226,6 +280,235 @@ namespace FFF.UI.Battle
             }
 
             return null;
+        }
+
+        private void EnsureTopHud()
+        {
+            if (_topHudRoot != null)
+                return;
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            _topHudRoot = CreateUIObject("TopRunHud", parent);
+            RectTransform rootRect = _topHudRoot.GetComponent<RectTransform>();
+            rootRect.anchorMin = new Vector2(0f, 1f);
+            rootRect.anchorMax = new Vector2(1f, 1f);
+            rootRect.pivot = new Vector2(0.5f, 1f);
+            rootRect.sizeDelta = new Vector2(0f, 76f);
+            rootRect.anchoredPosition = Vector2.zero;
+            _topHudRoot.transform.SetAsLastSibling();
+
+            Image background = _topHudRoot.AddComponent<Image>();
+            background.color = new Color(0.08f, 0.12f, 0.15f, 0.92f);
+            background.raycastTarget = false;
+
+            BuildPortrait(_topHudRoot.transform);
+            BuildHealthBlock(_topHudRoot.transform);
+            BuildGoldBlock(_topHudRoot.transform);
+            BuildJokerBlock(_topHudRoot.transform);
+            BuildHudButtons(_topHudRoot.transform);
+            BuildAccessoryRow(parent);
+        }
+
+        private void BuildPortrait(Transform parent)
+        {
+            GameObject frame = CreateUIObject("PortraitFrame", parent);
+            RectTransform rect = frame.GetComponent<RectTransform>();
+            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(58f, 58f), new Vector2(42f, 0f));
+
+            Image image = frame.AddComponent<Image>();
+            image.sprite = _playerPortraitSprite;
+            image.color = _playerPortraitSprite != null ? Color.white : new Color(0.88f, 0.78f, 0.48f, 1f);
+            image.preserveAspect = true;
+
+            if (_playerPortraitSprite == null)
+            {
+                TextMeshProUGUI label = CreateRewardText("Text_PortraitFallback", frame.transform, "P", 24,
+                    TextAlignmentOptions.Center, FontStyles.Bold);
+                SetStretch(label.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            }
+        }
+
+        private void BuildHealthBlock(Transform parent)
+        {
+            TextMeshProUGUI heart = CreateRewardText("Text_HeartIcon", parent, "♥", 32,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            heart.color = new Color(1f, 0.25f, 0.28f, 1f);
+            SetStretch(heart.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(42f, 42f), new Vector2(114f, -1f));
+
+            _topHealthText = CreateRewardText("Text_TopHealth", parent, "0/0", 25,
+                TextAlignmentOptions.Left, FontStyles.Bold);
+            _topHealthText.color = new Color(1f, 0.35f, 0.35f, 1f);
+            SetStretch(_topHealthText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(112f, 44f), new Vector2(188f, -1f));
+        }
+
+        private void BuildGoldBlock(Transform parent)
+        {
+            TextMeshProUGUI coin = CreateRewardText("Text_CoinIcon", parent, "전", 24,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            coin.color = new Color(1f, 0.82f, 0.2f, 1f);
+            SetStretch(coin.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(42f, 42f), new Vector2(278f, -1f));
+
+            _topGoldText = CreateRewardText("Text_TopGold", parent, "0", 25,
+                TextAlignmentOptions.Left, FontStyles.Bold);
+            _topGoldText.color = new Color(1f, 0.84f, 0.28f, 1f);
+            SetStretch(_topGoldText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(90f, 44f), new Vector2(340f, -1f));
+        }
+
+        private void BuildJokerBlock(Transform parent)
+        {
+            GameObject block = CreateUIObject("JokerHudBlock", parent);
+            RectTransform rect = block.GetComponent<RectTransform>();
+            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(216f, 58f), new Vector2(482f, 0f));
+
+            Image bg = block.AddComponent<Image>();
+            bg.color = new Color(0.02f, 0.04f, 0.06f, 0.56f);
+            bg.raycastTarget = false;
+
+            Transform originalJokerLayout = _jokerLayoutGroup;
+            if (originalJokerLayout == null)
+            {
+                GameObject layoutGo = CreateUIObject("Layout_Jokers", block.transform);
+                _jokerLayoutGroup = layoutGo.transform;
+            }
+            else
+            {
+                originalJokerLayout.SetParent(block.transform, false);
+                _jokerLayoutGroup = originalJokerLayout;
+            }
+
+            RectTransform layoutRect = _jokerLayoutGroup.GetComponent<RectTransform>();
+            if (layoutRect != null)
+            {
+                layoutRect.anchorMin = Vector2.zero;
+                layoutRect.anchorMax = Vector2.one;
+                layoutRect.offsetMin = new Vector2(10f, 7f);
+                layoutRect.offsetMax = new Vector2(-10f, -7f);
+                layoutRect.anchoredPosition = Vector2.zero;
+            }
+
+            HorizontalLayoutGroup layout = _jokerLayoutGroup.GetComponent<HorizontalLayoutGroup>();
+            if (layout == null)
+                layout = _jokerLayoutGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.spacing = 9f;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            _topJokerSlotRoot = _jokerLayoutGroup;
+        }
+
+        private void BuildAccessoryRow(Transform parent)
+        {
+            GameObject block = CreateUIObject("AccessoryHudRow", parent);
+            RectTransform rect = block.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(0f, 44f);
+            rect.anchoredPosition = new Vector2(0f, -76f);
+
+            Image bg = block.AddComponent<Image>();
+            bg.color = new Color(0.05f, 0.07f, 0.08f, 0.45f);
+            bg.raycastTarget = false;
+
+            Transform originalAccessoryLayout = _accessoryLayoutGroup;
+            if (originalAccessoryLayout == null)
+            {
+                GameObject layoutGo = CreateUIObject("Layout_Accessories", block.transform);
+                _accessoryLayoutGroup = layoutGo.transform;
+            }
+            else
+            {
+                originalAccessoryLayout.SetParent(block.transform, false);
+                _accessoryLayoutGroup = originalAccessoryLayout;
+            }
+
+            RectTransform layoutRect = _accessoryLayoutGroup.GetComponent<RectTransform>();
+            if (layoutRect != null)
+            {
+                layoutRect.anchorMin = new Vector2(0f, 0f);
+                layoutRect.anchorMax = new Vector2(1f, 1f);
+                layoutRect.offsetMin = new Vector2(18f, 4f);
+                layoutRect.offsetMax = new Vector2(-18f, -4f);
+            }
+
+            HorizontalLayoutGroup layout = _accessoryLayoutGroup.GetComponent<HorizontalLayoutGroup>();
+            if (layout == null)
+                layout = _accessoryLayoutGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            layout.spacing = 8f;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            _topAccessorySlotRoot = _accessoryLayoutGroup;
+        }
+
+        private void BuildHudButtons(Transform parent)
+        {
+            CreateHudButton("Button_TopMap", parent, "맵", new Vector2(-218f, 0f), ShowMapOverlay);
+            CreateHudButton("Button_TopDeck", parent, "덱", new Vector2(-146f, 0f), ShowDeckOverlay);
+            CreateHudButton("Button_TopSettings", parent, "설정", new Vector2(-66f, 0f), ShowSettingsOverlay);
+        }
+
+        private Button CreateHudButton(string name, Transform parent, string label, Vector2 position, Action onClick)
+        {
+            GameObject go = CreateUIObject(name, parent);
+            RectTransform rect = go.GetComponent<RectTransform>();
+            SetStretch(rect, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(64f, 48f), position);
+
+            Image image = go.AddComponent<Image>();
+            image.color = new Color(0.16f, 0.2f, 0.23f, 0.95f);
+
+            Button button = go.AddComponent<Button>();
+            button.targetGraphic = image;
+            button.onClick.AddListener(() =>
+            {
+                SoundManager.PlayDefaultUiClick();
+                onClick?.Invoke();
+            });
+
+            TextMeshProUGUI text = CreateRewardText($"Text_{name}", go.transform, label, 18,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            return button;
+        }
+
+        private void ConfigureHudIcon(GameObject icon)
+        {
+            if (icon == null)
+                return;
+
+            RectTransform rect = icon.GetComponent<RectTransform>();
+            if (rect != null)
+                rect.sizeDelta = new Vector2(42f, 42f);
+
+            LayoutElement layout = icon.GetComponent<LayoutElement>();
+            if (layout == null)
+                layout = icon.AddComponent<LayoutElement>();
+
+            layout.preferredWidth = 42f;
+            layout.preferredHeight = 42f;
+            layout.minWidth = 42f;
+            layout.minHeight = 42f;
+            layout.flexibleWidth = 0f;
+            layout.flexibleHeight = 0f;
+        }
+
+        private void CreateJokerSlotPlaceholders(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                GameObject slot = CreateUIObject("EmptyJokerSlot", _jokerLayoutGroup);
+                Image image = slot.AddComponent<Image>();
+                image.color = new Color(0.15f, 0.18f, 0.19f, 0.74f);
+                ConfigureHudIcon(slot);
+            }
         }
 
         private void ClearChildren(Transform parent)
@@ -567,6 +850,333 @@ namespace FFF.UI.Battle
         {
             if (_rewardPanel != null)
                 _rewardPanel.SetActive(false);
+        }
+
+        private void ShowDeckOverlay()
+        {
+            if (_deckOverlay == null)
+                BuildDeckOverlay();
+
+            RefreshDeckOverlay();
+            _deckOverlay.SetActive(true);
+            _deckOverlay.transform.SetAsLastSibling();
+        }
+
+        private void BuildDeckOverlay()
+        {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            _deckOverlay = CreateOverlayRoot("DeckOverlay");
+
+            GameObject panel = CreatePanel(_deckOverlay.transform, "보유 덱", new Vector2(900f, 560f));
+
+            GameObject scrollRoot = CreateUIObject("DeckScrollView", panel.transform);
+            RectTransform scrollRect = scrollRoot.GetComponent<RectTransform>();
+            SetStretch(scrollRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(820f, 390f), new Vector2(0f, -10f));
+
+            Image scrollBg = scrollRoot.AddComponent<Image>();
+            scrollBg.color = new Color(0.05f, 0.06f, 0.07f, 0.62f);
+
+            ScrollRect scroll = scrollRoot.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+            scroll.vertical = true;
+
+            GameObject viewport = CreateUIObject("Viewport", scrollRoot.transform);
+            RectTransform viewportRect = viewport.GetComponent<RectTransform>();
+            viewportRect.anchorMin = Vector2.zero;
+            viewportRect.anchorMax = Vector2.one;
+            viewportRect.offsetMin = new Vector2(12f, 12f);
+            viewportRect.offsetMax = new Vector2(-12f, -12f);
+            Mask mask = viewport.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+            Image viewportImage = viewport.AddComponent<Image>();
+            viewportImage.color = new Color(0f, 0f, 0f, 0f);
+
+            GameObject content = CreateUIObject("DeckContent", viewport.transform);
+            RectTransform contentRect = content.GetComponent<RectTransform>();
+            contentRect.anchorMin = new Vector2(0f, 1f);
+            contentRect.anchorMax = new Vector2(1f, 1f);
+            contentRect.pivot = new Vector2(0.5f, 1f);
+            contentRect.sizeDelta = new Vector2(0f, 0f);
+
+            GridLayoutGroup grid = content.AddComponent<GridLayoutGroup>();
+            grid.cellSize = new Vector2(98f, 146f);
+            grid.spacing = new Vector2(14f, 18f);
+            grid.padding = new RectOffset(10, 10, 10, 10);
+            grid.childAlignment = TextAnchor.UpperLeft;
+
+            ContentSizeFitter fitter = content.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            scroll.viewport = viewportRect;
+            scroll.content = contentRect;
+
+            Button close = CreateOverlayButton("Button_CloseDeck", panel.transform, "닫기", new Vector2(0f, -234f), () => _deckOverlay.SetActive(false));
+            close.gameObject.transform.SetAsLastSibling();
+
+            _deckOverlay.SetActive(false);
+        }
+
+        private void RefreshDeckOverlay()
+        {
+            Transform content = _deckOverlay != null ? _deckOverlay.transform.Find("Panel/DeckScrollView/Viewport/DeckContent") : null;
+            ClearChildren(content);
+            if (content == null)
+                return;
+
+            foreach (string cardId in _currentDeckCardIds)
+            {
+                HwaTuCard card = HwaTuCardDatabase.FindById(cardId);
+                if (_cardPrefab != null && card != null)
+                {
+                    GameObject cardObject = Instantiate(_cardPrefab, content, false);
+                    RectTransform rect = cardObject.GetComponent<RectTransform>();
+                    if (rect != null)
+                        rect.sizeDelta = new Vector2(98f, 146f);
+
+                    CardUIComponent cardView = cardObject.GetComponent<CardUIComponent>();
+                    if (cardView != null)
+                        cardView.Setup(card, _ => { }, HwaTuCardDatabase.GetArtwork(cardId));
+                }
+                else
+                {
+                    GameObject fallback = CreateUIObject($"DeckCard_{cardId}", content);
+                    Image image = fallback.AddComponent<Image>();
+                    image.color = new Color(0.18f, 0.2f, 0.24f, 1f);
+                    TextMeshProUGUI text = CreateRewardText("Text_CardName", fallback.transform, card != null ? card.DisplayName : cardId,
+                        15, TextAlignmentOptions.Center, FontStyles.Bold);
+                    SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                }
+            }
+        }
+
+        private void ShowMapOverlay()
+        {
+            if (_mapOverlay == null)
+                BuildMapOverlay();
+
+            RefreshMapOverlay();
+            _mapOverlay.SetActive(true);
+            _mapOverlay.transform.SetAsLastSibling();
+        }
+
+        private void BuildMapOverlay()
+        {
+            _mapOverlay = CreateOverlayRoot("MapOverlay");
+            GameObject panel = CreatePanel(_mapOverlay.transform, "스테이지 맵", new Vector2(920f, 640f));
+
+            GameObject scrollRoot = CreateUIObject("MapScrollView", panel.transform);
+            RectTransform scrollRect = scrollRoot.GetComponent<RectTransform>();
+            SetStretch(scrollRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(820f, 470f), new Vector2(0f, -8f));
+
+            Image scrollBackground = scrollRoot.AddComponent<Image>();
+            scrollBackground.color = new Color(0.05f, 0.06f, 0.07f, 0.62f);
+
+            ScrollRect scroll = scrollRoot.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+            scroll.vertical = true;
+
+            GameObject viewport = CreateUIObject("Viewport", scrollRoot.transform);
+            RectTransform viewportRect = viewport.GetComponent<RectTransform>();
+            viewportRect.anchorMin = Vector2.zero;
+            viewportRect.anchorMax = Vector2.one;
+            viewportRect.offsetMin = new Vector2(12f, 12f);
+            viewportRect.offsetMax = new Vector2(-12f, -12f);
+
+            Image viewportImage = viewport.AddComponent<Image>();
+            viewportImage.color = new Color(0f, 0f, 0f, 0f);
+            Mask mask = viewport.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
+            GameObject mapContent = CreateUIObject("MapContent", viewport.transform);
+            RectTransform contentRect = mapContent.GetComponent<RectTransform>();
+            contentRect.anchorMin = new Vector2(0.5f, 0f);
+            contentRect.anchorMax = new Vector2(0.5f, 0f);
+            contentRect.pivot = new Vector2(0.5f, 0f);
+            contentRect.sizeDelta = new Vector2(760f, 0f);
+            contentRect.anchoredPosition = Vector2.zero;
+
+            scroll.viewport = viewportRect;
+            scroll.content = contentRect;
+
+            Button close = CreateOverlayButton("Button_CloseMap", panel.transform, "닫기", new Vector2(0f, -254f), () => _mapOverlay.SetActive(false));
+            close.gameObject.transform.SetAsLastSibling();
+
+            _mapOverlay.SetActive(false);
+        }
+
+        private void RefreshMapOverlay()
+        {
+            Transform mapContent = _mapOverlay != null ? _mapOverlay.transform.Find("Panel/MapScrollView/Viewport/MapContent") : null;
+            ClearChildren(mapContent);
+            if (mapContent == null)
+                return;
+
+            MapData mapData = GameManager.Instance != null ? GameManager.Instance.CurrentMapData : null;
+            if (mapData == null)
+            {
+                TextMeshProUGUI text = CreateRewardText("Text_NoMap", mapContent, "확인할 스테이지 맵이 없습니다.", 24,
+                    TextAlignmentOptions.Center, FontStyles.Bold);
+                SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                return;
+            }
+
+            MapUIComponent mapView = mapContent.GetComponent<MapUIComponent>();
+            if (mapView == null)
+                mapView = mapContent.gameObject.AddComponent<MapUIComponent>();
+
+            mapView.BuildReadOnlyMap(mapContent.GetComponent<RectTransform>(), mapData);
+
+            ScrollRect scroll = _mapOverlay.GetComponentInChildren<ScrollRect>(true);
+            if (scroll != null)
+                scroll.verticalNormalizedPosition = 0f;
+        }
+
+        private void ShowSettingsOverlay()
+        {
+            if (_settingsOverlay == null)
+                BuildSettingsOverlay();
+
+            _settingsOverlay.SetActive(true);
+            _settingsOverlay.transform.SetAsLastSibling();
+        }
+
+        private void BuildSettingsOverlay()
+        {
+            _settingsOverlay = CreateOverlayRoot("BattleSettingsOverlay");
+            GameObject panel = CreatePanel(_settingsOverlay.transform, "환경 설정", new Vector2(660f, 460f));
+
+            CreateSoundSlider(panel.transform, "전체 음량", SoundBus.Master, 118f);
+            CreateSoundSlider(panel.transform, "배경음", SoundBus.Bgm, 56f);
+            CreateSoundSlider(panel.transform, "효과음", SoundBus.Sfx, -6f);
+            CreateSoundSlider(panel.transform, "UI 효과음", SoundBus.Ui, -68f);
+
+            Button close = CreateOverlayButton("Button_CloseSettings", panel.transform, "닫기", new Vector2(0f, -178f), () => _settingsOverlay.SetActive(false));
+            close.gameObject.transform.SetAsLastSibling();
+
+            _settingsOverlay.SetActive(false);
+        }
+
+        private void CreateSoundSlider(Transform parent, string label, SoundBus bus, float y)
+        {
+            SoundManager soundManager = SoundManager.EnsureExists();
+
+            TextMeshProUGUI name = CreateRewardText($"Text_{bus}Label", parent, label, 20,
+                TextAlignmentOptions.Left, FontStyles.Bold);
+            SetStretch(name.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(140f, 34f), new Vector2(-205f, y));
+
+            TextMeshProUGUI valueText = CreateRewardText($"Text_{bus}Value", parent, ToPercent(soundManager.GetVolume(bus)), 19,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(valueText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(70f, 34f), new Vector2(178f, y));
+
+            Slider slider = CreateOverlaySlider($"Slider_{bus}", parent, soundManager.GetVolume(bus), new Vector2(250f, 24f), new Vector2(-20f, y));
+            slider.onValueChanged.AddListener(value =>
+            {
+                soundManager.SetVolume(bus, value);
+                valueText.text = ToPercent(value);
+            });
+        }
+
+        private GameObject CreateOverlayRoot(string name)
+        {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            GameObject overlay = CreateUIObject(name, parent);
+            RectTransform rect = overlay.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            Image dim = overlay.AddComponent<Image>();
+            dim.color = new Color(0f, 0f, 0f, 0.62f);
+            return overlay;
+        }
+
+        private GameObject CreatePanel(Transform parent, string titleText, Vector2 size)
+        {
+            GameObject panel = CreateUIObject("Panel", parent);
+            RectTransform rect = panel.GetComponent<RectTransform>();
+            SetStretch(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), size, Vector2.zero);
+
+            Image image = panel.AddComponent<Image>();
+            image.color = new Color(0.12f, 0.14f, 0.17f, 0.98f);
+
+            TextMeshProUGUI title = CreateRewardText("Text_Title", panel.transform, titleText, 34,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(420f, 54f), new Vector2(0f, -42f));
+            return panel;
+        }
+
+        private Button CreateOverlayButton(string name, Transform parent, string label, Vector2 position, Action onClick)
+        {
+            GameObject go = CreateUIObject(name, parent);
+            RectTransform rect = go.GetComponent<RectTransform>();
+            SetStretch(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(160f, 46f), position);
+
+            Image image = go.AddComponent<Image>();
+            image.color = new Color(0.32f, 0.35f, 0.4f, 1f);
+
+            Button button = go.AddComponent<Button>();
+            button.targetGraphic = image;
+            button.onClick.AddListener(() =>
+            {
+                SoundManager.PlayDefaultUiClick();
+                onClick?.Invoke();
+            });
+
+            TextMeshProUGUI text = CreateRewardText($"Text_{name}", go.transform, label, 20,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            return button;
+        }
+
+        private Slider CreateOverlaySlider(string name, Transform parent, float value, Vector2 size, Vector2 position)
+        {
+            GameObject go = CreateUIObject(name, parent);
+            RectTransform rect = go.GetComponent<RectTransform>();
+            SetStretch(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), size, position);
+
+            Slider slider = go.AddComponent<Slider>();
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.value = Mathf.Clamp01(value);
+
+            GameObject background = CreateUIObject("Background", go.transform);
+            RectTransform bgRect = background.GetComponent<RectTransform>();
+            bgRect.anchorMin = new Vector2(0f, 0.5f);
+            bgRect.anchorMax = new Vector2(1f, 0.5f);
+            bgRect.sizeDelta = new Vector2(0f, 8f);
+            bgRect.anchoredPosition = Vector2.zero;
+            Image bgImage = background.AddComponent<Image>();
+            bgImage.color = new Color(0.22f, 0.25f, 0.29f, 1f);
+
+            GameObject fill = CreateUIObject("Fill", background.transform);
+            RectTransform fillRect = fill.GetComponent<RectTransform>();
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+            Image fillImage = fill.AddComponent<Image>();
+            fillImage.color = new Color(1f, 0.84f, 0.14f, 1f);
+
+            GameObject handle = CreateUIObject("Handle", go.transform);
+            RectTransform handleRect = handle.GetComponent<RectTransform>();
+            handleRect.sizeDelta = new Vector2(22f, 22f);
+            Image handleImage = handle.AddComponent<Image>();
+            handleImage.color = Color.white;
+
+            slider.fillRect = fillRect;
+            slider.handleRect = handleRect;
+            slider.targetGraphic = handleImage;
+            return slider;
+        }
+
+        private static string ToPercent(float value)
+        {
+            return $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
         }
 
         private void BuildRewardPanel()

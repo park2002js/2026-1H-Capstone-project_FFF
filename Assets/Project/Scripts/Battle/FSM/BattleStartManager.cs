@@ -80,6 +80,8 @@ namespace FFF.Battle.Managers
 
                 // 5. UI 초기화
                 _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
+                _battleUI.SetPlayerGold(player.CurrentGold);
+                _battleUI.SetDeckCards(player.DeckCardIds);
                 _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
                 _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
                 _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
