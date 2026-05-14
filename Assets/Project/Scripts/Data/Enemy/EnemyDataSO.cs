@@ -1,4 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
+using FFF.Battle.Enemy;
+using FFF.Battle.Data;
+using FFF.Battle.Modifier;
 
 namespace FFF.Data
 {
@@ -14,6 +18,10 @@ namespace FFF.Data
         public string EnemyName;
         public int MaxHealth;
 
-        // 추후 이 곳에 적의 AI 패턴, 기믹 데이터(List<EnemyIntent> 등)가 추가할 예정
+        public EnemyAISO AILogic;
+
+        [Header("=== AI 로직 설정 ===")]
+        [Tooltip("인스펙터에서 이 적의 AI 패턴을 메모해두는 용도")]
+        public string AIPatternDescription = "체력 50% 이하 시 분기형 AI";
     }
 }
