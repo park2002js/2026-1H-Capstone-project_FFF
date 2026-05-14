@@ -121,6 +121,14 @@ namespace FFF.Battle.Card
                 return new List<HwaTuCard>();
             }
 
+            // DrawPile이 비어있을 때는 선택 카드를 반납하기 전에 묘지를 먼저 재활용한다.
+            // 그래야 리롤 시 방금 반납한 카드만 다시 뽑히는 상황을 피할 수 있다.
+            if (_pile.DrawPile.Count == 0 && _pile.DiscardPile.Count > 0)
+            {
+                Debug.Log("[CardDrawHandler] 리롤 전 DrawPile이 비어 묘지를 먼저 재활용합니다.");
+                ReturnDiscardToDrawPile();
+            }
+
             // 1. 선택한 카드를 Hand → DrawPile로 반납
             int returned = _pile.MoveSelectedCardsToDrawPile(cardsToReturn);
 

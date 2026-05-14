@@ -20,11 +20,13 @@ namespace FFF.Data
 
             // 1. 체력 갱신 (전투 중 맞아서 깎인 체력을 원본에 덮어씌움)
             masterData.CurrentHealth = battleData.CurrentHealth;
+            masterData.CurrentGold = battleData.CurrentGold;
 
             // 2. 조커 갱신 (전투 중 소비되어 리스트에서 빠진 내역을 덮어씌움)
             masterData.HeldJokerIds ??= new List<string>();
             masterData.HeldJokerIds.Clear();
-            masterData.HeldJokerIds.AddRange(battleData.HeldJokerIds);
+            for (int i = 0; i < battleData.HeldJokerIds.Count && i < PlayerDataSO.MaxHeldJokerCount; i++)
+                masterData.HeldJokerIds.Add(battleData.HeldJokerIds[i]);
 
             // 3. 장신구 갱신 (전투 중 파괴되거나 변경되는 기믹을 대비)
             masterData.EquippedAccessoryIds ??= new List<string>();

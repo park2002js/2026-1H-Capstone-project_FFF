@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnemyId: Enemy_001
   EnemyName: "\uD14C\uC2A4\uD2B8 \uC6A9"
-  MaxHealth: 7531
+  MaxHealth: 1

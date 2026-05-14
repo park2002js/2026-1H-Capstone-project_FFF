@@ -38,12 +38,35 @@ namespace FFF.UI.Map
         [SerializeField] private Sprite _iconShop;
         [SerializeField] private Sprite _iconBoss;
 
+        private static Sprite _visitedRingShadowSprite;
+        private static Sprite _visitedRingHighlightSprite;
+
         private MapData _mapData;
+        private bool _nodeSelectionEnabled = true;
         private readonly Dictionary<MapNode, MapNodeView> _nodeViews = new Dictionary<MapNode, MapNodeView>();
 
         public void SetMapData(MapData data)
         {
             _mapData = data;
+        }
+
+        public void SetNodeSelectionEnabled(bool enabled)
+        {
+            _nodeSelectionEnabled = enabled;
+
+            foreach (KeyValuePair<MapNode, MapNodeView> pair in _nodeViews)
+            {
+                if (pair.Value != null && pair.Key != null)
+                    pair.Value.SetState(enabled && pair.Key.IsReachable, pair.Key.IsVisited);
+            }
+        }
+
+        public void BuildReadOnlyMap(RectTransform mapContainer, MapData data)
+        {
+            _mapContainer = mapContainer;
+            _mapData = data;
+            _nodeSelectionEnabled = false;
+            BuildMap();
         }
 
         protected override void OnShow()
@@ -136,11 +159,13 @@ namespace FFF.UI.Map
             }
             else
             {
-                // 배경 이미지가 지정되지 않았을 때 나타나는 기본 '하얀색 네모'를 투명하게 숨깁니다.
-                bg.color = Color.clear;
+                bg.color = GetFallbackNodeColor(node.RoomType);
             }
             
-            go.AddComponent<Button>();
+            bg.raycastTarget = _nodeSelectionEnabled;
+
+            Button button = go.AddComponent<Button>();
+            button.interactable = _nodeSelectionEnabled;
 
             // 아이콘 자식 오브젝트
             var iconGo = new GameObject("Icon");
@@ -154,14 +179,108 @@ namespace FFF.UI.Map
 
             Sprite sprite = GetIcon(node.RoomType);
             if (sprite != null)
+            {
                 iconImg.sprite = sprite;
+                iconImg.color = Color.white;
+            }
             else
-                iconGo.SetActive(false);
+            {
+                iconImg.sprite = null;
+                iconImg.color = GetFallbackNodeColor(node.RoomType);
+                iconGo.SetActive(_nodeBackgroundSprite != null);
+            }
+
+            var markerGo = new GameObject("VisitedMarker");
+            markerGo.transform.SetParent(go.transform, false);
+            var markerRect = markerGo.AddComponent<RectTransform>();
+            markerRect.anchorMin = new Vector2(0.5f, 0.5f);
+            markerRect.anchorMax = new Vector2(0.5f, 0.5f);
+            markerRect.pivot = new Vector2(0.5f, 0.5f);
+            markerRect.sizeDelta = new Vector2(_nodeSize * 1.42f, _nodeSize * 1.42f);
+            markerRect.anchoredPosition = Vector2.zero;
+            markerGo.transform.SetAsLastSibling();
+
+            CreateVisitedRingImage(markerGo.transform, "VisitedRingShadow", _nodeSize * 1.42f,
+                GetVisitedRingSprite(ref _visitedRingShadowSprite, new Color(0.04f, 0.02f, 0.01f, 1f), 20));
+            markerGo.SetActive(node.IsVisited);
 
             var view = go.AddComponent<MapNodeView>();
-            view.Setup(node, OnNodeClicked);
+            view.Setup(node, _nodeSelectionEnabled ? OnNodeClicked : null);
+            view.SetState(_nodeSelectionEnabled && node.IsReachable, node.IsVisited);
 
             _nodeViews[node] = view;
+        }
+
+        private void CreateVisitedRingImage(Transform parent, string name, float size, Sprite sprite)
+        {
+            var ringGo = new GameObject(name);
+            ringGo.transform.SetParent(parent, false);
+
+            var ringRect = ringGo.AddComponent<RectTransform>();
+            ringRect.anchorMin = new Vector2(0.5f, 0.5f);
+            ringRect.anchorMax = new Vector2(0.5f, 0.5f);
+            ringRect.pivot = new Vector2(0.5f, 0.5f);
+            ringRect.sizeDelta = new Vector2(size, size);
+            ringRect.anchoredPosition = Vector2.zero;
+
+            var image = ringGo.AddComponent<Image>();
+            image.sprite = sprite;
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+        }
+
+        private static Sprite GetVisitedRingSprite(ref Sprite cache, Color color, int thickness)
+        {
+            if (cache != null)
+                return cache;
+
+            cache = CreateVisitedRingSprite(color, thickness);
+            return cache;
+        }
+
+        private static Sprite CreateVisitedRingSprite(Color color, int thickness)
+        {
+            const int size = 128;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.hideFlags = HideFlags.HideAndDontSave;
+
+            Color clear = new Color(0f, 0f, 0f, 0f);
+            float center = (size - 1f) * 0.5f;
+            float outerRadius = center - 2f;
+            float innerRadius = Mathf.Max(0f, outerRadius - thickness);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - center;
+                    float dy = y - center;
+                    float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                    float outerAlpha = Mathf.Clamp01(outerRadius - distance + 1f);
+                    float innerAlpha = Mathf.Clamp01(distance - innerRadius + 1f);
+                    float alpha = Mathf.Min(outerAlpha, innerAlpha);
+
+                    if (alpha <= 0f)
+                    {
+                        texture.SetPixel(x, y, clear);
+                    }
+                    else
+                    {
+                        Color pixel = color;
+                        pixel.a *= alpha;
+                        texture.SetPixel(x, y, pixel);
+                    }
+                }
+            }
+
+            texture.Apply();
+
+            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+            sprite.hideFlags = HideFlags.HideAndDontSave;
+            return sprite;
         }
 
         // ====================================================================
@@ -195,6 +314,9 @@ namespace FFF.UI.Map
 
         private void OnNodeClicked(MapNode node)
         {
+            if (!_nodeSelectionEnabled || node == null)
+                return;
+
             int nodeId = node.RoomType == RoomType.Boss
                 ? MapData.FLOORS * MapData.COLUMNS
                 : node.Floor * MapData.COLUMNS + node.Column;
@@ -227,6 +349,21 @@ namespace FFF.UI.Map
                 RoomType.Shop     => _iconShop,
                 RoomType.Boss     => _iconBoss,
                 _                 => null
+            };
+        }
+
+        private static Color GetFallbackNodeColor(RoomType type)
+        {
+            return type switch
+            {
+                RoomType.Monster => new Color(0.72f, 0.16f, 0.14f, 1f),
+                RoomType.Elite => new Color(0.86f, 0.32f, 0.18f, 1f),
+                RoomType.Event => new Color(0.45f, 0.28f, 0.74f, 1f),
+                RoomType.Treasure => new Color(0.94f, 0.72f, 0.2f, 1f),
+                RoomType.Rest => new Color(0.25f, 0.56f, 0.78f, 1f),
+                RoomType.Shop => new Color(0.28f, 0.68f, 0.36f, 1f),
+                RoomType.Boss => new Color(0.56f, 0.08f, 0.08f, 1f),
+                _ => new Color(0.42f, 0.46f, 0.5f, 1f)
             };
         }
 
