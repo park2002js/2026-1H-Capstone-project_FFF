@@ -68,7 +68,7 @@ namespace FFF.Battle.Managers
                 _battleUI.SetTurnReadyUIVisibility(true);
 
                 Debug.Log("[TurnReadyManager] 0. 적 의도 파악 및 표시");
-                _enemyDataBattle.GenerateIntent();
+                _enemyDataBattle.GenerateIntent(_battleManager.CurrentModifierContext);
                 _battleUI.ShowEnemyIntent(_enemyDataBattle.CurrentIntent);
 
                 Debug.Log("[TurnPhaseManager] 1. 턴 시작 준비 및 드로우");

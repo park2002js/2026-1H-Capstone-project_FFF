@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnemyId: Enemy_001
   EnemyName: "\uD14C\uC2A4\uD2B8 \uC6A9"
-  MaxHealth: 1
+  MaxHealth: 18100
+  AILogic: {fileID: 11400000, guid: 27acfedafb6479545af582f21644543a, type: 2}
+  AIPatternDescription: "3\uD134\uB9C8\uB2E4 \uB561\uB0B4"
