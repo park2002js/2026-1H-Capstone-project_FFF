@@ -16,11 +16,35 @@ namespace FFF.UI.Animation
         [SerializeField] private GameObject _attackVisual;
 
         private Coroutine _running;
+        private Coroutine _idleBreathRoutine;
+        private Vector3 _initialScale;
+
+        [SerializeField] private bool _playIdleBreath = true;
+        [SerializeField] private float _idleBreathScale = 1.025f;
+        [SerializeField] private float _idleBreathDuration = 1.1f;
+
+        private void Awake()
+        {
+            _initialScale = transform.localScale;
+        }
 
         private void OnEnable()
         {
             Show(_idleVisual);
             Hide(_attackVisual);
+            if (_playIdleBreath)
+                _idleBreathRoutine = StartCoroutine(IdleBreathRoutine());
+        }
+
+        private void OnDisable()
+        {
+            if (_idleBreathRoutine != null)
+            {
+                StopCoroutine(_idleBreathRoutine);
+                _idleBreathRoutine = null;
+            }
+
+            transform.localScale = _initialScale;
         }
 
         /// <summary>지정한 시간만큼 attack 외형을 표시한 뒤 idle로 복귀.</summary>
@@ -66,6 +90,31 @@ namespace FFF.UI.Animation
         private void Hide(GameObject go)
         {
             if (go != null && go.activeSelf) go.SetActive(false);
+        }
+
+        private IEnumerator IdleBreathRoutine()
+        {
+            while (true)
+            {
+                yield return ScaleRoot(_initialScale * _idleBreathScale, _idleBreathDuration);
+                yield return ScaleRoot(_initialScale, _idleBreathDuration);
+            }
+        }
+
+        private IEnumerator ScaleRoot(Vector3 targetScale, float duration)
+        {
+            Vector3 startScale = transform.localScale;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = 0.5f - Mathf.Cos(t * Mathf.PI) * 0.5f;
+                transform.localScale = Vector3.LerpUnclamped(startScale, targetScale, eased);
+                yield return null;
+            }
+
+            transform.localScale = targetScale;
         }
     }
 }

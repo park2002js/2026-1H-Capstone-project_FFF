@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -74,6 +75,8 @@ namespace FFF.UI.Shop
         private ShopItemBinding _activeCardRemovalItem;
         private string _selectedRemovalCardId;
         private CardUIComponent _selectedRemovalCardView;
+        private Coroutine _feedbackRoutine;
+        private Coroutine _goldRoutine;
 
         public void Bind(
             GameObject dialogueGroup,
@@ -168,6 +171,7 @@ namespace FFF.UI.Shop
             if (_cardRemovalPanel != null) _cardRemovalPanel.SetActive(false);
             if (_passButton != null) _passButton.gameObject.SetActive(true);
             if (_feedbackText != null) _feedbackText.gameObject.SetActive(false);
+            PlayPanelIn(_dialogueGroup);
         }
 
         private void OpenShopBag()
@@ -183,6 +187,7 @@ namespace FFF.UI.Shop
                 _feedbackText.gameObject.SetActive(true);
                 _feedbackText.text = "필요한 물건을 골라보라냥.";
             }
+            PlayPanelIn(_shopPanel);
         }
 
         private void LeaveShop()
@@ -214,6 +219,7 @@ namespace FFF.UI.Shop
             if (_currentGold < item.Price)
             {
                 SetFeedback("엽전이 부족하다냥.");
+                ShakeText(_goldText);
                 return;
             }
 
@@ -241,6 +247,7 @@ namespace FFF.UI.Shop
             if (_currentGold < item.Price)
             {
                 SetFeedback("엽전이 부족하다냥.");
+                ShakeText(_goldText);
                 return;
             }
 
@@ -253,6 +260,7 @@ namespace FFF.UI.Shop
             if (_confirmCardRemovalButton != null) _confirmCardRemovalButton.interactable = false;
             if (_selectedRemovalCardText != null) _selectedRemovalCardText.text = "삭제할 카드 1장을 선택하세요.";
             SetFeedback("삭제할 카드 1장을 고르라냥.");
+            PlayPanelIn(_cardRemovalPanel);
         }
 
         private void BuildCardRemovalGrid()
@@ -331,6 +339,7 @@ namespace FFF.UI.Shop
             if (_currentGold < _activeCardRemovalItem.Price)
             {
                 SetFeedback("엽전이 부족하다냥.");
+                ShakeText(_goldText);
                 return;
             }
 
@@ -356,6 +365,7 @@ namespace FFF.UI.Shop
 
         private bool CompletePurchase(ShopItemBinding item)
         {
+            int beforeGold = _currentGold;
             if (!TrySpendGold(item.Price))
             {
                 SetFeedback("엽전이 부족하다냥.");
@@ -368,7 +378,10 @@ namespace FFF.UI.Shop
             if (item.StateText != null) item.StateText.text = "구매 완료";
             if (item.SoldOverlay != null) item.SoldOverlay.SetActive(true);
 
-            RefreshGold();
+            if (item.Button != null)
+                StartCoroutine(PulseTransform(item.Button.transform, 1.08f, 0.18f));
+
+            RefreshGoldAnimated(beforeGold, _currentGold);
             return true;
         }
 
@@ -388,6 +401,19 @@ namespace FFF.UI.Shop
             SyncGoldFromProvider();
             if (_goldText != null)
                 _goldText.text = $"엽전 {_currentGold}";
+        }
+
+        private void RefreshGoldAnimated(int from, int to)
+        {
+            if (_goldText == null)
+            {
+                RefreshGold();
+                return;
+            }
+
+            if (_goldRoutine != null)
+                StopCoroutine(_goldRoutine);
+            _goldRoutine = StartCoroutine(AnimateGold(from, to));
         }
 
         private void SyncGoldFromProvider()
@@ -419,7 +445,112 @@ namespace FFF.UI.Shop
             {
                 _feedbackText.gameObject.SetActive(true);
                 _feedbackText.text = message;
+                if (_feedbackRoutine != null)
+                    StopCoroutine(_feedbackRoutine);
+                _feedbackRoutine = StartCoroutine(PulseText(_feedbackText, 1.05f, 0.16f));
             }
+        }
+
+        private void PlayPanelIn(GameObject panel)
+        {
+            if (panel == null || !panel.activeInHierarchy)
+                return;
+
+            StartCoroutine(PanelIn(panel.transform));
+        }
+
+        private IEnumerator PanelIn(Transform panel)
+        {
+            CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+                canvasGroup = panel.gameObject.AddComponent<CanvasGroup>();
+
+            canvasGroup.alpha = 0f;
+            panel.localScale = Vector3.one * 0.94f;
+
+            float elapsed = 0f;
+            const float duration = 0.18f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = 1f - Mathf.Pow(1f - t, 3f);
+                canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+                panel.localScale = Vector3.LerpUnclamped(Vector3.one * 0.94f, Vector3.one, eased);
+                yield return null;
+            }
+
+            canvasGroup.alpha = 1f;
+            panel.localScale = Vector3.one;
+        }
+
+        private IEnumerator AnimateGold(int from, int to)
+        {
+            float elapsed = 0f;
+            const float duration = 0.35f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                int value = Mathf.RoundToInt(Mathf.Lerp(from, to, t));
+                _goldText.text = $"엽전 {value}";
+                yield return null;
+            }
+
+            _goldText.text = $"엽전 {to}";
+            yield return PulseText(_goldText, 1.08f, 0.14f);
+            _goldRoutine = null;
+        }
+
+        private void ShakeText(TextMeshProUGUI text)
+        {
+            if (text != null)
+                StartCoroutine(ShakeRect(text.rectTransform, 0.2f, 5f));
+        }
+
+        private IEnumerator PulseText(TextMeshProUGUI text, float scale, float duration)
+        {
+            if (text == null)
+                yield break;
+
+            yield return PulseTransform(text.transform, scale, duration);
+        }
+
+        private IEnumerator PulseTransform(Transform target, float scale, float duration)
+        {
+            Vector3 original = target.localScale;
+            yield return ScaleTo(target, original * scale, duration * 0.45f);
+            yield return ScaleTo(target, original, duration * 0.55f);
+        }
+
+        private IEnumerator ScaleTo(Transform target, Vector3 to, float duration)
+        {
+            Vector3 from = target.localScale;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = 1f - Mathf.Pow(1f - t, 3f);
+                target.localScale = Vector3.LerpUnclamped(from, to, eased);
+                yield return null;
+            }
+
+            target.localScale = to;
+        }
+
+        private IEnumerator ShakeRect(RectTransform rect, float duration, float magnitude)
+        {
+            Vector2 original = rect.anchoredPosition;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                rect.anchoredPosition = original + UnityEngine.Random.insideUnitCircle * magnitude;
+                yield return null;
+            }
+
+            rect.anchoredPosition = original;
         }
     }
 }

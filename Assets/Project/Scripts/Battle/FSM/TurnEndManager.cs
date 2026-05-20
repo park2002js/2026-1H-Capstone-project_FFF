@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using FFF.Battle.Data;
 using FFF.Battle.FSM;
@@ -30,6 +31,7 @@ namespace FFF.Battle.Managers
         [SerializeField] private IntEvent _onEnemyAttack;
 
         private CombatCalculator _combatCalculator;
+        private bool _isResolvingTurnEnd;
 
         private void Awake()
         {
@@ -49,35 +51,51 @@ namespace FFF.Battle.Managers
 
         private void HandleTurnEndEnter()
         {
-            Debug.Log("========== [TurnEnd] 결산 페이즈 진입 ==========");
+            if (_isResolvingTurnEnd)
+                return;
+
+            StartCoroutine(RunTurnEndFlow());
+        }
+
+        private IEnumerator RunTurnEndFlow()
+        {
+            _isResolvingTurnEnd = true;
+            Debug.Log("========== [TurnEnd] Resolve flow start ==========");
             _battleUI.SetTurnProceedUIVisibility(false);
 
-            // 1. 양측의 기본 공격력 산출
             int playerStrength = GetPlayerStrength();
             int enemyStrength = _enemyDataBattle.CurrentIntent.BasePower;
+            int outcome = playerStrength.CompareTo(enemyStrength);
 
-            Debug.Log($"[TurnEnd] ⚔️ 플레이어 공격력({playerStrength}) vs 적 공격력({enemyStrength})");
+            Debug.Log($"[TurnEnd] Player power({playerStrength}) vs Enemy power({enemyStrength})");
 
-            // 2. 승자 판정 및 데미지 적용 (핵심 로직)
+            if (_battleUI != null)
+            {
+                yield return _battleUI.PlayCombatReveal(
+                    _deckSystem.SelectedCards,
+                    GetPlayerHandName(),
+                    playerStrength,
+                    _enemyDataBattle.CurrentIntent,
+                    outcome);
+            }
+
             ApplyCombatResult(playerStrength, enemyStrength);
 
-            // 3. UI 체력 갱신
-            PlayerDataBattle player = _battleManager.Context.PlayerData; // 체력 갱신을 위해 참조 객체 생성(원본 연결됨)
+            PlayerDataBattle player = _battleManager.Context.PlayerData;
             _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
             _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
 
-            // 4. 턴 정리
-            _deckSystem.CleanupForNextTurn(); // 카드 무덤으로 보내기
+            yield return new WaitForSeconds(outcome == 0 ? 0.45f : 1.25f);
+
+            _deckSystem.CleanupForNextTurn();
             _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
 
-            // 5. 턴 종료에 따른 Modifier들의 수명 업데이트
-            _modifierManager.TickModifiers(); // 버프 수명 차감 및 파기
+            _modifierManager.TickModifiers();
 
-            // 6. 카드 폐기 연출 → 완료 후 전환 판정
-            //    ClearHandUI가 콜백을 받으므로, 연출이 끝나야 다음 턴으로 넘어간다.
             _battleUI.ClearHandUI(onComplete: () =>
             {
                 CheckDeathAndTransition();
+                _isResolvingTurnEnd = false;
             });
         }
 
@@ -95,6 +113,15 @@ namespace FFF.Battle.Managers
                 );
             }
             return 0;
+        }
+
+        private string GetPlayerHandName()
+        {
+            var selected = _deckSystem.SelectedCards;
+            if (selected.Count != 2)
+                return "선택 없음";
+
+            return SeotdaJudge.Judge(selected[0], selected[1]).DisplayName;
         }
 
         /// <summary>

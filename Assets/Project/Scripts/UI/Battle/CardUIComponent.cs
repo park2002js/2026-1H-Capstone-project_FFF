@@ -5,6 +5,7 @@ using FFF.Data;
 using FFF.UI.Animation;
 using FFF.Audio;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 #if UNITY_EDITOR
@@ -35,6 +36,7 @@ namespace FFF.UI.Battle
 
         public HwaTuCard CardData { get; private set; }
         private Action<CardUIComponent> _onClickCallback;
+        private Coroutine _rejectRoutine;
 
         public void Setup(HwaTuCard cardData, Action<CardUIComponent> onClickCallback, Sprite artworkOverride = null)
         {
@@ -81,10 +83,44 @@ namespace FFF.UI.Battle
             }
         }
 
+        public void PlayRejectFeedback()
+        {
+            if (_rejectRoutine != null)
+                StopCoroutine(_rejectRoutine);
+
+            _rejectRoutine = StartCoroutine(RejectFeedbackRoutine());
+        }
+
         private void HandleClick()
         {
             SoundManager.PlayDefaultUiClick();
             _onClickCallback?.Invoke(this);
+        }
+
+        private IEnumerator RejectFeedbackRoutine()
+        {
+            RectTransform rect = GetComponent<RectTransform>();
+            if (rect == null)
+                yield break;
+
+            Vector2 originalPosition = rect.anchoredPosition;
+            Vector3 originalScale = transform.localScale;
+            const float duration = 0.18f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float wave = Mathf.Sin(t * Mathf.PI * 6f);
+                rect.anchoredPosition = originalPosition + Vector2.right * (wave * 8f);
+                transform.localScale = Vector3.LerpUnclamped(originalScale * 1.04f, originalScale, t);
+                yield return null;
+            }
+
+            rect.anchoredPosition = originalPosition;
+            transform.localScale = originalScale;
+            _rejectRoutine = null;
         }
 
         private Sprite ResolveArtwork(HwaTuCard cardData, Sprite artworkOverride)

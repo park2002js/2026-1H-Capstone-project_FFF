@@ -129,6 +129,8 @@ namespace FFF.UI.Battle
         private GameObject _mapOverlay;
         private GameObject _settingsOverlay;
         private readonly List<string> _currentDeckCardIds = new List<string>();
+        private int _lastPlayerHealth = -1;
+        private int _lastEnemyHealth = -1;
 
         protected override void OnInitialize()
         {
@@ -164,6 +166,14 @@ namespace FFF.UI.Battle
             if (_topHealthText != null)
                 _topHealthText.text = $"{current}/{max}";
 
+            if (_lastPlayerHealth >= 0 && _lastPlayerHealth != current)
+            {
+                bool tookDamage = current < _lastPlayerHealth;
+                AnimateHealthText(_playerHpText, tookDamage);
+                AnimateHealthText(_topHealthText, tookDamage);
+            }
+            _lastPlayerHealth = current;
+
             Debug.Log($"[BattleUI] 플레이어 체력 갱신: {current} / {max}");
         }
 
@@ -186,6 +196,13 @@ namespace FFF.UI.Battle
         {
             if (_enemyHpText != null) 
                 _enemyHpText.text = $"Enemy HP: {current} / {max}";
+
+            if (_lastEnemyHealth >= 0 && _lastEnemyHealth != current)
+            {
+                bool tookDamage = current < _lastEnemyHealth;
+                AnimateHealthText(_enemyHpText, tookDamage);
+            }
+            _lastEnemyHealth = current;
             Debug.Log($"[BattleUI] 적 체력 갱신: {current} / {max}");
         }
 
@@ -239,6 +256,7 @@ namespace FFF.UI.Battle
             icon.transform.SetAsLastSibling();
             ApplyItemIconDefinition(icon, itemId, iconDefinitions);
             ConfigureHudIcon(icon);
+            StartCoroutine(PopIn(icon.transform, 0f, 1.08f, 0.18f));
         }
 
         private void ApplyItemIconDefinition(
@@ -525,7 +543,10 @@ namespace FFF.UI.Battle
         public void ShowEnemyIntent(EnemyIntent intent)
         {
             if (_enemyIntentText != null)
+            {
                 _enemyIntentText.text = $"적 의도: {intent.Card1.DisplayName} + {intent.Card2.DisplayName}\n(예상 공격력: {intent.BasePower})";
+                StartCoroutine(PulseText(_enemyIntentText, new Color(1f, 0.78f, 0.28f, 1f), 1.08f));
+            }
         }
 
         // 2. 내 손패 카드들을 화면에 생성 + 드로우 연출
@@ -710,7 +731,11 @@ namespace FFF.UI.Battle
         public void SetExpectedStrengthText(string text)
         {
             if (_expectedStrengthText != null)
+            {
                 _expectedStrengthText.text = $"예상 공격력: {text}";
+                if (!string.IsNullOrEmpty(text) && text != "-")
+                    StartCoroutine(PulseText(_expectedStrengthText, new Color(1f, 0.88f, 0.28f, 1f), 1.06f));
+            }
         }
 
         /// <summary>
@@ -719,7 +744,12 @@ namespace FFF.UI.Battle
         public void SetEndTurnButtonInteractable(bool isInteractable)
         {
             if (_endTurnButton != null)
+            {
+                bool changed = _endTurnButton.interactable != isInteractable;
                 _endTurnButton.interactable = isInteractable;
+                if (changed && isInteractable)
+                    StartCoroutine(PulseTransform(_endTurnButton.transform, 1.07f, 0.16f));
+            }
         }
 
         /// <summary>
@@ -791,11 +821,218 @@ namespace FFF.UI.Battle
         /// <summary>
         /// 결과창을 띄우고 승패 텍스트를 설정합니다.
         /// </summary>
+        public IEnumerator PlayCombatReveal(
+            IReadOnlyList<HwaTuCard> playerCards,
+            string playerHandName,
+            int playerPower,
+            EnemyIntent enemyIntent,
+            int outcome)
+        {
+            TryAnimateSelectedHandCards(playerCards);
+
+            GameObject overlay = CreateCombatRevealOverlay(
+                playerCards,
+                playerHandName,
+                playerPower,
+                enemyIntent,
+                outcome,
+                out List<Transform> popTargets,
+                out RectTransform resultRect);
+
+            if (overlay == null)
+                yield break;
+
+            CanvasGroup canvasGroup = overlay.GetComponent<CanvasGroup>();
+            canvasGroup.alpha = 0f;
+            yield return UITweenHelper.FadeTo(canvasGroup, 1f, 0.16f, UITweenHelper.EaseType.Linear);
+
+            for (int i = 0; i < popTargets.Count; i++)
+                StartCoroutine(PopIn(popTargets[i], i * 0.08f, 1.08f, 0.22f));
+
+            yield return new WaitForSeconds(0.72f);
+
+            if (resultRect != null)
+            {
+                if (outcome == 0)
+                    StartCoroutine(UITweenHelper.ShakeRect(resultRect, 0.26f, 10f));
+                else
+                    StartCoroutine(PulseTransform(resultRect, 1.12f, 0.22f));
+            }
+
+            yield return new WaitForSeconds(0.72f);
+            yield return UITweenHelper.FadeTo(canvasGroup, 0f, 0.18f, UITweenHelper.EaseType.Linear);
+            Destroy(overlay);
+        }
+
+        private GameObject CreateCombatRevealOverlay(
+            IReadOnlyList<HwaTuCard> playerCards,
+            string playerHandName,
+            int playerPower,
+            EnemyIntent enemyIntent,
+            int outcome,
+            out List<Transform> popTargets,
+            out RectTransform resultRect)
+        {
+            popTargets = new List<Transform>();
+            resultRect = null;
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            GameObject overlay = CreateUIObject("CombatRevealOverlay", parent);
+            overlay.transform.SetAsLastSibling();
+
+            RectTransform overlayRect = overlay.GetComponent<RectTransform>();
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.offsetMin = Vector2.zero;
+            overlayRect.offsetMax = Vector2.zero;
+
+            Image dim = overlay.AddComponent<Image>();
+            dim.color = new Color(0f, 0f, 0f, 0.55f);
+            dim.raycastTarget = false;
+
+            overlay.AddComponent<CanvasGroup>();
+
+            TextMeshProUGUI title = CreateRewardText("Text_CombatTitle", overlay.transform, "승부", 44,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            title.color = new Color(1f, 0.9f, 0.48f, 1f);
+            SetStretch(title.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(520f, 60f), new Vector2(0f, 194f));
+
+            CreateCombatSide(overlay.transform, "상대", enemyIntent.HandName, enemyIntent.BasePower,
+                enemyIntent.Card1, enemyIntent.Card2, new Vector2(0f, 92f), new Color(0.78f, 0.22f, 0.22f, 1f), popTargets);
+
+            CreateCombatSide(overlay.transform, "나", playerHandName, playerPower,
+                GetCardAt(playerCards, 0), GetCardAt(playerCards, 1), new Vector2(0f, -112f),
+                new Color(0.22f, 0.58f, 0.92f, 1f), popTargets);
+
+            string resultText = outcome > 0 ? "승리!" : outcome < 0 ? "패배..." : "무승부";
+            Color resultColor = outcome > 0
+                ? new Color(1f, 0.86f, 0.25f, 1f)
+                : outcome < 0
+                    ? new Color(1f, 0.34f, 0.28f, 1f)
+                    : new Color(0.82f, 0.86f, 0.9f, 1f);
+
+            TextMeshProUGUI result = CreateRewardText("Text_CombatResult", overlay.transform, resultText, 54,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            result.color = resultColor;
+            SetStretch(result.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(420f, 74f), new Vector2(0f, -8f));
+            resultRect = result.rectTransform;
+            popTargets.Add(result.transform);
+
+            return overlay;
+        }
+
+        private void CreateCombatSide(
+            Transform parent,
+            string sideName,
+            string handName,
+            int power,
+            HwaTuCard card1,
+            HwaTuCard card2,
+            Vector2 center,
+            Color accent,
+            List<Transform> popTargets)
+        {
+            TextMeshProUGUI label = CreateRewardText($"Text_Combat_{sideName}", parent,
+                $"{sideName}: {handName}  /  {power}", 24, TextAlignmentOptions.Center, FontStyles.Bold);
+            label.color = accent;
+            SetStretch(label.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(520f, 40f), center + new Vector2(0f, 70f));
+
+            Transform first = CreateCombatCard(parent, card1, center + new Vector2(-62f, 0f), accent);
+            Transform second = CreateCombatCard(parent, card2, center + new Vector2(62f, 0f), accent);
+            popTargets.Add(first);
+            popTargets.Add(second);
+            popTargets.Add(label.transform);
+        }
+
+        private Transform CreateCombatCard(Transform parent, HwaTuCard card, Vector2 position, Color accent)
+        {
+            GameObject cardObject = CreateUIObject($"CombatCard_{card?.CardId ?? "None"}", parent);
+            RectTransform rect = cardObject.GetComponent<RectTransform>();
+            SetStretch(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(96f, 140f), position);
+
+            Image bg = cardObject.AddComponent<Image>();
+            bg.color = new Color(0.08f, 0.09f, 0.11f, 0.96f);
+            bg.raycastTarget = false;
+
+            GameObject accentObject = CreateUIObject("Accent", cardObject.transform);
+            RectTransform accentRect = accentObject.GetComponent<RectTransform>();
+            SetStretch(accentRect, new Vector2(0f, 1f), new Vector2(1f, 1f),
+                new Vector2(0f, 5f), new Vector2(0f, -2f));
+            Image accentImage = accentObject.AddComponent<Image>();
+            accentImage.color = accent;
+            accentImage.raycastTarget = false;
+
+            Sprite artwork = card != null ? HwaTuCardDatabase.GetArtwork(card.CardId) : null;
+            if (artwork != null)
+            {
+                GameObject artObject = CreateUIObject("Artwork", cardObject.transform);
+                RectTransform artRect = artObject.GetComponent<RectTransform>();
+                SetStretch(artRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                    new Vector2(78f, 94f), new Vector2(0f, -54f));
+                Image art = artObject.AddComponent<Image>();
+                art.sprite = artwork;
+                art.preserveAspect = true;
+                art.raycastTarget = false;
+            }
+
+            TextMeshProUGUI name = CreateRewardText("Text_CardName", cardObject.transform,
+                card != null ? card.DisplayName : "-", 15, TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(86f, 34f), new Vector2(0f, 19f));
+
+            cardObject.transform.localScale = Vector3.one * 0.72f;
+            return cardObject.transform;
+        }
+
+        private void TryAnimateSelectedHandCards(IReadOnlyList<HwaTuCard> selectedCards)
+        {
+            if (_handLayoutGroup == null || selectedCards == null)
+                return;
+
+            foreach (Transform child in _handLayoutGroup)
+            {
+                CardUIComponent cardUI = child.GetComponent<CardUIComponent>();
+                if (cardUI == null || !ContainsCard(selectedCards, cardUI.CardData))
+                    continue;
+
+                CardAnimator animator = child.GetComponent<CardAnimator>();
+                if (animator != null)
+                    animator.PlaySubmitToField();
+            }
+        }
+
+        private static bool ContainsCard(IReadOnlyList<HwaTuCard> cards, HwaTuCard target)
+        {
+            if (cards == null || target == null)
+                return false;
+
+            for (int i = 0; i < cards.Count; i++)
+            {
+                if (ReferenceEquals(cards[i], target) || cards[i] == target)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static HwaTuCard GetCardAt(IReadOnlyList<HwaTuCard> cards, int index)
+        {
+            return cards != null && index >= 0 && index < cards.Count ? cards[index] : null;
+        }
+
         public void ShowBattleResult(string resultMessage)
         {
             HideRewardSelection();
             if (_battleResultPanel != null) _battleResultPanel.SetActive(true);
             if (_battleResultText != null) _battleResultText.text = resultMessage;
+            if (_battleResultPanel != null)
+                StartCoroutine(PopIn(_battleResultPanel.transform, 0f, 1.04f, 0.24f));
         }
 
         /// <summary>
@@ -829,6 +1066,7 @@ namespace FFF.UI.Battle
             {
                 _rewardPanel.SetActive(true);
                 _rewardPanel.transform.SetAsLastSibling();
+                StartCoroutine(PopIn(_rewardPanel.transform, 0f, 1.01f, 0.2f));
             }
 
             if (_rewardFeedbackText != null)
@@ -1235,6 +1473,7 @@ namespace FFF.UI.Battle
             GameObject box = CreateUIObject($"RewardBox_{option?.Id ?? "Unknown"}", _rewardBoxContainer);
             RectTransform rect = box.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(240f, 260f);
+            int displayIndex = _rewardBoxContainer != null ? _rewardBoxContainer.childCount - 1 : 0;
 
             Image background = box.AddComponent<Image>();
             background.color = new Color(0.18f, 0.19f, 0.23f, 0.98f);
@@ -1305,6 +1544,7 @@ namespace FFF.UI.Battle
                     return;
 
                 SoundManager.PlayDefaultUiClick();
+                StartCoroutine(PulseTransform(box.transform, 1.06f, 0.2f));
                 _hasSelectedReward = true;
                 bool isFinalSelection = _isFinalRewardSelection;
 
@@ -1354,6 +1594,8 @@ namespace FFF.UI.Battle
                 _onRewardSelected?.Invoke(option);
                 Debug.Log($"[BattleUI] 보상 선택 UI 처리 완료: {option.Category} / {option.DisplayName}");
             });
+
+            StartCoroutine(PopIn(box.transform, displayIndex * 0.08f, 1.06f, 0.22f));
         }
 
         private GameObject CreateUIObject(string name, Transform parent)
@@ -1443,6 +1685,96 @@ namespace FFF.UI.Battle
         /// 부채꼴 배치 기울기 계산. 양끝 ±maxTilt, 중앙 0도.
         /// 위가 넓은 부채꼴(∨) 모양: 좌측 카드는 윗변이 좌측으로, 우측 카드는 윗변이 우측으로 기울어짐.
         /// </summary>
+        private void AnimateHealthText(TextMeshProUGUI text, bool tookDamage)
+        {
+            if (text == null || !gameObject.activeInHierarchy)
+                return;
+
+            Color flashColor = tookDamage
+                ? new Color(1f, 0.28f, 0.24f, 1f)
+                : new Color(0.35f, 1f, 0.55f, 1f);
+            StartCoroutine(PulseText(text, flashColor, tookDamage ? 1.16f : 1.09f));
+
+            if (tookDamage)
+                StartCoroutine(UITweenHelper.ShakeRect(text.rectTransform, 0.22f, 5f));
+        }
+
+        private IEnumerator PulseText(TextMeshProUGUI text, Color flashColor, float scale)
+        {
+            if (text == null)
+                yield break;
+
+            Color originalColor = text.color;
+            Transform target = text.transform;
+            Vector3 originalScale = target.localScale;
+
+            text.color = flashColor;
+            yield return ScaleTransform(target, originalScale * scale, 0.08f, UITweenHelper.EaseType.OutCubic);
+            yield return ScaleTransform(target, originalScale, 0.14f, UITweenHelper.EaseType.OutBack);
+            text.color = originalColor;
+        }
+
+        private IEnumerator PulseTransform(Transform target, float scale, float duration)
+        {
+            if (target == null)
+                yield break;
+
+            Vector3 originalScale = target.localScale;
+            yield return ScaleTransform(target, originalScale * scale, duration * 0.45f, UITweenHelper.EaseType.OutCubic);
+            yield return ScaleTransform(target, originalScale, duration * 0.55f, UITweenHelper.EaseType.OutBack);
+        }
+
+        private IEnumerator PopIn(Transform target, float delay, float scale, float duration)
+        {
+            if (target == null)
+                yield break;
+
+            if (delay > 0f)
+                yield return new WaitForSeconds(delay);
+
+            Vector3 finalScale = Vector3.one;
+            target.localScale = finalScale * 0.58f;
+            yield return ScaleTransform(target, finalScale * scale, duration * 0.55f, UITweenHelper.EaseType.OutBack);
+            yield return ScaleTransform(target, finalScale, duration * 0.45f, UITweenHelper.EaseType.OutCubic);
+        }
+
+        private IEnumerator ScaleTransform(Transform target, Vector3 to, float duration, UITweenHelper.EaseType ease)
+        {
+            if (target == null)
+                yield break;
+
+            Vector3 from = target.localScale;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = ApplyLocalEase(t, ease);
+                target.localScale = Vector3.LerpUnclamped(from, to, eased);
+                yield return null;
+            }
+
+            target.localScale = to;
+        }
+
+        private static float ApplyLocalEase(float t, UITweenHelper.EaseType ease)
+        {
+            switch (ease)
+            {
+                case UITweenHelper.EaseType.OutBack:
+                    const float s = 1.70158f;
+                    float t1 = t - 1f;
+                    return t1 * t1 * ((s + 1f) * t1 + s) + 1f;
+                case UITweenHelper.EaseType.OutCubic:
+                    float f = t - 1f;
+                    return f * f * f + 1f;
+                case UITweenHelper.EaseType.OutQuad:
+                    return t * (2f - t);
+                default:
+                    return t;
+            }
+        }
+
         private float CalculateCardRotation(int index, int totalCards)
         {
             if (totalCards <= 1) return 0f;
