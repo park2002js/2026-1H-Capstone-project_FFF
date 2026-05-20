@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; // 씬 전환용
 using System.Collections.Generic;
 using FFF.Battle.FSM;
 using FFF.UI.Battle;
@@ -301,7 +300,7 @@ namespace FFF.Battle.FSM
 
             Debug.Log("[BattleEnd] 전투를 다시 시작합니다.");
             // 현재 활성화된 씬(BattleScene)을 다시 로드하여 모든 것을 완전 초기화합니다.
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            FFF.Core.SceneLoader.ReloadCurrentScene();
         }
 
         public void OnTitleButtonClicked()
@@ -310,7 +309,7 @@ namespace FFF.Battle.FSM
 
             Debug.Log("[BattleEnd] 타이틀로 돌아갑니다.");
             // 씬 이름은 실제 프로젝트의 Title 씬 이름("TitleScene" 등)으로 맞춰주세요.
-            SceneManager.LoadScene("TitleScene"); 
+            FFF.Core.SceneLoader.LoadScene(FFF.Core.SceneLoader.SceneNames.TITLE);
         }
 
         /// <summary>
@@ -334,7 +333,7 @@ namespace FFF.Battle.FSM
             }
 
             Debug.LogWarning("[BattleEnd] GameManager가 없어 StageScene으로 직접 이동합니다. 전투 보상은 MasterData에 저장되지 않습니다.");
-            SceneManager.LoadScene(FFF.Core.SceneLoader.SceneNames.MAP);
+            FFF.Core.SceneLoader.LoadScene(FFF.Core.SceneLoader.SceneNames.MAP);
         }
 
         #endregion
