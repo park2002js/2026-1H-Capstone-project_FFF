@@ -162,6 +162,7 @@ namespace FFF.Core
             if (!CanSelectMapNode(selectedNode))
             {
                 Debug.LogWarning($"[GameManager] 아직 선택할 수 없는 스테이지입니다. nodeId={nodeId}");
+                SoundManager.PlaySfxSound(SoundIds.SfxMapNodeLocked);
                 return;
             }
 
@@ -170,6 +171,7 @@ namespace FFF.Core
 
             if (selectedNode.RoomType == RoomType.Shop)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxMapEnterShop);
                 SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
                 return;
             }
@@ -178,6 +180,7 @@ namespace FFF.Core
             // TODO: MapNode 정보를 기반으로 해당 노드에 배치된 적 ID를 배정해야 함
             // 현재는 시스템 뼈대 완성을 위해 임의의 몬스터 ID를 넘긴다고 가정합니다.
             TargetEnemyId = "Enemy_001";
+            SoundManager.PlaySfxSound(selectedNode.RoomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
         }
 

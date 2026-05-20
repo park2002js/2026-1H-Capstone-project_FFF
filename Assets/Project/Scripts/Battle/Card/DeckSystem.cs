@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FFF.Core.Events;
 using FFF.Data;
+using FFF.Audio;
 
 namespace FFF.Battle.Card
 {
@@ -197,6 +198,9 @@ namespace FFF.Battle.Card
         public List<HwaTuCard> DrawCards()
         {
             var drawn = _drawHandler.DrawCards(TotalDrawCount);
+            if (drawn.Count > 0)
+                SoundManager.PlaySfxSound(SoundIds.SfxCardDraw);
+
             _onCardsDrawn?.Raise();
             return drawn;
         }
@@ -220,6 +224,7 @@ namespace FFF.Battle.Card
             {
                 // 리롤 성공 시 사용 횟수 증가
                 _usedRerollsThisTurn++;
+                SoundManager.PlaySfxSound(SoundIds.SfxCardReroll);
                 _onRerolled?.Raise();
             }
 
@@ -240,6 +245,7 @@ namespace FFF.Battle.Card
 
             if (success)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxCardSelect);
                 _onSelectionChanged?.Raise();
             }
 
@@ -250,12 +256,15 @@ namespace FFF.Battle.Card
         /// 카드 선택을 해제한다.
         /// CardSelectionHandler에게 위임. SO Event 발행.
         /// </summary>
-        public bool DeselectCard(HwaTuCard card)
+        public bool DeselectCard(HwaTuCard card, bool playSound = true)
         {
             bool success = _selectionHandler.DeselectCard(card);
 
             if (success)
             {
+                if (playSound)
+                    SoundManager.PlaySfxSound(SoundIds.SfxCardDeselect);
+
                 _onSelectionChanged?.Raise();
             }
 
@@ -277,7 +286,7 @@ namespace FFF.Battle.Card
             var cardsToDeselect = new List<HwaTuCard>(SelectedCards);
             foreach (var card in cardsToDeselect)
             {
-                DeselectCard(card);
+                DeselectCard(card, playSound: false);
             }
             Debug.Log($"[DeckSystem] 모든 카드 선택 해제 완료. (Hand: {Hand.Count}장)");
         }
@@ -291,6 +300,7 @@ namespace FFF.Battle.Card
         {
             // 1. 카드 묘지로 이동
             _drawHandler.MoveAllToDiscard(); 
+            SoundManager.PlaySfxSound(SoundIds.SfxCardDiscard);
 
             _onTurnCleanedUp?.Raise();
             Debug.Log($"[DeckSystem] 턴 정리 완료. {this}");

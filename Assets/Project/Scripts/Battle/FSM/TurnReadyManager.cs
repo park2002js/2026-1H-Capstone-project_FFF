@@ -129,6 +129,7 @@ namespace FFF.Battle.Managers
                 else
                 {
                     // 제한에 걸린 카드는 짧게 흔들어 선택 불가 상태를 알려줍니다.
+                    SoundManager.PlayUiSound(SoundIds.UiError);
                     cardUI.PlayRejectFeedback();
                     Debug.LogWarning("[UI 방어] 최대 선택 개수를 초과하여 카드를 선택할 수 없습니다.");
                 }
@@ -142,8 +143,11 @@ namespace FFF.Battle.Managers
         public void OnRerollButtonClicked()
         {
             var selected = _deckSystem.SelectedCards.ToList();
-            if (selected.Count == 0) return;
-            SoundManager.PlayDefaultUiClick();
+            if (selected.Count == 0)
+            {
+                SoundManager.PlayUiSound(SoundIds.UiError);
+                return;
+            }
 
             Debug.Log($"[TurnReadyManager] 리롤 진행 ({selected.Count}장)");
             var redrawn = _deckSystem.Reroll(selected);
@@ -171,7 +175,7 @@ namespace FFF.Battle.Managers
         /// </summary>
         public void OnPlayerMulliganFinished()
         {
-            SoundManager.PlayDefaultUiClick();
+            SoundManager.PlayUiSound(SoundIds.UiConfirm);
 
             // 기다리고 있던 Task를 완료 상태로 만들어, RunTurnStartFlowAsync의 대기를 풀어줌
             CompletePlayerMulligan();

@@ -11,6 +11,8 @@ namespace FFF.Audio
     {
         private const float SilentDecibels = -80f;
         private const float MinLinearVolume = 0.0001f;
+        internal const string ResourceSfxRoot = "Audio/SFX/";
+        internal const string ResourceBgmRoot = "Audio/BGM/";
 
         private static readonly SoundBus[] VolumeBuses =
         {
@@ -88,6 +90,18 @@ namespace FFF.Audio
                 soundManager.PlayUi(soundManager.DefaultUiClickId);
         }
 
+        public static void PlayUiSound(string soundId, float volumeScale = 1f)
+        {
+            if (TryGetInstance(out SoundManager soundManager))
+                soundManager.PlayUi(soundId, volumeScale);
+        }
+
+        public static void PlaySfxSound(string soundId, float volumeScale = 1f)
+        {
+            if (TryGetInstance(out SoundManager soundManager))
+                soundManager.PlaySfx(soundId, volumeScale);
+        }
+
         protected override void OnInitialize()
         {
             BuildSceneBgmLookup();
@@ -156,7 +170,8 @@ namespace FFF.Audio
             if (!TryResolveEntry(soundId, out SoundCatalogSO.SoundEntry entry))
                 return false;
 
-            if (!ValidatePlayableEntry(entry, soundId))
+            AudioClip clip = ResolvePlayableClip(entry, soundId);
+            if (!ValidatePlayableClip(clip, soundId))
                 return false;
 
             WarnBusMismatch(entry, SoundBus.Bgm, soundId);
@@ -177,7 +192,7 @@ namespace FFF.Audio
 
             int nextIndex = 1 - _activeBgmIndex;
             AudioSource nextSource = _bgmSources[nextIndex];
-            ConfigureBgmSource(nextSource, entry);
+            ConfigureBgmSource(nextSource, entry, clip);
 
             if (_bgmFadeRoutine != null)
                 StopCoroutine(_bgmFadeRoutine);
@@ -248,7 +263,8 @@ namespace FFF.Audio
             if (!TryResolveEntry(soundId, out SoundCatalogSO.SoundEntry entry))
                 return false;
 
-            if (!ValidatePlayableEntry(entry, soundId))
+            AudioClip clip = ResolvePlayableClip(entry, soundId);
+            if (!ValidatePlayableClip(clip, soundId))
                 return false;
 
             WarnBusMismatch(entry, requestedBus, soundId);
@@ -259,13 +275,13 @@ namespace FFF.Audio
             if (requestedBus == SoundBus.Ui)
             {
                 _uiSource.volume = 1f;
-                _uiSource.PlayOneShot(entry.Clip, volume);
+                _uiSource.PlayOneShot(clip, volume);
                 return true;
             }
 
             AudioSource source = GetAvailableSfxSource();
             source.volume = 1f;
-            source.PlayOneShot(entry.Clip, volume);
+            source.PlayOneShot(clip, volume);
             return true;
         }
 
@@ -294,12 +310,45 @@ namespace FFF.Audio
             return true;
         }
 
-        private bool ValidatePlayableEntry(SoundCatalogSO.SoundEntry entry, string soundId)
+        private AudioClip ResolvePlayableClip(SoundCatalogSO.SoundEntry entry, string soundId)
         {
+            if (entry == null)
+                return null;
+
             if (entry.Clip != null)
+                return entry.Clip;
+
+            if (TryLoadResourceClip(entry.Bus, soundId, out AudioClip clip))
+                return clip;
+
+            return null;
+        }
+
+        internal static bool TryLoadResourceClip(SoundBus bus, string soundId, out AudioClip clip)
+        {
+            clip = null;
+
+            if (string.IsNullOrWhiteSpace(soundId))
+                return false;
+
+            string root = bus == SoundBus.Bgm ? ResourceBgmRoot : ResourceSfxRoot;
+            clip = Resources.Load<AudioClip>($"{root}{soundId}");
+            if (clip != null)
                 return true;
 
-            WarnOnce($"missing-clip:{soundId}", $"[SoundManager] Sound id '{soundId}' has no AudioClip assigned.");
+            clip = Resources.Load<AudioClip>($"Audio/{soundId}");
+            return clip != null;
+        }
+
+        private bool ValidatePlayableClip(AudioClip clip, string soundId)
+        {
+            if (clip != null)
+                return true;
+
+            WarnOnce(
+                $"missing-clip:{soundId}",
+                $"[SoundManager] Sound id '{soundId}' has no AudioClip assigned and no Resources clip was found."
+            );
             return false;
         }
 
@@ -369,10 +418,10 @@ namespace FFF.Audio
                 _uiSource.outputAudioMixerGroup = _uiMixerGroup;
         }
 
-        private void ConfigureBgmSource(AudioSource source, SoundCatalogSO.SoundEntry entry)
+        private void ConfigureBgmSource(AudioSource source, SoundCatalogSO.SoundEntry entry, AudioClip clip)
         {
             source.Stop();
-            source.clip = entry.Clip;
+            source.clip = clip;
             source.loop = entry.Loop;
             source.volume = 0f;
             source.outputAudioMixerGroup = _bgmMixerGroup;

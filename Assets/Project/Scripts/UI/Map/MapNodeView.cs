@@ -87,7 +87,7 @@ namespace FFF.UI.Map
             if (_clickRoutine != null)
                 return;
 
-            SoundManager.PlayDefaultUiClick();
+            SoundManager.PlaySfxSound(SoundIds.SfxMapNodeSelect);
             _button.interactable = false;
             _clickRoutine = StartCoroutine(ClickThenInvoke());
         }

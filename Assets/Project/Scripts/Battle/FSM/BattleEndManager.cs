@@ -74,6 +74,7 @@ namespace FFF.Battle.FSM
 
             if (isPlayerWin)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxBattleVictory);
                 _rewardClaimed = false;
                 _battleUI.ShowRewardSelection(
                     CreateRewardCategoryOptions(),
@@ -85,6 +86,7 @@ namespace FFF.Battle.FSM
                 return;
             }
 
+            SoundManager.PlaySfxSound(SoundIds.SfxBattleDefeat);
             _battleUI.ShowBattleResult("Game Over\n<size=50>플레이어 패배</size>");
         }
 

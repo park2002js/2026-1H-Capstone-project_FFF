@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using FFF.Core.Events;
+using FFF.Audio;
 
 namespace FFF.UI.Animation
 {
@@ -180,7 +181,8 @@ namespace FFF.UI.Animation
                 attackerVisual: _playerVisual,
                 target: _enemyCharacter,
                 lungeDirection: Vector2.right,
-                damage: damage
+                damage: damage,
+                attackSoundId: SoundIds.SfxPlayerAttack
             );
         }
 
@@ -194,7 +196,8 @@ namespace FFF.UI.Animation
                 attackerVisual: _enemyVisual,
                 target: _playerCharacter,
                 lungeDirection: Vector2.left,
-                damage: damage
+                damage: damage,
+                attackSoundId: SoundIds.SfxEnemyAttack
             );
         }
 
@@ -206,12 +209,14 @@ namespace FFF.UI.Animation
             CharacterAttackVisual attackerVisual,
             RectTransform target,
             Vector2 lungeDirection,
-            int damage)
+            int damage,
+            string attackSoundId)
         {
             Vector2 originalPos = attacker != null ? attacker.anchoredPosition : Vector2.zero;
             Vector2 lungeTarget = originalPos + lungeDirection * _lungeDistance;
 
             // [1] 앞으로 이동 (idle 포즈 유지)
+            SoundManager.PlaySfxSound(attackSoundId);
             if (attacker != null)
             {
                 yield return UITweenHelper.MoveTo(attacker, lungeTarget,
@@ -220,6 +225,7 @@ namespace FFF.UI.Animation
 
             // [2] attack 포즈로 전환 + 임팩트(화면 흔들림 + 피격 + 데미지 숫자)
             if (attackerVisual != null) attackerVisual.SwitchToAttack();
+            SoundManager.PlaySfxSound(damage >= 20 ? SoundIds.SfxHitHeavy : SoundIds.SfxHitLight);
             if (_shakeTarget != null)
                 StartCoroutine(UITweenHelper.ShakeRect(_shakeTarget, _shakeDuration, _shakeMagnitude));
             if (target != null)

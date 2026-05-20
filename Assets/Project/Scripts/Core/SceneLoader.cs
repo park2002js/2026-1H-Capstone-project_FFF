@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using FFF.Audio;
 
 namespace FFF.Core
 {
@@ -28,6 +29,7 @@ namespace FFF.Core
         public static void LoadScene(string sceneName, bool showLoadingScreen)
         {
             Debug.Log($"[SceneLoader] Scene change: {sceneName}");
+            SoundManager.PlaySfxSound(SoundIds.SfxSceneTransition, 0.8f);
 
             if (!Application.isPlaying || !showLoadingScreen)
             {

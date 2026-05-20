@@ -829,6 +829,7 @@ namespace FFF.UI.Battle
             int outcome)
         {
             TryAnimateSelectedHandCards(playerCards);
+            SoundManager.PlaySfxSound(SoundIds.SfxHandReveal);
 
             GameObject overlay = CreateCombatRevealOverlay(
                 playerCards,
@@ -854,9 +855,15 @@ namespace FFF.UI.Battle
             if (resultRect != null)
             {
                 if (outcome == 0)
+                {
+                    SoundManager.PlaySfxSound(SoundIds.SfxMiss);
                     StartCoroutine(UITweenHelper.ShakeRect(resultRect, 0.26f, 10f));
+                }
                 else
+                {
+                    SoundManager.PlaySfxSound(outcome > 0 ? SoundIds.SfxRoundWin : SoundIds.SfxRoundLose);
                     StartCoroutine(PulseTransform(resultRect, 1.12f, 0.22f));
+                }
             }
 
             yield return new WaitForSeconds(0.72f);
@@ -898,14 +905,21 @@ namespace FFF.UI.Battle
                 TextAlignmentOptions.Center, FontStyles.Bold);
             title.color = new Color(1f, 0.9f, 0.48f, 1f);
             SetStretch(title.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(520f, 60f), new Vector2(0f, 194f));
+                new Vector2(520f, 60f), new Vector2(0f, 218f));
 
             CreateCombatSide(overlay.transform, "상대", enemyIntent.HandName, enemyIntent.BasePower,
-                enemyIntent.Card1, enemyIntent.Card2, new Vector2(0f, 92f), new Color(0.78f, 0.22f, 0.22f, 1f), popTargets);
+                enemyIntent.Card1, enemyIntent.Card2, new Vector2(-278f, 22f), new Color(0.82f, 0.24f, 0.24f, 1f), popTargets);
 
             CreateCombatSide(overlay.transform, "나", playerHandName, playerPower,
-                GetCardAt(playerCards, 0), GetCardAt(playerCards, 1), new Vector2(0f, -112f),
+                GetCardAt(playerCards, 0), GetCardAt(playerCards, 1), new Vector2(278f, 22f),
                 new Color(0.22f, 0.58f, 0.92f, 1f), popTargets);
+
+            TextMeshProUGUI versus = CreateRewardText("Text_CombatVersus", overlay.transform, "VS", 46,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            versus.color = new Color(1f, 0.94f, 0.62f, 1f);
+            SetStretch(versus.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(120f, 64f), new Vector2(0f, 58f));
+            popTargets.Add(versus.transform);
 
             string resultText = outcome > 0 ? "승리!" : outcome < 0 ? "패배..." : "무승부";
             Color resultColor = outcome > 0
@@ -918,7 +932,7 @@ namespace FFF.UI.Battle
                 TextAlignmentOptions.Center, FontStyles.Bold);
             result.color = resultColor;
             SetStretch(result.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(420f, 74f), new Vector2(0f, -8f));
+                new Vector2(220f, 74f), new Vector2(0f, -32f));
             resultRect = result.rectTransform;
             popTargets.Add(result.transform);
 
@@ -936,25 +950,65 @@ namespace FFF.UI.Battle
             Color accent,
             List<Transform> popTargets)
         {
-            TextMeshProUGUI label = CreateRewardText($"Text_Combat_{sideName}", parent,
-                $"{sideName}: {handName}  /  {power}", 24, TextAlignmentOptions.Center, FontStyles.Bold);
-            label.color = accent;
-            SetStretch(label.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(520f, 40f), center + new Vector2(0f, 70f));
+            GameObject group = CreateUIObject($"CombatSide_{sideName}", parent);
+            RectTransform groupRect = group.GetComponent<RectTransform>();
+            SetStretch(groupRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(300f, 312f), center);
 
-            Transform first = CreateCombatCard(parent, card1, center + new Vector2(-62f, 0f), accent);
-            Transform second = CreateCombatCard(parent, card2, center + new Vector2(62f, 0f), accent);
+            TextMeshProUGUI sideLabel = CreateRewardText($"Text_Combat_{sideName}_Side", group.transform,
+                sideName, 25, TextAlignmentOptions.Center, FontStyles.Bold);
+            sideLabel.color = accent;
+            SetStretch(sideLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(160f, 34f), new Vector2(0f, -20f));
+
+            Transform first = CreateCombatCard(group.transform, card1, new Vector2(-64f, 18f), accent);
+            Transform second = CreateCombatCard(group.transform, card2, new Vector2(64f, 18f), accent);
+
+            TextMeshProUGUI handLabel = CreateRewardText($"Text_Combat_{sideName}_Hand", group.transform,
+                string.IsNullOrWhiteSpace(handName) ? "-" : handName, 22, TextAlignmentOptions.Center, FontStyles.Bold);
+            handLabel.color = Color.white;
+            SetStretch(handLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(260f, 34f), new Vector2(0f, 44f));
+
+            TextMeshProUGUI powerLabel = CreateRewardText($"Text_Combat_{sideName}_Power", group.transform,
+                $"공격력 {power}", 19, TextAlignmentOptions.Center, FontStyles.Bold);
+            powerLabel.color = new Color(0.86f, 0.9f, 0.95f, 1f);
+            SetStretch(powerLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                new Vector2(220f, 30f), new Vector2(0f, 12f));
+
             popTargets.Add(first);
             popTargets.Add(second);
-            popTargets.Add(label.transform);
+            popTargets.Add(sideLabel.transform);
+            popTargets.Add(handLabel.transform);
+            popTargets.Add(powerLabel.transform);
         }
 
         private Transform CreateCombatCard(Transform parent, HwaTuCard card, Vector2 position, Color accent)
         {
-            GameObject cardObject = CreateUIObject($"CombatCard_{card?.CardId ?? "None"}", parent);
+            GameObject cardObject = _cardPrefab != null && card != null
+                ? Instantiate(_cardPrefab, parent, false)
+                : CreateUIObject($"CombatCard_{card?.CardId ?? "None"}", parent);
+            cardObject.name = $"CombatCard_{card?.CardId ?? "None"}";
+
             RectTransform rect = cardObject.GetComponent<RectTransform>();
             SetStretch(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(96f, 140f), position);
+                new Vector2(112f, 168f), position);
+
+            CardUIComponent cardUI = cardObject.GetComponent<CardUIComponent>();
+            if (cardUI != null && card != null)
+            {
+                cardUI.Setup(card, _ => { }, card != null ? FindCardArtwork(card.CardId) : null);
+                cardUI.SetSelected(false);
+
+                Button cardButton = cardObject.GetComponent<Button>();
+                if (cardButton != null)
+                {
+                    cardButton.onClick.RemoveAllListeners();
+                    cardButton.enabled = false;
+                }
+
+                return cardObject.transform;
+            }
 
             Image bg = cardObject.AddComponent<Image>();
             bg.color = new Color(0.08f, 0.09f, 0.11f, 0.96f);
@@ -986,7 +1040,6 @@ namespace FFF.UI.Battle
             SetStretch(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                 new Vector2(86f, 34f), new Vector2(0f, 19f));
 
-            cardObject.transform.localScale = Vector3.one * 0.72f;
             return cardObject.transform;
         }
 
@@ -1068,6 +1121,7 @@ namespace FFF.UI.Battle
                 _rewardPanel.transform.SetAsLastSibling();
                 StartCoroutine(PopIn(_rewardPanel.transform, 0f, 1.01f, 0.2f));
             }
+            SoundManager.PlaySfxSound(SoundIds.SfxRewardOpen);
 
             if (_rewardFeedbackText != null)
                 _rewardFeedbackText.text = promptMessage;
@@ -1543,10 +1597,10 @@ namespace FFF.UI.Battle
                 if (_hasSelectedReward || option == null)
                     return;
 
-                SoundManager.PlayDefaultUiClick();
+                bool isFinalSelection = _isFinalRewardSelection;
+                SoundManager.PlaySfxSound(isFinalSelection ? SoundIds.SfxRewardClaim : SoundIds.SfxRewardSelect);
                 StartCoroutine(PulseTransform(box.transform, 1.06f, 0.2f));
                 _hasSelectedReward = true;
-                bool isFinalSelection = _isFinalRewardSelection;
 
                 question.gameObject.SetActive(false);
                 if (artwork != null)

@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using TMPro;
 using FFF.Data;
 using FFF.UI.Animation;
-using FFF.Audio;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -93,7 +92,6 @@ namespace FFF.UI.Battle
 
         private void HandleClick()
         {
-            SoundManager.PlayDefaultUiClick();
             _onClickCallback?.Invoke(this);
         }
 

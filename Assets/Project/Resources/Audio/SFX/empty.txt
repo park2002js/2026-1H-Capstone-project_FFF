@@ -1,0 +1,10 @@
+sfx_battle_end
+sfx_hand_reveal
+sfx_hand_strong
+sfx_hand_weak
+sfx_hit_heavy
+sfx_hit_light
+ui_cancel
+ui_click
+ui_confirm
+ui_error

@@ -90,11 +90,12 @@ namespace FFF.Battle.FSM
             if (_deckSystem.SelectedCards.Count != 2)
             {
                 Debug.LogWarning("[TurnProceed] 카드 2장을 선택해야 턴을 종료할 수 있습니다.");
+                SoundManager.PlayUiSound(SoundIds.UiError);
                 return;
             }
 
             Debug.Log("[TurnProceed] 플레이어 행동 확정. TurnEnd로 넘어갑니다.");
-            SoundManager.PlayDefaultUiClick();
+            SoundManager.PlayUiSound(SoundIds.UiConfirm);
             _battleManager.ChangeState(TurnState.TurnEnd);
         }
     }
