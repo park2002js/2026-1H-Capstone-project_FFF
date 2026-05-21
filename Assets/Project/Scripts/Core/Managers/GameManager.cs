@@ -176,6 +176,7 @@ namespace FFF.Core
             if (!CanSelectMapNode(selectedNode))
             {
                 Debug.LogWarning($"[GameManager] 아직 선택할 수 없는 스테이지입니다. nodeId={nodeId}");
+                SoundManager.PlaySfxSound(SoundIds.SfxMapNodeLocked);
                 return;
             }
 
@@ -184,6 +185,7 @@ namespace FFF.Core
 
             if (selectedNode.RoomType == RoomType.Shop)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxMapEnterShop);
                 SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
                 return;
             }
@@ -193,7 +195,8 @@ namespace FFF.Core
 
             // RoomType에 맞춰 몬스터 ID를 추출하여 배정
             TargetEnemyId = PopEnemyFromList(selectedNode.RoomType, currentSeed);
-            
+
+            SoundManager.PlaySfxSound(selectedNode.RoomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
         }
 

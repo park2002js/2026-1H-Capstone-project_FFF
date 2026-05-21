@@ -1749,6 +1749,11 @@ MonoBehaviour:
     _bus: 2
     _volumeScale: 1
     _fadeSeconds: 0.5
+  - _gameEvent: {fileID: 11400000, guid: 247e475ed8ae5104e901fe3d20f084a3, type: 2}
+    _soundId: sfx_turn_proceed
+    _bus: 2
+    _volumeScale: 1
+    _fadeSeconds: 0.5
   - _gameEvent: {fileID: 11400000, guid: 7e05a41c30f28804fac46733e7402e85, type: 2}
     _soundId: sfx_turn_end
     _bus: 2

@@ -18,6 +18,21 @@ MonoBehaviour:
     _bus: 3
     _defaultVolume: 1
     _loop: 0
+  - _soundId: ui_confirm
+    _clip: {fileID: 0}
+    _bus: 3
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: ui_cancel
+    _clip: {fileID: 0}
+    _bus: 3
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: ui_error
+    _clip: {fileID: 0}
+    _bus: 3
+    _defaultVolume: 1
+    _loop: 0
   - _soundId: bgm_title
     _clip: {fileID: 0}
     _bus: 1
@@ -38,6 +53,11 @@ MonoBehaviour:
     _bus: 1
     _defaultVolume: 1
     _loop: 1
+  - _soundId: sfx_scene_transition
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
   - _soundId: sfx_battle_start
     _clip: {fileID: 0}
     _bus: 2
@@ -48,12 +68,247 @@ MonoBehaviour:
     _bus: 2
     _defaultVolume: 1
     _loop: 0
+  - _soundId: sfx_turn_proceed
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
   - _soundId: sfx_turn_end
     _clip: {fileID: 0}
     _bus: 2
     _defaultVolume: 1
     _loop: 0
   - _soundId: sfx_battle_end
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_card_draw
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_card_deal
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_card_flip
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_card_select
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_card_deselect
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_card_reroll
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_card_discard
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_deck_shuffle
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_discard_recycle
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_player_attack
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_enemy_attack
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_hit_light
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_hit_heavy
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_critical
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_block
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_miss
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_player_damage
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_enemy_damage
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_enemy_defeat
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_player_defeat
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_hand_reveal
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_hand_strong
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_hand_weak
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_round_win
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_round_lose
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_battle_victory
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_battle_defeat
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_map_node_select
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_map_node_locked
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_map_path_reveal
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_map_enter_battle
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_map_enter_shop
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_map_enter_boss
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_reward_open
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_reward_select
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_reward_claim
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_joker_activate
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_accessory_activate
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_item_equip
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_gold_gain
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_gold_spend
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_shop_open
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_shop_buy
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_shop_cannot_buy
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_shop_card_remove
+    _clip: {fileID: 0}
+    _bus: 2
+    _defaultVolume: 1
+    _loop: 0
+  - _soundId: sfx_shop_leave
     _clip: {fileID: 0}
     _bus: 2
     _defaultVolume: 1

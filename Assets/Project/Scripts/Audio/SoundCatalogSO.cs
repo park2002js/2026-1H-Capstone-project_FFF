@@ -84,7 +84,7 @@ namespace FFF.Audio
                     continue;
                 }
 
-                if (entry.Clip == null && logValidation)
+                if (entry.Clip == null && logValidation && !SoundManager.TryLoadResourceClip(entry.Bus, entry.SoundId, out _))
                     Debug.LogWarning($"[SoundCatalog] '{entry.SoundId}' has no AudioClip assigned.", this);
 
                 _lookup.Add(entry.SoundId, entry);

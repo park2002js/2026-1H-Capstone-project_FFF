@@ -176,7 +176,7 @@ namespace FFF.UI.Shop
 
         private void OpenShopBag()
         {
-            SoundManager.PlayDefaultUiClick();
+            SoundManager.PlaySfxSound(SoundIds.SfxShopOpen);
 
             if (_dialogueGroup != null) _dialogueGroup.SetActive(false);
             if (_shopPanel != null) _shopPanel.SetActive(true);
@@ -192,7 +192,7 @@ namespace FFF.UI.Shop
 
         private void LeaveShop()
         {
-            SoundManager.PlayDefaultUiClick();
+            SoundManager.PlaySfxSound(SoundIds.SfxShopLeave);
             OnLeave?.Invoke();
         }
 
@@ -201,7 +201,6 @@ namespace FFF.UI.Shop
             if (item == null || string.IsNullOrEmpty(item.Id))
                 return;
 
-            SoundManager.PlayDefaultUiClick();
             SyncGoldFromProvider();
 
             if (item.Kind == ShopItemKind.CardRemoval)
@@ -212,12 +211,14 @@ namespace FFF.UI.Shop
 
             if (_soldItemIds.Contains(item.Id))
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxShopCannotBuy);
                 SetFeedback("이미 챙긴 물건이다냥.");
                 return;
             }
 
             if (_currentGold < item.Price)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxShopCannotBuy);
                 SetFeedback("엽전이 부족하다냥.");
                 ShakeText(_goldText);
                 return;
@@ -226,6 +227,7 @@ namespace FFF.UI.Shop
             if (!CompletePurchase(item))
                 return;
 
+            SoundManager.PlaySfxSound(SoundIds.SfxShopBuy);
             if (item.Kind == ShopItemKind.Card)
                 OnAddDeckCard?.Invoke(item.PayloadId);
             else if (item.Kind == ShopItemKind.Accessory)
@@ -240,12 +242,14 @@ namespace FFF.UI.Shop
 
             if (_soldItemIds.Contains(item.Id))
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxShopCannotBuy);
                 SetFeedback("이미 이용한 서비스다냥.");
                 return;
             }
 
             if (_currentGold < item.Price)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxShopCannotBuy);
                 SetFeedback("엽전이 부족하다냥.");
                 ShakeText(_goldText);
                 return;
@@ -259,6 +263,7 @@ namespace FFF.UI.Shop
             if (_cardRemovalPanel != null) _cardRemovalPanel.SetActive(true);
             if (_confirmCardRemovalButton != null) _confirmCardRemovalButton.interactable = false;
             if (_selectedRemovalCardText != null) _selectedRemovalCardText.text = "삭제할 카드 1장을 선택하세요.";
+            SoundManager.PlaySfxSound(SoundIds.SfxShopCardRemove, 0.75f);
             SetFeedback("삭제할 카드 1장을 고르라냥.");
             PlayPanelIn(_cardRemovalPanel);
         }
@@ -270,12 +275,14 @@ namespace FFF.UI.Shop
             IReadOnlyList<string> deckCardIds = OnDeckCardIdsRequested?.Invoke();
             if (deckCardIds == null || deckCardIds.Count == 0)
             {
+                SoundManager.PlayUiSound(SoundIds.UiError);
                 SetFeedback("삭제할 카드가 없다냥.");
                 return;
             }
 
             if (_cardPrefab == null)
             {
+                SoundManager.PlayUiSound(SoundIds.UiError);
                 SetFeedback("카드 프리팹 연결이 필요하다냥.");
                 return;
             }
@@ -319,6 +326,7 @@ namespace FFF.UI.Shop
 
             if (_selectedRemovalCardView != null)
                 _selectedRemovalCardView.SetSelected(true);
+            SoundManager.PlaySfxSound(SoundIds.SfxCardSelect);
 
             HwaTuCard card = HwaTuCardDatabase.FindById(cardId);
             if (_selectedRemovalCardText != null)
@@ -332,21 +340,23 @@ namespace FFF.UI.Shop
         {
             if (_activeCardRemovalItem == null || string.IsNullOrEmpty(_selectedRemovalCardId))
             {
+                SoundManager.PlayUiSound(SoundIds.UiError);
                 SetFeedback("삭제할 카드를 먼저 고르라냥.");
                 return;
             }
 
             if (_currentGold < _activeCardRemovalItem.Price)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxShopCannotBuy);
                 SetFeedback("엽전이 부족하다냥.");
                 ShakeText(_goldText);
                 return;
             }
 
-            SoundManager.PlayDefaultUiClick();
             if (!CompletePurchase(_activeCardRemovalItem))
                 return;
 
+            SoundManager.PlaySfxSound(SoundIds.SfxShopCardRemove);
             OnRemoveDeckCard?.Invoke(_selectedRemovalCardId);
             CloseCardRemovalPanel();
             SetFeedback("카드 1장을 덱에서 제거했다냥.");
@@ -429,7 +439,10 @@ namespace FFF.UI.Shop
 
             bool spent = OnSpendGold != null ? OnSpendGold.Invoke(amount) : _currentGold >= amount;
             if (!spent)
+            {
+                SoundManager.PlaySfxSound(SoundIds.SfxShopCannotBuy);
                 return false;
+            }
 
             if (OnSpendGold == null)
                 _currentGold -= amount;
