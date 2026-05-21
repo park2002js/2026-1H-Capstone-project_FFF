@@ -28,9 +28,9 @@ namespace FFF.Battle.Modifier
         /// <summary>
         /// 이전 단계에서 넘어온 값에 자신의 수치를 더해서 다음으로 넘깁니다.
         /// </summary>
-        public int Apply(int currentValue)
+        public void Apply(ModifierContext context)
         {
-            return currentValue + _amount;
+            //return currentValue + _amount;
         }
     }
 }

@@ -20,6 +20,9 @@ namespace FFF.Data
 
         public EnemyAISO AILogic;
 
+        [Header("=== 적 기믹 설정 ===")]
+        public EnemyGimmickSO GimmickLogic;
+
         [Header("=== AI 로직 설정 ===")]
         [Tooltip("인스펙터에서 이 적의 AI 패턴을 메모해두는 용도")]
         public string AIPatternDescription = "체력 50% 이하 시 분기형 AI";

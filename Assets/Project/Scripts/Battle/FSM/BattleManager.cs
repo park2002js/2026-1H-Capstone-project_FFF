@@ -141,5 +141,40 @@ namespace FFF.Battle.FSM
                     break;
             }
         }
+
+        #region === Temp: 디버그용 갓 코드 ===
+        
+        private void Update()
+        {
+            // '~' 키(BackQuote) 입력 감지
+            if (Input.GetKeyDown(KeyCode.BackQuote))
+            {
+                // 전투가 진행 중이 아닐 때는 무시
+                if (CurrentPhase == TurnState.None || Context == null) return;
+
+                // 씬 내에 존재하는 현재 적 객체 탐색
+                var currentEnemy = FindFirstObjectByType<FFF.Battle.Enemy.EnemyDataBattle>();
+                if (currentEnemy != null)
+                {
+                    Debug.Log("[BattleManager - Temp] 갓 코드 발동: 적에게 최대 데미지를 입힙니다.");
+                    
+                    // int.MaxValue 데미지 적용
+                    currentEnemy.TakeDamage(int.MaxValue);
+
+                    // 체력이 0 이하가 되었는지 확인 후 즉시 승리 및 전투 종료 처리
+                    if (currentEnemy.CurrentHealth <= 0)
+                    {
+                        Context.IsPlayerWinner = true;
+                        EndBattle();
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[BattleManager - Temp] 씬 내에 적(EnemyDataBattle) 객체를 찾을 수 없습니다.");
+                }
+            }
+        }
+        
+        #endregion
     }    
 }

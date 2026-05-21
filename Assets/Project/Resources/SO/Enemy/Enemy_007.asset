@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
-  m_Name: Enemy 001
+  m_Name: Enemy_007
   m_EditorClassIdentifier: 
-  EnemyId: Enemy_001
-  EnemyName: "\uD14C\uC2A4\uD2B8 \uC6A9"
-  MaxHealth: 18100
-  AILogic: {fileID: 11400000, guid: 27acfedafb6479545af582f21644543a, type: 2}
-  AIPatternDescription: "3\uD134\uB9C8\uB2E4 \uB561\uB0B4"
+  EnemyId: Enemy_007
+  EnemyName: 7
+  MaxHealth: 1007
+  AILogic: {fileID: 11400000, guid: 4ae5a6ddcee7db1488f791084072fe41, type: 2}
+  GimmickLogic: {fileID: 11400000, guid: a31ef4f55463d194e9367f6252481bd4, type: 2}
+  AIPatternDescription: "\uADF8\uB0E5 \uBB34\uC791\uC704 \uCE74\uB4DC 2\uC7A5 \uC870\uD569"

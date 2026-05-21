@@ -45,6 +45,7 @@ namespace FFF.Battle.Enemy
                 EnemyName = "시연용 허수아비";
                 MaxHealth = 181;
                 CurrentHealth = 181;
+                RegisterTestGimmick(); // 임시 테스트용 기믹 등록
                 return;
             }
 
@@ -53,6 +54,21 @@ namespace FFF.Battle.Enemy
             EnemyName = enemyData.EnemyName;
             MaxHealth = enemyData.MaxHealth;
             CurrentHealth = enemyData.MaxHealth;
+            
+            if (enemyData.GimmickLogic != null)
+            {
+                var modifiers = enemyData.GimmickLogic.CreateGimmickModifiers(EnemyId);
+                foreach (var mod in modifiers)
+                {
+                    ModifierManager.Instance.AddModifier(mod);
+                }
+                Debug.Log($"[EnemyDataBattle] {EnemyName} 기믹 등록 완료.");
+            }
+            else
+            {
+                RegisterTestGimmick();
+                Debug.Log($"[EnemyDataBattle] {EnemyName} 기믹 파일이 누락되어 임시 기믹으로 대체.");
+            }
 
             Debug.Log($"[EnemyDataBattle] 적 세팅 완료: {EnemyName} (HP: {CurrentHealth}/{MaxHealth})");
         }
@@ -98,6 +114,17 @@ namespace FFF.Battle.Enemy
             if (CurrentHealth < 0) CurrentHealth = 0;
             
             Debug.Log($"[EnemyData] 적이 {damage}의 피해를 입었습니다! 남은 체력: {CurrentHealth}");
+        }
+
+        private void RegisterTestGimmick()
+        {
+            // TODO: Step 2에서 구체적인 Enemy 기믹 클래스로 분리될 영역
+            // 현재는 시스템 검증을 위해 뼈대만 배치함
+            if (ModifierManager.Instance != null)
+            {
+                Debug.Log($"[EnemyDataBattle] {EnemyName}의 기믹 로드 및 ModifierManager 등록 준비 완료.");
+                // 예: ModifierManager.Instance.RegisterModifier(new BattleModifier(...));
+            }
         }
     }
 }
