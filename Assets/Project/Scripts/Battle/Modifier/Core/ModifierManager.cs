@@ -172,7 +172,5 @@ namespace FFF.Battle.Modifier
         }
 
         #endregion
-
-        
     }
 }
