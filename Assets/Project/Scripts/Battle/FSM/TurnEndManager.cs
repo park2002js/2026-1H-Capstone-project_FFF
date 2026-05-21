@@ -108,7 +108,6 @@ namespace FFF.Battle.Managers
                 return _combatCalculator.Strength.CalculateExpectedStrength(
                     selected[0], 
                     selected[1], 
-                    _modifierManager, 
                     _battleManager.CurrentModifierContext
                 );
             }
@@ -136,7 +135,7 @@ namespace FFF.Battle.Managers
                 // 플레이어 승리: 플레이어의 데미지 파이프라인 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
                     playerStrength,
-                    _modifierManager,
+                    enemyStrength,
                     _battleManager.CurrentModifierContext
                 );
                 _enemyDataBattle.TakeDamage(finalDamage);
@@ -148,7 +147,7 @@ namespace FFF.Battle.Managers
                 // 적 승리: 적이 플레이어를 때릴 때도 플레이어의 파이프라인(방어력 등) 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
                     enemyStrength,
-                    _modifierManager,
+                    playerStrength,
                     _battleManager.CurrentModifierContext
                 );
 

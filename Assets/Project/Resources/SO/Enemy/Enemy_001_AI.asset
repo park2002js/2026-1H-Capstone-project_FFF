@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9d8463a32572204491cc2ca0c92b424, type: 3}
+  m_Script: {fileID: 11500000, guid: ddca358581fa3e04897b2fd9dbc19de5, type: 3}
   m_Name: Enemy_001_AI
   m_EditorClassIdentifier: 

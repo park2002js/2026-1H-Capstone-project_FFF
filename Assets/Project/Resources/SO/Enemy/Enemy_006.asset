@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
+  m_Name: Enemy_006
+  m_EditorClassIdentifier: 
+  EnemyId: Enemy_006
+  EnemyName: 6
+  MaxHealth: 1006
+  AILogic: {fileID: 11400000, guid: 290d0b93fb2d4a94889ad1c10e619985, type: 2}
+  GimmickLogic: {fileID: 11400000, guid: 645fa40b4b38a5747b67e5276dd80465, type: 2}
+  AIPatternDescription: "3\uD134\uB9C8\uB2E4 \uB561\uC744 \uC774\uC6A9\uD55C \uACF5\uACA9\uC744
+    \uD55C\uB2E4."

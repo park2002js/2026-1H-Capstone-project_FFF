@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
+  m_Name: Enemy_008
+  m_EditorClassIdentifier: 
+  EnemyId: Enemy_008
+  EnemyName: 8
+  MaxHealth: 1008
+  AILogic: {fileID: 11400000, guid: d87651320d459b34ba1784857609dbbb, type: 2}
+  GimmickLogic: {fileID: 11400000, guid: 382ae5e3b72d73c449a9af234edc6ce5, type: 2}
+  AIPatternDescription: "\uC9DD\uC218 \uD134\uC5D0\uB294 \uC9DD\uC218\uC778 \uCE74\uB4DC\uB85C\uB9CC
+    \uC870\uD569\uC744, \uD640\uC218 \uD134\uC5D0\uB294 \uD640\uC218\uC778 \uCE74\uB4DC\uB85C\uB9CC
+    \uC870\uD569\uC744 \uD558\uC5EC \uB0B8\uB2E4"

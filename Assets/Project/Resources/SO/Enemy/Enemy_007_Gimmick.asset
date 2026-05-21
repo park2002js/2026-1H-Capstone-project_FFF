@@ -9,9 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
-  m_Name: Enemy 002
+  m_Script: {fileID: 11500000, guid: f8da3e6febaf6bf4aa8259bb4fcffb19, type: 3}
+  m_Name: Enemy_007_Gimmick
   m_EditorClassIdentifier: 
-  EnemyId: Enemy_002
-  EnemyName: "\uD14C\uC2A4\uD2B8 \uC2E4\uD328"
-  MaxHealth: 2

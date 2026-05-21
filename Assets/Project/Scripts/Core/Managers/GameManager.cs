@@ -20,6 +20,7 @@ namespace FFF.Core
     /// - 씬 전환 결정
     /// - 각 씬의 View(UIComponent)에 델리게이트 연결
     /// - UIManager를 통해 화면 표시 명령
+    /// - 씬 간 데이터(적 목록, 플레이어 데이터)를 전달
     ///
     /// 각 SceneSetup이 씬 준비 완료 시 OnXxxSceneReady()를 호출하면,
     /// GameManager가 View에 델리게이트를 연결하고 UIManager에 표시를 지시한다.
@@ -34,6 +35,14 @@ namespace FFF.Core
 
         private MapData _currentMapData;
         public MapData CurrentMapData => _currentMapData;
+
+        // === 적 목록 관리 필드 ===
+        private List<string> _normalEnemyList = new List<string>();
+        private List<string> _eliteEnemyList = new List<string>();
+        private List<string> _bossEnemyList = new List<string>();
+        private System.Random _enemyRng;
+
+        public string TargetEnemyId { get; private set; } // 전투로 넘길 적 ID 보관소
 
         // ================================================================
         // 씬별 준비 완료 알림 (SceneSetup → GameManager)
@@ -55,7 +64,10 @@ namespace FFF.Core
             UIManager.Instance.ShowScreen(UIScreenNames.MAIN);
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.MAIN);
         }
-
+        
+        // ================================================================
+        // 맵 생성 및 로드 시 적 목록 초기화 트리거
+        // ================================================================
         public MapData GetOrCreateRunMap(bool useRandomSeed, int fixedSeed)
         {
             if (_currentMapData != null)
@@ -68,7 +80,11 @@ namespace FFF.Core
             _currentMapData = new MapGenerator().Generate(seed);
             InitializeMapProgress(_currentMapData);
             SaveRunMapProgress();
-            Debug.Log($"[GameManager] 스테이지 맵 생성 완료. seed={seed}");
+
+            // 맵 생성 완료 후 해당 시드값으로 적 목록 생성
+            InitializeEnemyLists(seed);
+
+            Debug.Log($"[GameManager] 스테이지 맵 생성 및 적 목록 초기화 완료. seed={seed}");
 
             return _currentMapData;
         }
@@ -112,7 +128,6 @@ namespace FFF.Core
         // ================================================================
         // 게임 흐름 결정 (GameManager 내부)
         // ================================================================
-
         private void HandleTitleExit()
         {
             SceneLoader.LoadScene(SceneLoader.SceneNames.MAIN);
@@ -153,7 +168,6 @@ namespace FFF.Core
         /// <summary>
         /// 특정 스테이지로 이동할 때 호출됩니다.
         /// </summary>
-        public string TargetEnemyId { get; private set; } // 전투로 넘길 적 ID 임시 보관소
         private void HandleStageSelect(int nodeId)
         {
             Debug.Log($"[GameManager] 스테이지 선택: nodeId={nodeId}");
@@ -176,10 +190,12 @@ namespace FFF.Core
                 return;
             }
 
-            // TODO: nodeId를 바탕으로 BattleContext 구성 후 BattleScene으로
-            // TODO: MapNode 정보를 기반으로 해당 노드에 배치된 적 ID를 배정해야 함
-            // 현재는 시스템 뼈대 완성을 위해 임의의 몬스터 ID를 넘긴다고 가정합니다.
-            TargetEnemyId = "Enemy_001";
+            // 시드값을 받아올 수 없는 경우 임의값 1을 전달
+            int currentSeed = _currentMapData != null ? _currentMapData.Seed : 1;
+
+            // RoomType에 맞춰 몬스터 ID를 추출하여 배정
+            TargetEnemyId = PopEnemyFromList(selectedNode.RoomType, currentSeed);
+
             SoundManager.PlaySfxSound(selectedNode.RoomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
         }
@@ -268,7 +284,10 @@ namespace FFF.Core
             ApplySavedMapProgress(restoredMap);
             _currentMapData = restoredMap;
 
-            Debug.Log($"[GameManager] 저장된 스테이지 맵 복원 완료. seed={_masterPlayerData.SavedMapSeed}");
+            // 복원된 맵의 시드값으로 적 목록 재생성
+            InitializeEnemyLists(_masterPlayerData.SavedMapSeed);
+
+            Debug.Log($"[GameManager] 시드값 기반으로 저장된 스테이지 맵 및 적 List 재생성. seed={_masterPlayerData.SavedMapSeed}");
             return true;
         }
 
@@ -421,5 +440,86 @@ namespace FFF.Core
             // (updater 객체는 이 메서드가 끝나면 지역 변수이므로 가비지 컬렉터에 의해 자동으로 메모리에서 제거됨)
             SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
         }
+
+        // ================================================================
+        #region 적 목록 초기화 및 셔플 로직
+
+        /// <summary>
+        /// 시드값을 기반으로 등급별 적 목록을 구성하고 셔플합니다.
+        /// </summary>
+        private void InitializeEnemyLists(int seed)
+        {
+            _enemyRng = new System.Random(seed);
+
+            _normalEnemyList = new List<string> { "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005" };
+            ShuffleList(_normalEnemyList, _enemyRng);
+
+            _eliteEnemyList = new List<string> { "Enemy_006", "Enemy_007" };
+            ShuffleList(_eliteEnemyList, _enemyRng);
+
+            _bossEnemyList = new List<string> { "Enemy_008" };
+            ShuffleList(_bossEnemyList, _enemyRng);
+
+            Debug.Log($"[GameManager] 등급별 적 목록 초기화 및 셔플 완료. 적용된 시드값: {seed}");
+        }
+
+        /// <summary>
+        /// Fisher-Yates 알고리즘을 이용해 리스트 요소를 무작위로 섞습니다.
+        /// </summary>
+        private void ShuffleList(List<string> list, System.Random rng)
+        {
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
+            }
+        }
+
+        /// <summary>
+        /// 룸 타입에 맞는 적 목록에서 마지막 요소를 꺼내(Pop) 반환합니다.
+        /// 리스트가 비어있을 경우 원본 ID 목록으로 재충전 후 다시 셔플합니다.
+        /// </summary>
+        private string PopEnemyFromList(RoomType roomType, int fallbackSeed)
+        {
+            // RNG가 초기화되지 않은 예외 상황 시 폴백(Fallback) 시드값으로 생성
+            if (_enemyRng == null)
+            {
+                _enemyRng = new System.Random(fallbackSeed);
+            }
+
+            List<string> targetList;
+            List<string> defaultIds;
+
+            switch (roomType)
+            {
+                // 엘리트 룸 타입이 MapSystem 내부에 구현되어 있다고 가정합니다. (구현에 따라 Enum명 변경 요망)
+                case RoomType.Elite: 
+                    targetList = _eliteEnemyList;
+                    defaultIds = new List<string> { "Enemy_006", "Enemy_007" };
+                    break;
+                case RoomType.Boss:
+                    targetList = _bossEnemyList;
+                    defaultIds = new List<string> { "Enemy_008" };
+                    break;
+                default: 
+                    targetList = _normalEnemyList;
+                    defaultIds = new List<string> { "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005" };
+                    break;
+            }
+
+            // 리스트 고갈 시 재충전 및 셔플 진행
+            if (targetList.Count == 0)
+            {
+                targetList.AddRange(defaultIds);
+                ShuffleList(targetList, _enemyRng);
+                Debug.Log($"[GameManager] {roomType} 등급 적 목록이 고갈되어 리스트를 재충전하고 셔플했습니다.");
+            }
+
+            string selectedEnemyId = targetList[targetList.Count - 1];
+            targetList.RemoveAt(targetList.Count - 1);
+
+            return selectedEnemyId;
+        }
+        #endregion
     }
 }

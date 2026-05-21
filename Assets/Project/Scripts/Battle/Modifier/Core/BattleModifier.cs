@@ -1,12 +1,15 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FFF.Battle.Modifier
 {
     /// <summary>
     /// 조건(Condition)과 효과(Effect) 부품을 조립하여 완성된 '최종 아이템/버프 객체'입니다.
+    /// 조건, 효과, 생명주기를 모두 포함하는 단일 Modifier 객체 규격에 해당합니다.
     /// 구 TurnModifier를 완벽히 대체하며, 파이프라인(ModifierManager)에 등록되어 실질적인 가로채기를 수행합니다.
     /// </summary>
-    public class ItemModifier
+    public class BattleModifier
     {
         /// <summary> 영구 버프를 의미하는 매직 넘버 </summary>
         public const int PERMANENT_TURN = -1;
@@ -15,7 +18,7 @@ namespace FFF.Battle.Modifier
         public string Id { get; private set; }
 
         /// <summary> 이 아이템이 파이프라인에서 가로챌 값의 목적지 (예: 데미지, 리롤 횟수) </summary>
-        public ModifierValueType ValueType { get; private set; }
+        public ModifierValueType TargetType { get; private set; }
 
         // === 조립된 레고 부품들 ===
         private readonly IModifierCondition _condition;
@@ -25,18 +28,21 @@ namespace FFF.Battle.Modifier
         public int TurnsRemaining { get; private set; }
         public bool IsPermanent => TurnsRemaining == PERMANENT_TURN;
 
+        // ModifierManager의 Delegate에서 구독 해제를 하기 위한 액션 참조 보관용
+        public Action<ModifierContext> AttachedAction { get; set; }
+
         /// <summary>
         /// 새로운 아이템/버프 객체를 조립합니다.
         /// </summary>
         /// <param name="id">디버깅용 ID</param>
-        /// <param name="valueType">수정할 값의 종류</param>
+        /// <param name="targetType">수정할 값의 종류</param>
         /// <param name="condition">발동 조건 부품 (null이면 항상 발동)</param>
         /// <param name="effect">수치 연산 부품 (null이면 값 변화 없음)</param>
         /// <param name="turns">유지될 턴 수 (-1이면 영구)</param>
-        public ItemModifier(string id, ModifierValueType valueType, IModifierCondition condition, IModifierEffect effect, int turns = PERMANENT_TURN)
+        public BattleModifier(string id, ModifierValueType targetType, IModifierCondition condition, IModifierEffect effect, int turns = PERMANENT_TURN)
         {
             Id = id;
-            ValueType = valueType;
+            TargetType = targetType;
             _condition = condition;
             _effect = effect;
             TurnsRemaining = turns < 0 ? PERMANENT_TURN : turns;
@@ -55,14 +61,27 @@ namespace FFF.Battle.Modifier
         }
 
         /// <summary>
-        /// 파이프라인의 이전 값을 받아 효과 부품의 연산을 거친 뒤 뱉어냅니다.
+        /// Modifier 파이프라인의 값을 객체 하나에 계속해서 적용합니다.
+        /// 기존의 ApplyEffect를 대체합니다.
+        /// </summary>
+        
+        public void ApplyToContext(ModifierContext context)
+        {
+            if (_effect != null)
+            {
+                _effect.Apply(context);
+            }
+        }
+
+        /// <summary>
+        /// (Lagacy) 파이프라인의 이전 값을 받아 효과 부품의 연산을 거친 뒤 뱉어냅니다.
         /// </summary>
         public int ApplyEffect(int currentValue)
         {
             if (_effect == null) return currentValue;
             
             // 연산 책임은 효과 부품에게 위임합니다.
-            return _effect.Apply(currentValue);
+            return 0; //_effect.Apply(currentValue);
         }
 
         /// <summary>

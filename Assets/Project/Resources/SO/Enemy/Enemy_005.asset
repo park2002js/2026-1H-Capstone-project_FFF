@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
+  m_Name: Enemy_005
+  m_EditorClassIdentifier: 
+  EnemyId: Enemy_005
+  EnemyName: 5
+  MaxHealth: 1005
+  AILogic: {fileID: 11400000, guid: e93518bb73f19e9498d8cbe52797560b, type: 2}
+  GimmickLogic: {fileID: 11400000, guid: ec635ff0b63e6fe418455d6631bb96e5, type: 2}
+  AIPatternDescription: "\uC801\uC740 \uB057 \uC870\uD569\uB9CC \uB0B4\uBA70 \uADF8\uC678\uC758
+    \uC870\uD569\uC740 \uB0B4\uC9C0 \uC54A\uB294\uB2E4."

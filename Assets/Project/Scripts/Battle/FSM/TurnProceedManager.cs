@@ -67,8 +67,7 @@ namespace FFF.Battle.FSM
                 // Manager와 Context를 넘겨서 예상 데미지를 계산합니다.
                 int expectedPower = _combatCalculator.Strength.CalculateExpectedStrength(
                     selected[0], 
-                    selected[1], 
-                    _modifierManager, 
+                    selected[1],  
                     _battleManager.CurrentModifierContext
                 );
                 
