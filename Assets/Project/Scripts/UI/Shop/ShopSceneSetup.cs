@@ -735,16 +735,21 @@ namespace FFF.UI.Shop
 
         private static void EnsureCamera()
         {
-            if (Camera.main != null)
-                return;
+            Camera mainCamera = Camera.main;
 
-            GameObject cameraGo = new GameObject("Main Camera");
-            Camera camera = cameraGo.AddComponent<Camera>();
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = Color.black;
-            camera.orthographic = true;
-            cameraGo.tag = "MainCamera";
-            cameraGo.transform.position = new Vector3(0f, 0f, -10f);
+            if (mainCamera == null)
+            {
+                GameObject cameraGo = new GameObject("Main Camera");
+                mainCamera = cameraGo.AddComponent<Camera>();
+                mainCamera.clearFlags = CameraClearFlags.SolidColor;
+                mainCamera.backgroundColor = Color.black;
+                mainCamera.orthographic = true;
+                cameraGo.tag = "MainCamera";
+                cameraGo.transform.position = new Vector3(0f, 0f, -10f);
+            }
+
+            if (UnityEngine.Object.FindFirstObjectByType<AudioListener>() == null)
+                mainCamera.gameObject.AddComponent<AudioListener>();
         }
 
         private static void EnsureEventSystem()

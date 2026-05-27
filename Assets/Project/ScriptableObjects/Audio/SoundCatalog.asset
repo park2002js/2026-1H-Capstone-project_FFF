@@ -36,22 +36,27 @@ MonoBehaviour:
   - _soundId: bgm_title
     _clip: {fileID: 0}
     _bus: 1
-    _defaultVolume: 1
+    _defaultVolume: 0.55
     _loop: 1
   - _soundId: bgm_main
     _clip: {fileID: 0}
     _bus: 1
-    _defaultVolume: 1
+    _defaultVolume: 0.5
     _loop: 1
   - _soundId: bgm_map
     _clip: {fileID: 0}
     _bus: 1
-    _defaultVolume: 1
+    _defaultVolume: 0.48
+    _loop: 1
+  - _soundId: bgm_shop
+    _clip: {fileID: 0}
+    _bus: 1
+    _defaultVolume: 0.46
     _loop: 1
   - _soundId: bgm_battle
     _clip: {fileID: 0}
     _bus: 1
-    _defaultVolume: 1
+    _defaultVolume: 0.6
     _loop: 1
   - _soundId: sfx_scene_transition
     _clip: {fileID: 0}

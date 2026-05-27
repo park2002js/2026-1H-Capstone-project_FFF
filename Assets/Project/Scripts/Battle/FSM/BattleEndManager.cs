@@ -80,9 +80,9 @@ namespace FFF.Battle.FSM
                     CreateRewardCategoryOptions(),
                     ShowRewardCandidates,
                     OnReturnToMapButtonClicked,
-                    "물음표 보따리 하나를 선택하세요.",
+                    "보상 종류 하나를 선택하세요.",
                     isFinalRewardSelection: false,
-                    hideRewardDetailsUntilSelection: true);
+                    hideRewardDetailsUntilSelection: false);
                 return;
             }
 
@@ -300,9 +300,8 @@ namespace FFF.Battle.FSM
         {
             SoundManager.PlayDefaultUiClick();
 
-            Debug.Log("[BattleEnd] 전투를 다시 시작합니다.");
-            // 현재 활성화된 씬(BattleScene)을 다시 로드하여 모든 것을 완전 초기화합니다.
-            FFF.Core.SceneLoader.ReloadCurrentScene();
+            Debug.Log("[BattleEnd] 재시작 대신 타이틀로 돌아갑니다.");
+            FFF.Core.SceneLoader.LoadScene(FFF.Core.SceneLoader.SceneNames.TITLE);
         }
 
         public void OnTitleButtonClicked()

@@ -117,7 +117,7 @@ namespace FFF.Core
             view.OnSpendGold = HandleSpendGold;
             UIManager.Instance.RegisterScreen(UIScreenNames.SHOP, view);
             UIManager.Instance.ShowScreen(UIScreenNames.SHOP);
-            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.MAP);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.SHOP);
         }
 
         public void UnregisterScreen(string screenName)

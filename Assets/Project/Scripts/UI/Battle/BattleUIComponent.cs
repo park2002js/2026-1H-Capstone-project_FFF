@@ -21,6 +21,22 @@ namespace FFF.UI.Battle
     /// </summary>
     public class BattleUIComponent : BaseUIComponent
     {
+        private const float CombatRevealFadeInSeconds = 0.22f;
+        private const float CombatRevealPopStaggerSeconds = 0.1f;
+        private const float CombatRevealPopDurationSeconds = 0.32f;
+        private const float CombatRevealPreResultDelaySeconds = 0.95f;
+        private const float CombatRevealPostResultDelaySeconds = 1f;
+        private const float CombatRevealFadeOutSeconds = 0.26f;
+
+        private static readonly Vector2 CombatPlayerSideCenter = new Vector2(-360f, 8f);
+        private static readonly Vector2 CombatEnemySideCenter = new Vector2(360f, 8f);
+        private static readonly Vector2 CombatSideSize = new Vector2(386f, 400f);
+        private static readonly Vector2 CombatCardSize = new Vector2(136f, 204f);
+        private static readonly Vector2 CombatFirstCardPosition = new Vector2(-86f, 48f);
+        private static readonly Vector2 CombatSecondCardPosition = new Vector2(86f, 48f);
+        private const float RewardBoxWidth = 280f;
+        private const float RewardBoxHeight = 320f;
+
         [Serializable]
         private class ItemIconDefinition
         {
@@ -120,14 +136,24 @@ namespace FFF.UI.Battle
         [Tooltip("양끝 카드의 최대 기울기 (도)")]
         [SerializeField] private float _maxTiltAngle = 4f;
 
+        [Header("=== 족보 가이드 ===")]
+        [Tooltip("전투 중 확인할 화투 족보 이미지")]
+        [SerializeField] private Sprite _jokboGuideSprite;
+        [Tooltip("Resources 기준 족보 이미지 경로. 예: Assets/Project/Resources/UI/Jokbo/seotda_jokbo.png")]
+        [SerializeField] private string _jokboGuideResourcePath = "UI/Jokbo/seotda_jokbo";
+
         private GameObject _topHudRoot;
         private TextMeshProUGUI _topHealthText;
         private TextMeshProUGUI _topGoldText;
         private Transform _topJokerSlotRoot;
         private Transform _topAccessorySlotRoot;
+        private Button _jokboGuideButton;
         private GameObject _deckOverlay;
         private GameObject _mapOverlay;
         private GameObject _settingsOverlay;
+        private GameObject _jokboOverlay;
+        private Image _jokboGuideImage;
+        private TextMeshProUGUI _jokboGuideFallbackText;
         private readonly List<string> _currentDeckCardIds = new List<string>();
         private int _lastPlayerHealth = -1;
         private int _lastEnemyHealth = -1;
@@ -135,6 +161,7 @@ namespace FFF.UI.Battle
         protected override void OnInitialize()
         {
             EnsureTopHud();
+            EnsureJokboGuideButton();
             HideBattleResult();
             HideRewardSelection();
         }
@@ -497,6 +524,45 @@ namespace FFF.UI.Battle
             return button;
         }
 
+        private void EnsureJokboGuideButton()
+        {
+            if (_jokboGuideButton != null)
+                return;
+
+            Transform parent = _deckAreaRect != null ? _deckAreaRect : _topHudRoot != null ? _topHudRoot.transform : transform;
+            GameObject go = CreateUIObject("Button_JokboGuide", parent);
+            RectTransform rect = go.GetComponent<RectTransform>();
+
+            if (_deckAreaRect != null)
+            {
+                rect.anchorMin = new Vector2(0.5f, 1f);
+                rect.anchorMax = new Vector2(0.5f, 1f);
+                rect.pivot = new Vector2(0.5f, 0f);
+                rect.sizeDelta = new Vector2(120f, 52f);
+                rect.anchoredPosition = new Vector2(0f, 14f);
+            }
+            else
+            {
+                SetStretch(rect, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(92f, 52f), new Vector2(-306f, 0f));
+            }
+
+            Image image = go.AddComponent<Image>();
+            image.color = new Color(0.2f, 0.26f, 0.3f, 0.96f);
+
+            _jokboGuideButton = go.AddComponent<Button>();
+            _jokboGuideButton.targetGraphic = image;
+            _jokboGuideButton.onClick.AddListener(() =>
+            {
+                SoundManager.PlayDefaultUiClick();
+                ToggleJokboOverlay();
+            });
+
+            TextMeshProUGUI text = CreateRewardText("Text_Button_JokboGuide", go.transform, "족보", 22,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            go.transform.SetAsLastSibling();
+        }
+
         private void ConfigureHudIcon(GameObject icon)
         {
             if (icon == null)
@@ -845,29 +911,29 @@ namespace FFF.UI.Battle
 
             CanvasGroup canvasGroup = overlay.GetComponent<CanvasGroup>();
             canvasGroup.alpha = 0f;
-            yield return UITweenHelper.FadeTo(canvasGroup, 1f, 0.16f, UITweenHelper.EaseType.Linear);
+            yield return UITweenHelper.FadeTo(canvasGroup, 1f, CombatRevealFadeInSeconds, UITweenHelper.EaseType.Linear);
 
             for (int i = 0; i < popTargets.Count; i++)
-                StartCoroutine(PopIn(popTargets[i], i * 0.08f, 1.08f, 0.22f));
+                StartCoroutine(PopIn(popTargets[i], i * CombatRevealPopStaggerSeconds, 1.08f, CombatRevealPopDurationSeconds));
 
-            yield return new WaitForSeconds(0.72f);
+            yield return new WaitForSeconds(CombatRevealPreResultDelaySeconds);
 
             if (resultRect != null)
             {
                 if (outcome == 0)
                 {
                     SoundManager.PlaySfxSound(SoundIds.SfxMiss);
-                    StartCoroutine(UITweenHelper.ShakeRect(resultRect, 0.26f, 10f));
+                    StartCoroutine(UITweenHelper.ShakeRect(resultRect, 0.34f, 10f));
                 }
                 else
                 {
                     SoundManager.PlaySfxSound(outcome > 0 ? SoundIds.SfxRoundWin : SoundIds.SfxRoundLose);
-                    StartCoroutine(PulseTransform(resultRect, 1.12f, 0.22f));
+                    StartCoroutine(PulseTransform(resultRect, 1.12f, 0.3f));
                 }
             }
 
-            yield return new WaitForSeconds(0.72f);
-            yield return UITweenHelper.FadeTo(canvasGroup, 0f, 0.18f, UITweenHelper.EaseType.Linear);
+            yield return new WaitForSeconds(CombatRevealPostResultDelaySeconds);
+            yield return UITweenHelper.FadeTo(canvasGroup, 0f, CombatRevealFadeOutSeconds, UITweenHelper.EaseType.Linear);
             Destroy(overlay);
         }
 
@@ -901,24 +967,24 @@ namespace FFF.UI.Battle
 
             overlay.AddComponent<CanvasGroup>();
 
-            TextMeshProUGUI title = CreateRewardText("Text_CombatTitle", overlay.transform, "승부", 44,
+            TextMeshProUGUI title = CreateRewardText("Text_CombatTitle", overlay.transform, "승부", 52,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             title.color = new Color(1f, 0.9f, 0.48f, 1f);
             SetStretch(title.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(520f, 60f), new Vector2(0f, 218f));
-
-            CreateCombatSide(overlay.transform, "상대", enemyIntent.HandName, enemyIntent.BasePower,
-                enemyIntent.Card1, enemyIntent.Card2, new Vector2(-278f, 22f), new Color(0.82f, 0.24f, 0.24f, 1f), popTargets);
+                new Vector2(580f, 72f), new Vector2(0f, 260f));
 
             CreateCombatSide(overlay.transform, "나", playerHandName, playerPower,
-                GetCardAt(playerCards, 0), GetCardAt(playerCards, 1), new Vector2(278f, 22f),
+                GetCardAt(playerCards, 0), GetCardAt(playerCards, 1), CombatPlayerSideCenter,
                 new Color(0.22f, 0.58f, 0.92f, 1f), popTargets);
 
-            TextMeshProUGUI versus = CreateRewardText("Text_CombatVersus", overlay.transform, "VS", 46,
+            CreateCombatSide(overlay.transform, "상대", enemyIntent.HandName, enemyIntent.BasePower,
+                enemyIntent.Card1, enemyIntent.Card2, CombatEnemySideCenter, new Color(0.82f, 0.24f, 0.24f, 1f), popTargets);
+
+            TextMeshProUGUI versus = CreateRewardText("Text_CombatVersus", overlay.transform, "VS", 58,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             versus.color = new Color(1f, 0.94f, 0.62f, 1f);
             SetStretch(versus.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(120f, 64f), new Vector2(0f, 58f));
+                new Vector2(150f, 78f), new Vector2(0f, 86f));
             popTargets.Add(versus.transform);
 
             string resultText = outcome > 0 ? "승리!" : outcome < 0 ? "패배..." : "무승부";
@@ -928,11 +994,11 @@ namespace FFF.UI.Battle
                     ? new Color(1f, 0.34f, 0.28f, 1f)
                     : new Color(0.82f, 0.86f, 0.9f, 1f);
 
-            TextMeshProUGUI result = CreateRewardText("Text_CombatResult", overlay.transform, resultText, 54,
+            TextMeshProUGUI result = CreateRewardText("Text_CombatResult", overlay.transform, resultText, 66,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             result.color = resultColor;
             SetStretch(result.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(220f, 74f), new Vector2(0f, -32f));
+                new Vector2(280f, 90f), new Vector2(0f, -64f));
             resultRect = result.rectTransform;
             popTargets.Add(result.transform);
 
@@ -953,28 +1019,28 @@ namespace FFF.UI.Battle
             GameObject group = CreateUIObject($"CombatSide_{sideName}", parent);
             RectTransform groupRect = group.GetComponent<RectTransform>();
             SetStretch(groupRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(300f, 312f), center);
+                CombatSideSize, center);
 
             TextMeshProUGUI sideLabel = CreateRewardText($"Text_Combat_{sideName}_Side", group.transform,
-                sideName, 25, TextAlignmentOptions.Center, FontStyles.Bold);
+                sideName, 31, TextAlignmentOptions.Center, FontStyles.Bold);
             sideLabel.color = accent;
             SetStretch(sideLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(160f, 34f), new Vector2(0f, -20f));
+                new Vector2(190f, 44f), new Vector2(0f, -24f));
 
-            Transform first = CreateCombatCard(group.transform, card1, new Vector2(-64f, 18f), accent);
-            Transform second = CreateCombatCard(group.transform, card2, new Vector2(64f, 18f), accent);
+            Transform first = CreateCombatCard(group.transform, card1, CombatFirstCardPosition, accent);
+            Transform second = CreateCombatCard(group.transform, card2, CombatSecondCardPosition, accent);
 
             TextMeshProUGUI handLabel = CreateRewardText($"Text_Combat_{sideName}_Hand", group.transform,
-                string.IsNullOrWhiteSpace(handName) ? "-" : handName, 22, TextAlignmentOptions.Center, FontStyles.Bold);
+                string.IsNullOrWhiteSpace(handName) ? "-" : handName, 27, TextAlignmentOptions.Center, FontStyles.Bold);
             handLabel.color = Color.white;
             SetStretch(handLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                new Vector2(260f, 34f), new Vector2(0f, 44f));
+                new Vector2(330f, 44f), new Vector2(0f, 67f));
 
             TextMeshProUGUI powerLabel = CreateRewardText($"Text_Combat_{sideName}_Power", group.transform,
-                $"공격력 {power}", 19, TextAlignmentOptions.Center, FontStyles.Bold);
+                $"공격력 {power}", 23, TextAlignmentOptions.Center, FontStyles.Bold);
             powerLabel.color = new Color(0.86f, 0.9f, 0.95f, 1f);
             SetStretch(powerLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                new Vector2(220f, 30f), new Vector2(0f, 12f));
+                new Vector2(270f, 36f), new Vector2(0f, 27f));
 
             popTargets.Add(first);
             popTargets.Add(second);
@@ -992,7 +1058,7 @@ namespace FFF.UI.Battle
 
             RectTransform rect = cardObject.GetComponent<RectTransform>();
             SetStretch(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(112f, 168f), position);
+                CombatCardSize, position);
 
             CardUIComponent cardUI = cardObject.GetComponent<CardUIComponent>();
             if (cardUI != null && card != null)
@@ -1028,7 +1094,7 @@ namespace FFF.UI.Battle
                 GameObject artObject = CreateUIObject("Artwork", cardObject.transform);
                 RectTransform artRect = artObject.GetComponent<RectTransform>();
                 SetStretch(artRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                    new Vector2(78f, 94f), new Vector2(0f, -54f));
+                    new Vector2(100f, 126f), new Vector2(0f, -70f));
                 Image art = artObject.AddComponent<Image>();
                 art.sprite = artwork;
                 art.preserveAspect = true;
@@ -1036,9 +1102,9 @@ namespace FFF.UI.Battle
             }
 
             TextMeshProUGUI name = CreateRewardText("Text_CardName", cardObject.transform,
-                card != null ? card.DisplayName : "-", 15, TextAlignmentOptions.Center, FontStyles.Bold);
+                card != null ? card.DisplayName : "-", 17, TextAlignmentOptions.Center, FontStyles.Bold);
             SetStretch(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                new Vector2(86f, 34f), new Vector2(0f, 19f));
+                new Vector2(112f, 42f), new Vector2(0f, 24f));
 
             return cardObject.transform;
         }
@@ -1142,6 +1208,115 @@ namespace FFF.UI.Battle
         {
             if (_rewardPanel != null)
                 _rewardPanel.SetActive(false);
+        }
+
+        private void ToggleJokboOverlay()
+        {
+            if (_jokboOverlay != null && _jokboOverlay.activeSelf)
+            {
+                _jokboOverlay.SetActive(false);
+                return;
+            }
+
+            ShowJokboOverlay();
+        }
+
+        private void ShowJokboOverlay()
+        {
+            if (_jokboOverlay == null)
+                BuildJokboOverlay();
+
+            RefreshJokboOverlay();
+            _jokboOverlay.SetActive(true);
+            _jokboOverlay.transform.SetAsLastSibling();
+        }
+
+        private void BuildJokboOverlay()
+        {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            _jokboOverlay = CreateUIObject("JokboGuideOverlay", parent);
+            RectTransform overlayRect = _jokboOverlay.GetComponent<RectTransform>();
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.offsetMin = Vector2.zero;
+            overlayRect.offsetMax = Vector2.zero;
+
+            GameObject panel = CreatePanel(_jokboOverlay.transform, "화투 족보", new Vector2(1600f, 900f));
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchoredPosition = new Vector2(0f, 18f);
+
+            GameObject imageFrame = CreateUIObject("JokboImageFrame", panel.transform);
+            RectTransform frameRect = imageFrame.GetComponent<RectTransform>();
+            SetStretch(frameRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(1550f, 817f), new Vector2(0f, -28f));
+
+            Image frameImage = imageFrame.AddComponent<Image>();
+            frameImage.color = new Color(0.03f, 0.04f, 0.05f, 0.78f);
+            frameImage.raycastTarget = true;
+
+            GameObject guideImageObject = CreateUIObject("Image_JokboGuide", imageFrame.transform);
+            RectTransform guideRect = guideImageObject.GetComponent<RectTransform>();
+            guideRect.anchorMin = new Vector2(0.5f, 0.5f);
+            guideRect.anchorMax = new Vector2(0.5f, 0.5f);
+            guideRect.pivot = new Vector2(0.5f, 0.5f);
+            guideRect.sizeDelta = new Vector2(1440f, 1080f);
+            guideRect.anchoredPosition = Vector2.zero;
+
+            _jokboGuideImage = guideImageObject.AddComponent<Image>();
+            _jokboGuideImage.preserveAspect = true;
+            _jokboGuideImage.raycastTarget = false;
+
+            _jokboGuideFallbackText = CreateRewardText("Text_JokboGuideFallback", imageFrame.transform,
+                "족보 이미지가 아직 연결되지 않았습니다.\n인스펙터의 Jokbo Guide Sprite에 이미지를 넣거나\nResources/UI/Jokbo/seotda_jokbo 경로로 저장해주세요.",
+                24, TextAlignmentOptions.Center, FontStyles.Bold);
+            _jokboGuideFallbackText.color = new Color(0.92f, 0.94f, 0.96f, 1f);
+            SetStretch(_jokboGuideFallbackText.rectTransform, Vector2.zero, Vector2.one, new Vector2(-64f, -64f), Vector2.zero);
+
+            Button close = CreateOverlayButton("Button_CloseJokboGuide", panel.transform, "닫기", new Vector2(695f, 404f), () => _jokboOverlay.SetActive(false));
+            close.gameObject.transform.SetAsLastSibling();
+
+            _jokboOverlay.SetActive(false);
+        }
+
+        private void RefreshJokboOverlay()
+        {
+            Sprite sprite = ResolveJokboGuideSprite();
+
+            if (_jokboGuideImage != null)
+            {
+                _jokboGuideImage.sprite = sprite;
+                _jokboGuideImage.enabled = sprite != null;
+            }
+
+            if (_jokboGuideFallbackText != null)
+                _jokboGuideFallbackText.gameObject.SetActive(sprite == null);
+        }
+
+        private Sprite ResolveJokboGuideSprite()
+        {
+            if (_jokboGuideSprite != null)
+                return _jokboGuideSprite;
+
+            if (string.IsNullOrWhiteSpace(_jokboGuideResourcePath))
+                return null;
+
+            Sprite sprite = Resources.Load<Sprite>(_jokboGuideResourcePath);
+            if (sprite != null)
+            {
+                _jokboGuideSprite = sprite;
+                return _jokboGuideSprite;
+            }
+
+            Texture2D texture = Resources.Load<Texture2D>(_jokboGuideResourcePath);
+            if (texture == null)
+                return null;
+
+            _jokboGuideSprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, texture.width, texture.height),
+                new Vector2(0.5f, 0.5f));
+            return _jokboGuideSprite;
         }
 
         private void ShowDeckOverlay()
@@ -1492,7 +1667,7 @@ namespace FFF.UI.Battle
                 new Vector2(680f, 72f), new Vector2(0f, -82f));
 
             _rewardFeedbackText = CreateRewardText("Text_RewardFeedback", _rewardPanel.transform,
-                "물음표 보따리 하나를 선택하세요.", 24, TextAlignmentOptions.Center, FontStyles.Normal);
+                "보상 하나를 선택하세요.", 24, TextAlignmentOptions.Center, FontStyles.Normal);
             SetStretch(_rewardFeedbackText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                 new Vector2(760f, 58f), new Vector2(0f, -152f));
 
@@ -1500,11 +1675,11 @@ namespace FFF.UI.Battle
             _rewardBoxContainer = container.transform;
             RectTransform containerRect = container.GetComponent<RectTransform>();
             SetStretch(containerRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(900f, 270f), new Vector2(0f, 12f));
+                new Vector2(1040f, 340f), new Vector2(0f, -2f));
 
             HorizontalLayoutGroup layout = container.AddComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 42f;
+            layout.spacing = 46f;
             layout.childControlWidth = false;
             layout.childControlHeight = false;
             layout.childForceExpandWidth = false;
@@ -1526,7 +1701,7 @@ namespace FFF.UI.Battle
         {
             GameObject box = CreateUIObject($"RewardBox_{option?.Id ?? "Unknown"}", _rewardBoxContainer);
             RectTransform rect = box.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(240f, 260f);
+            rect.sizeDelta = new Vector2(RewardBoxWidth, RewardBoxHeight);
             int displayIndex = _rewardBoxContainer != null ? _rewardBoxContainer.childCount - 1 : 0;
 
             Image background = box.AddComponent<Image>();
@@ -1536,46 +1711,60 @@ namespace FFF.UI.Battle
             button.targetGraphic = background;
 
             LayoutElement layout = box.AddComponent<LayoutElement>();
-            layout.preferredWidth = 240f;
-            layout.preferredHeight = 260f;
-            layout.minWidth = 240f;
-            layout.minHeight = 260f;
+            layout.preferredWidth = RewardBoxWidth;
+            layout.preferredHeight = RewardBoxHeight;
+            layout.minWidth = RewardBoxWidth;
+            layout.minHeight = RewardBoxHeight;
 
             TextMeshProUGUI question = CreateRewardText("Text_Question", box.transform, "?", 96,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             SetStretch(question.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
+            GameObject artFrame = CreateUIObject("RewardArtworkFrame", box.transform);
+            RectTransform artFrameRect = artFrame.GetComponent<RectTransform>();
+            SetStretch(artFrameRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(176f, 136f), new Vector2(0f, -148f));
+            Image artFrameImage = artFrame.AddComponent<Image>();
+            artFrameImage.color = GetRewardArtworkFrameColor(option);
+
+            Sprite resolvedArtwork = ResolveRewardArtwork(option);
             Image artwork = null;
-            if (option != null && option.Artwork != null)
+            if (resolvedArtwork != null)
             {
-                GameObject artObject = CreateUIObject("Image_Reward", box.transform);
+                GameObject artObject = CreateUIObject("Image_Reward", artFrame.transform);
                 RectTransform artRect = artObject.GetComponent<RectTransform>();
-                SetStretch(artRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                    new Vector2(132f, 132f), new Vector2(0f, -78f));
+                SetStretch(artRect, Vector2.zero, Vector2.one, new Vector2(-16f, -16f), Vector2.zero);
                 artwork = artObject.AddComponent<Image>();
-                artwork.sprite = option.Artwork;
+                artwork.sprite = resolvedArtwork;
                 artwork.preserveAspect = true;
-                artwork.gameObject.SetActive(false);
             }
+
+            TextMeshProUGUI fallbackIcon = CreateRewardText("Text_RewardIcon", artFrame.transform,
+                GetRewardFallbackIcon(option), 58, TextAlignmentOptions.Center, FontStyles.Bold);
+            fallbackIcon.color = new Color(1f, 0.93f, 0.63f, 1f);
+            fallbackIcon.textWrappingMode = TextWrappingModes.NoWrap;
+            SetStretch(fallbackIcon.rectTransform, Vector2.zero, Vector2.one, new Vector2(-18f, -18f), Vector2.zero);
+            fallbackIcon.gameObject.SetActive(artwork == null);
 
             TextMeshProUGUI category = CreateRewardText("Text_Category", box.transform, "", 18,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             SetStretch(category.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(190f, 32f), new Vector2(0f, -156f));
+                new Vector2(220f, 28f), new Vector2(0f, -54f));
             category.gameObject.SetActive(false);
 
             TextMeshProUGUI name = CreateRewardText("Text_Name", box.transform, "", 22,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             SetStretch(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                new Vector2(200f, 44f), new Vector2(0f, 88f));
+                new Vector2(230f, 36f), new Vector2(0f, 82f));
             name.gameObject.SetActive(false);
 
             TextMeshProUGUI description = CreateRewardText("Text_Description", box.transform, "", 16,
                 TextAlignmentOptions.Center, FontStyles.Normal);
             SetStretch(description.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                new Vector2(200f, 44f), new Vector2(0f, 37f));
+                new Vector2(230f, 48f), new Vector2(0f, 28f));
             bool showDetails = !_hideRewardDetailsUntilSelection;
             question.gameObject.SetActive(!showDetails);
+            artFrame.SetActive(showDetails);
             if (artwork != null)
                 artwork.gameObject.SetActive(showDetails);
             category.text = option != null ? option.Category : "";
@@ -1589,7 +1778,7 @@ namespace FFF.UI.Battle
                 TextAlignmentOptions.Center, FontStyles.Bold);
             selectedLabel.color = new Color(1f, 0.92f, 0.35f, 1f);
             SetStretch(selectedLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                new Vector2(160f, 34f), new Vector2(0f, -28f));
+                new Vector2(160f, 30f), new Vector2(0f, -22f));
             selectedLabel.gameObject.SetActive(false);
 
             button.onClick.AddListener(() =>
@@ -1603,6 +1792,7 @@ namespace FFF.UI.Battle
                 _hasSelectedReward = true;
 
                 question.gameObject.SetActive(false);
+                artFrame.SetActive(true);
                 if (artwork != null)
                     artwork.gameObject.SetActive(true);
                 background.color = isFinalSelection
@@ -1650,6 +1840,61 @@ namespace FFF.UI.Battle
             });
 
             StartCoroutine(PopIn(box.transform, displayIndex * 0.08f, 1.06f, 0.22f));
+        }
+
+        private Sprite ResolveRewardArtwork(RewardOption option)
+        {
+            if (option == null)
+                return null;
+
+            if (option.Artwork != null)
+                return option.Artwork;
+
+            return option.Kind switch
+            {
+                RewardKind.HwaTuCard => FindCardArtwork(
+                    string.IsNullOrWhiteSpace(option.PayloadId) ? "M1_Gwang" : option.PayloadId),
+                RewardKind.Joker => ResolvePrefabImageSprite(_jokerIconPrefab),
+                RewardKind.Accessory => ResolvePrefabImageSprite(_tempAccessoryIconPrefab),
+                _ => null
+            };
+        }
+
+        private static Sprite ResolvePrefabImageSprite(GameObject prefab)
+        {
+            if (prefab == null)
+                return null;
+
+            Image image = prefab.GetComponentInChildren<Image>(true);
+            return image != null ? image.sprite : null;
+        }
+
+        private static string GetRewardFallbackIcon(RewardOption option)
+        {
+            if (option == null)
+                return "?";
+
+            return option.Kind switch
+            {
+                RewardKind.HwaTuCard => "패",
+                RewardKind.Joker => "J",
+                RewardKind.Accessory => "장",
+                _ => "?"
+            };
+        }
+
+        private static Color GetRewardArtworkFrameColor(RewardOption option)
+        {
+            if (option == null)
+                return new Color(0.15f, 0.16f, 0.2f, 1f);
+
+            return option.Kind switch
+            {
+                RewardKind.HwaTuCard => new Color(0.25f, 0.14f, 0.14f, 1f),
+                RewardKind.Joker => new Color(0.13f, 0.18f, 0.28f, 1f),
+                RewardKind.Accessory => new Color(0.2f, 0.18f, 0.1f, 1f),
+                _ => new Color(0.15f, 0.16f, 0.2f, 1f)
+            };
         }
 
         private GameObject CreateUIObject(string name, Transform parent)
@@ -1838,16 +2083,19 @@ namespace FFF.UI.Battle
 
         private Sprite FindCardArtwork(string cardId)
         {
-            if (string.IsNullOrEmpty(cardId) || _cardArtworkDefinitions == null)
+            if (string.IsNullOrEmpty(cardId))
                 return null;
 
-            foreach (CardArtworkDefinition definition in _cardArtworkDefinitions)
+            if (_cardArtworkDefinitions != null)
             {
-                if (definition != null && definition.CardId == cardId)
-                    return definition.Artwork;
+                foreach (CardArtworkDefinition definition in _cardArtworkDefinitions)
+                {
+                    if (definition != null && definition.CardId == cardId)
+                        return definition.Artwork;
+                }
             }
 
-            return null;
+            return HwaTuCardDatabase.GetArtwork(cardId);
         }
     }
 }

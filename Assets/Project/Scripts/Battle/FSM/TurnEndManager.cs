@@ -14,6 +14,24 @@ namespace FFF.Battle.Managers
 {
     public class TurnEndManager : MonoBehaviour
     {
+        private const float AttackImpactDelaySeconds = 0.55f;
+        private const float AttackSequenceDurationSeconds = 2f;
+        private const float DrawResultDelaySeconds = 0.45f;
+
+        private readonly struct CombatDamageResult
+        {
+            public readonly bool HasWinner;
+            public readonly bool DamagesEnemy;
+            public readonly int Damage;
+
+            public CombatDamageResult(bool hasWinner, bool damagesEnemy, int damage)
+            {
+                HasWinner = hasWinner;
+                DamagesEnemy = damagesEnemy;
+                Damage = damage;
+            }
+        }
+
         [Header("=== 시스템 참조 ===")]
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private DeckSystem _deckSystem;
@@ -79,13 +97,31 @@ namespace FFF.Battle.Managers
                     outcome);
             }
 
-            ApplyCombatResult(playerStrength, enemyStrength);
+            CombatDamageResult damageResult = CalculateCombatDamage(playerStrength, enemyStrength);
+
+            if (damageResult.HasWinner)
+            {
+                if (damageResult.DamagesEnemy)
+                    _onPlayerAttack?.Raise(damageResult.Damage);
+                else
+                    _onEnemyAttack?.Raise(damageResult.Damage);
+
+                yield return new WaitForSeconds(AttackImpactDelaySeconds);
+                ApplyCombatDamage(damageResult);
+            }
+            else
+            {
+                Debug.Log("[TurnEnd] 🛡️ 무승부! 양측 모두 피해를 입지 않았습니다.");
+            }
 
             PlayerDataBattle player = _battleManager.Context.PlayerData;
             _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
             _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
 
-            yield return new WaitForSeconds(outcome == 0 ? 0.45f : 1.25f);
+            float postDamageDelay = damageResult.HasWinner
+                ? Mathf.Max(0f, AttackSequenceDurationSeconds - AttackImpactDelaySeconds)
+                : DrawResultDelaySeconds;
+            yield return new WaitForSeconds(postDamageDelay);
 
             _deckSystem.CleanupForNextTurn();
             _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
@@ -126,39 +162,46 @@ namespace FFF.Battle.Managers
         /// <summary>
         /// 전투 결과를 비교하고, 승자가 계산기를 통해 산출된 최종 데미지로 패자를 타격합니다.
         /// </summary>
-        private void ApplyCombatResult(int playerStrength, int enemyStrength)
+        private CombatDamageResult CalculateCombatDamage(int playerStrength, int enemyStrength)
         {
-            PlayerDataBattle player = _battleManager.Context.PlayerData;
-
             if (playerStrength > enemyStrength)
             {
-                // 플레이어 승리: 플레이어의 데미지 파이프라인 가동
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
                     playerStrength,
                     enemyStrength,
                     _battleManager.CurrentModifierContext
                 );
-                _enemyDataBattle.TakeDamage(finalDamage);
-                _onPlayerAttack?.Raise(finalDamage);
-                Debug.Log($"[TurnEnd] 💥 플레이어 승리! 적에게 {finalDamage}의 최종 피해를 입혔습니다.");
+                return new CombatDamageResult(true, true, finalDamage);
             }
-            else if (enemyStrength > playerStrength)
-            {
-                // 적 승리: 적이 플레이어를 때릴 때도 플레이어의 파이프라인(방어력 등) 가동
-                int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
-                    enemyStrength,
-                    playerStrength,
-                    _battleManager.CurrentModifierContext
-                );
 
-                player.TakeDamage(finalDamage);
-                _onEnemyAttack?.Raise(finalDamage);
-                Debug.Log($"[TurnEnd] 🩸 적 승리! 플레이어가 {finalDamage}의 최종 피해를 입었습니다.");
-            }
-            else
+            if (enemyStrength > playerStrength)
             {
-                Debug.Log("[TurnEnd] 🛡️ 무승부! 양측 모두 피해를 입지 않았습니다.");
+                int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
+                    enemyStrength,
+                    playerStrength,
+                    _battleManager.CurrentModifierContext
+                );
+                return new CombatDamageResult(true, false, finalDamage);
             }
+
+            return new CombatDamageResult(false, false, 0);
+        }
+
+        private void ApplyCombatDamage(CombatDamageResult result)
+        {
+            if (!result.HasWinner)
+                return;
+
+            if (result.DamagesEnemy)
+            {
+                _enemyDataBattle.TakeDamage(result.Damage);
+                Debug.Log($"[TurnEnd] 💥 플레이어 승리! 적에게 {result.Damage}의 최종 피해를 입혔습니다. Enemy HP: {_enemyDataBattle.CurrentHealth}/{_enemyDataBattle.MaxHealth}");
+                return;
+            }
+
+            PlayerDataBattle player = _battleManager.Context.PlayerData;
+            player.TakeDamage(result.Damage);
+            Debug.Log($"[TurnEnd] 🩸 적 승리! 플레이어가 {result.Damage}의 최종 피해를 입었습니다. Player HP: {player.CurrentHealth}/{player.MaxHealth}");
         }
 
         private void CheckDeathAndTransition()

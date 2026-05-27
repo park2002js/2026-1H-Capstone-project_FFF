@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnemyId: Enemy_001
   EnemyName: 1
-  MaxHealth: 1001
+  MaxHealth: 100
   AILogic: {fileID: 11400000, guid: 27acfedafb6479545af582f21644543a, type: 2}
   GimmickLogic: {fileID: 11400000, guid: 759574820c683674c8f7ba1a31544d7f, type: 2}
   AIPatternDescription: "\uC801\uC740 90%\uD655\uB960\uB85C \uD558\uB098\uB77C\uB3C4

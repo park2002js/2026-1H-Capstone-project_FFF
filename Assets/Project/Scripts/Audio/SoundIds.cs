@@ -10,6 +10,7 @@ namespace FFF.Audio
         public const string BgmTitle = "bgm_title";
         public const string BgmMain = "bgm_main";
         public const string BgmMap = "bgm_map";
+        public const string BgmShop = "bgm_shop";
         public const string BgmBattle = "bgm_battle";
 
         public const string SfxSceneTransition = "sfx_scene_transition";
@@ -82,6 +83,8 @@ namespace FFF.Audio
                     return BgmMain;
                 case "StageScene":
                     return BgmMap;
+                case "ShopScene":
+                    return BgmShop;
                 case "BattleScene":
                     return BgmBattle;
                 default:

@@ -280,24 +280,65 @@ namespace FFF.UI.Animation
         /// </summary>
         private void SpawnDamageNumber(RectTransform target, int damage)
         {
-            if (_damageNumberPrefab == null || _damageNumberParent == null) return;
+            if (target == null)
+                return;
 
-            GameObject dmgObj = Instantiate(_damageNumberPrefab, _damageNumberParent);
+            Transform parent = _damageNumberParent;
+            if (parent == null)
+            {
+                Canvas canvas = target.GetComponentInParent<Canvas>();
+                parent = canvas != null ? canvas.transform : target.parent;
+            }
+
+            if (parent == null)
+                return;
+
+            GameObject dmgObj = _damageNumberPrefab != null
+                ? Instantiate(_damageNumberPrefab, parent)
+                : CreateRuntimeDamageNumber(parent, damage);
             RectTransform dmgRect = dmgObj.GetComponent<RectTransform>();
+            if (dmgRect == null)
+                dmgRect = dmgObj.AddComponent<RectTransform>();
 
             // 대상 위치에 약간의 랜덤 오프셋
             dmgRect.position = target.position + new Vector3(
                 Random.Range(-10f, 10f), Random.Range(0f, 20f), 0f);
+            dmgObj.transform.SetAsLastSibling();
 
             // 텍스트 설정
             TextMeshProUGUI dmgText = dmgObj.GetComponent<TextMeshProUGUI>();
             if (dmgText != null)
             {
                 dmgText.text = damage.ToString();
+                if (damage <= 0)
+                    dmgText.color = new Color(0.8f, 0.82f, 0.86f, 1f);
             }
 
             // 떠오르며 사라지는 연출
             StartCoroutine(DamageNumberSequence(dmgObj));
+        }
+
+        private static GameObject CreateRuntimeDamageNumber(Transform parent, int damage)
+        {
+            GameObject go = new GameObject("DamageNumber_Runtime", typeof(RectTransform), typeof(CanvasGroup));
+            go.transform.SetParent(parent, false);
+
+            RectTransform rect = go.GetComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(160f, 72f);
+
+            TextMeshProUGUI text = go.AddComponent<TextMeshProUGUI>();
+            text.text = damage.ToString();
+            text.fontSize = 52f;
+            text.fontStyle = FontStyles.Bold;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = damage > 0
+                ? new Color(1f, 0.18f, 0.12f, 1f)
+                : new Color(0.8f, 0.82f, 0.86f, 1f);
+            text.raycastTarget = false;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.overflowMode = TextOverflowModes.Overflow;
+
+            return go;
         }
 
         /// <summary>

@@ -18,6 +18,8 @@ namespace FFF.UI.Animation
         private Coroutine _running;
         private Coroutine _idleBreathRoutine;
         private Vector3 _initialScale;
+        private Vector3 _idleInitialScale;
+        private Vector3 _attackInitialScale;
 
         [SerializeField] private bool _playIdleBreath = true;
         [SerializeField] private float _idleBreathScale = 1.025f;
@@ -26,6 +28,8 @@ namespace FFF.UI.Animation
         private void Awake()
         {
             _initialScale = transform.localScale;
+            _idleInitialScale = _idleVisual != null ? _idleVisual.transform.localScale : Vector3.one;
+            _attackInitialScale = _attackVisual != null ? _attackVisual.transform.localScale : Vector3.one;
         }
 
         private void OnEnable()
@@ -45,6 +49,10 @@ namespace FFF.UI.Animation
             }
 
             transform.localScale = _initialScale;
+            if (_idleVisual != null)
+                _idleVisual.transform.localScale = _idleInitialScale;
+            if (_attackVisual != null)
+                _attackVisual.transform.localScale = _attackInitialScale;
         }
 
         /// <summary>지정한 시간만큼 attack 외형을 표시한 뒤 idle로 복귀.</summary>
@@ -94,27 +102,33 @@ namespace FFF.UI.Animation
 
         private IEnumerator IdleBreathRoutine()
         {
+            Transform breathTarget = _idleVisual != null ? _idleVisual.transform : transform;
+            Vector3 breathInitialScale = _idleVisual != null ? _idleInitialScale : _initialScale;
+
             while (true)
             {
-                yield return ScaleRoot(_initialScale * _idleBreathScale, _idleBreathDuration);
-                yield return ScaleRoot(_initialScale, _idleBreathDuration);
+                yield return ScaleTarget(breathTarget, breathInitialScale * _idleBreathScale, _idleBreathDuration);
+                yield return ScaleTarget(breathTarget, breathInitialScale, _idleBreathDuration);
             }
         }
 
-        private IEnumerator ScaleRoot(Vector3 targetScale, float duration)
+        private IEnumerator ScaleTarget(Transform target, Vector3 targetScale, float duration)
         {
-            Vector3 startScale = transform.localScale;
+            if (target == null)
+                yield break;
+
+            Vector3 startScale = target.localScale;
             float elapsed = 0f;
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
                 float eased = 0.5f - Mathf.Cos(t * Mathf.PI) * 0.5f;
-                transform.localScale = Vector3.LerpUnclamped(startScale, targetScale, eased);
+                target.localScale = Vector3.LerpUnclamped(startScale, targetScale, eased);
                 yield return null;
             }
 
-            transform.localScale = targetScale;
+            target.localScale = targetScale;
         }
     }
 }
