@@ -104,9 +104,7 @@ namespace FFF.Battle.FSM
                 }
             };
 
-            PlayerDataBattle player = _battleManager != null && _battleManager.Context != null
-                ? _battleManager.Context.PlayerData
-                : null;
+            PlayerDataBattle player = GetCurrentPlayerData();
             if (player == null || player.HeldJokerIds.Count < PlayerDataSO.MaxHeldJokerCount)
             {
                 rewards.Add(new BattleUIComponent.RewardOption
@@ -119,14 +117,17 @@ namespace FFF.Battle.FSM
                 });
             }
 
-            rewards.Add(new BattleUIComponent.RewardOption
+            if (player == null || HasAvailableAccessoryReward(player))
             {
-                Id = "RewardCategory_Accessory",
-                Kind = BattleUIComponent.RewardKind.Accessory,
-                DisplayName = "장신구 보상",
-                Category = "장신구",
-                Description = "랜덤 장신구\n3개 중 1개 선택"
-            });
+                rewards.Add(new BattleUIComponent.RewardOption
+                {
+                    Id = "RewardCategory_Accessory",
+                    Kind = BattleUIComponent.RewardKind.Accessory,
+                    DisplayName = "장신구 보상",
+                    Category = "장신구",
+                    Description = "랜덤 장신구\n3개 중 1개 선택"
+                });
+            }
 
             Shuffle(rewards);
             return rewards;
@@ -213,12 +214,18 @@ namespace FFF.Battle.FSM
 
         private List<BattleUIComponent.RewardOption> CreateRandomAccessoryRewards(int count)
         {
+            PlayerDataBattle player = GetCurrentPlayerData();
+            HashSet<string> ownedAccessoryIds = player != null && player.EquippedAccessoryIds != null
+                ? new HashSet<string>(player.EquippedAccessoryIds)
+                : null;
+
             return CreateCatalogRewards(
                 AccessoryRewardPool,
                 count,
                 BattleUIComponent.RewardKind.Accessory,
                 "장신구",
-                item => $"Reward_Accessory_{item.Id}");
+                item => $"Reward_Accessory_{item.Id}",
+                ownedAccessoryIds);
         }
 
         private List<BattleUIComponent.RewardOption> CreateCatalogRewards(
@@ -226,14 +233,22 @@ namespace FFF.Battle.FSM
             int count,
             BattleUIComponent.RewardKind kind,
             string category,
-            System.Func<RewardCatalogItem, string> idSelector)
+            System.Func<RewardCatalogItem, string> idSelector,
+            ISet<string> excludedPayloadIds = null)
         {
             var candidates = new List<RewardCatalogItem>(pool ?? new List<RewardCatalogItem>());
             Shuffle(candidates);
 
             var rewards = new List<BattleUIComponent.RewardOption>();
+            var usedPayloadIds = new HashSet<string>();
             foreach (RewardCatalogItem item in candidates)
             {
+                if (string.IsNullOrEmpty(item.Id) || !usedPayloadIds.Add(item.Id))
+                    continue;
+
+                if (excludedPayloadIds != null && excludedPayloadIds.Contains(item.Id))
+                    continue;
+
                 rewards.Add(new BattleUIComponent.RewardOption
                 {
                     Id = idSelector != null ? idSelector(item) : $"Reward_{item.Id}",
@@ -275,6 +290,12 @@ namespace FFF.Battle.FSM
                     player.AddJoker(reward.PayloadId);
                     break;
                 case BattleUIComponent.RewardKind.Accessory:
+                    if (player.EquippedAccessoryIds != null && player.EquippedAccessoryIds.Contains(reward.PayloadId))
+                    {
+                        Debug.LogWarning($"[BattleEnd] 이미 보유 중인 장신구 보상은 받을 수 없습니다: {reward.PayloadId}");
+                        return;
+                    }
+
                     player.AddAccessory(reward.PayloadId);
                     break;
             }
@@ -283,6 +304,35 @@ namespace FFF.Battle.FSM
             _battleUI.SetDeckCards(player.DeckCardIds);
             _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
             Debug.Log($"[BattleEnd] 보상 획득: {reward.Category} / {reward.DisplayName} ({reward.PayloadId})");
+        }
+
+        private PlayerDataBattle GetCurrentPlayerData()
+        {
+            return _battleManager != null && _battleManager.Context != null
+                ? _battleManager.Context.PlayerData
+                : null;
+        }
+
+        private bool HasAvailableAccessoryReward(PlayerDataBattle player)
+        {
+            if (player == null)
+                return true;
+
+            HashSet<string> ownedAccessoryIds = player.EquippedAccessoryIds != null
+                ? new HashSet<string>(player.EquippedAccessoryIds)
+                : new HashSet<string>();
+
+            var uniqueRewardIds = new HashSet<string>();
+            foreach (RewardCatalogItem item in AccessoryRewardPool)
+            {
+                if (string.IsNullOrEmpty(item.Id) || !uniqueRewardIds.Add(item.Id))
+                    continue;
+
+                if (!ownedAccessoryIds.Contains(item.Id))
+                    return true;
+            }
+
+            return false;
         }
 
         private static void Shuffle<T>(IList<T> list)

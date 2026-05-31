@@ -14,6 +14,10 @@ using FFF.Core;
 using FFF.Map;
 using FFF.UI.Map;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace FFF.UI.Battle
 {
     /// <summary>
@@ -34,6 +38,10 @@ namespace FFF.UI.Battle
         private static readonly Vector2 CombatCardSize = new Vector2(136f, 204f);
         private static readonly Vector2 CombatFirstCardPosition = new Vector2(-86f, 48f);
         private static readonly Vector2 CombatSecondCardPosition = new Vector2(86f, 48f);
+        private static readonly Vector2 HudJokerSlotSize = new Vector2(132f, 128f);
+        private static readonly Vector2 HudJokerVisualSize = new Vector2(150f, 188f);
+        private static readonly Vector2 HudAccessorySlotSize = new Vector2(100f, 100f);
+        private static readonly Vector2 HudAccessoryVisualSize = new Vector2(160f, 160f);
         private const float RewardBoxWidth = 280f;
         private const float RewardBoxHeight = 320f;
 
@@ -243,12 +251,12 @@ namespace FFF.UI.Battle
             ClearChildren(_accessoryLayoutGroup);
             ClearChildren(_jokerLayoutGroup);
 
-            CreateOrderedItemIcons(accessoryIds, _tempAccessoryIconPrefab, _accessoryLayoutGroup, _accessoryIconDefinitions);
+            CreateOrderedItemIcons(accessoryIds, _tempAccessoryIconPrefab, _accessoryLayoutGroup, _accessoryIconDefinitions, isJoker: false);
 
             int jokerCount = Mathf.Min(jokerIds.Count, PlayerDataSO.MaxHeldJokerCount);
             for (int i = 0; i < jokerCount; i++)
             {
-                CreateItemIcon(jokerIds[i], _jokerIconPrefab, _jokerLayoutGroup, _jokerIconDefinitions);
+                CreateItemIcon(jokerIds[i], _jokerIconPrefab, _jokerLayoutGroup, _jokerIconDefinitions, isJoker: true);
             }
 
             CreateJokerSlotPlaceholders(PlayerDataSO.MaxHeldJokerCount - jokerCount);
@@ -260,13 +268,14 @@ namespace FFF.UI.Battle
             IReadOnlyList<string> itemIds,
             GameObject iconPrefab,
             Transform parent,
-            IReadOnlyList<ItemIconDefinition> iconDefinitions)
+            IReadOnlyList<ItemIconDefinition> iconDefinitions,
+            bool isJoker)
         {
             if (iconPrefab == null || parent == null) return;
 
             foreach (string itemId in itemIds)
             {
-                CreateItemIcon(itemId, iconPrefab, parent, iconDefinitions);
+                CreateItemIcon(itemId, iconPrefab, parent, iconDefinitions, isJoker);
             }
         }
 
@@ -274,42 +283,80 @@ namespace FFF.UI.Battle
             string itemId,
             GameObject iconPrefab,
             Transform parent,
-            IReadOnlyList<ItemIconDefinition> iconDefinitions)
+            IReadOnlyList<ItemIconDefinition> iconDefinitions,
+            bool isJoker)
         {
             if (string.IsNullOrEmpty(itemId) || iconPrefab == null || parent == null) return;
 
             GameObject icon = Instantiate(iconPrefab, parent, false);
             icon.name = itemId;
             icon.transform.SetAsLastSibling();
-            ApplyItemIconDefinition(icon, itemId, iconDefinitions);
-            ConfigureHudIcon(icon);
+            ApplyItemIconDefinition(icon, itemId, iconDefinitions, isJoker);
+            ConfigureHudIcon(icon, isJoker);
             StartCoroutine(PopIn(icon.transform, 0f, 1.08f, 0.18f));
         }
 
         private void ApplyItemIconDefinition(
             GameObject iconObject,
             string itemId,
-            IReadOnlyList<ItemIconDefinition> iconDefinitions)
+            IReadOnlyList<ItemIconDefinition> iconDefinitions,
+            bool isJoker)
         {
             ItemIconDefinition definition = FindItemIconDefinition(itemId, iconDefinitions);
-            if (definition == null) return;
-
-            if (!string.IsNullOrEmpty(definition.DisplayName))
+            string displayName = definition != null ? definition.DisplayName : null;
+            if (!string.IsNullOrEmpty(displayName))
                 iconObject.name = definition.DisplayName;
 
             Image image = iconObject.GetComponent<Image>();
             if (image == null)
                 image = iconObject.GetComponentInChildren<Image>();
 
-            if (image != null && definition.Icon != null)
+            Sprite icon = ResolveItemArtwork(itemId, iconDefinitions, null);
+            if (image != null)
+                image.enabled = false;
+
+            if (icon != null)
             {
-                image.sprite = definition.Icon;
-                image.preserveAspect = true;
+                ApplyHudItemVisual(iconObject, icon, isJoker);
             }
 
             TextMeshProUGUI label = iconObject.GetComponentInChildren<TextMeshProUGUI>();
             if (label != null)
-                label.text = string.IsNullOrEmpty(definition.DisplayName) ? itemId : definition.DisplayName;
+                label.text = string.IsNullOrEmpty(displayName) ? itemId : displayName;
+        }
+
+        private void ApplyHudItemVisual(GameObject iconObject, Sprite sprite, bool isJoker)
+        {
+            if (iconObject == null || sprite == null)
+                return;
+
+            Transform visualTransform = iconObject.transform.Find("HudItemVisual");
+            GameObject visualObject;
+            if (visualTransform == null)
+            {
+                visualObject = CreateUIObject("HudItemVisual", iconObject.transform);
+            }
+            else
+            {
+                visualObject = visualTransform.gameObject;
+            }
+
+            RectTransform visualRect = visualObject.GetComponent<RectTransform>();
+            visualRect.anchorMin = new Vector2(0.5f, 0.5f);
+            visualRect.anchorMax = new Vector2(0.5f, 0.5f);
+            visualRect.pivot = new Vector2(0.5f, 0.5f);
+            visualRect.anchoredPosition = Vector2.zero;
+            visualRect.sizeDelta = isJoker ? HudJokerVisualSize : HudAccessoryVisualSize;
+
+            Image visualImage = visualObject.GetComponent<Image>();
+            if (visualImage == null)
+                visualImage = visualObject.AddComponent<Image>();
+
+            visualImage.sprite = sprite;
+            visualImage.preserveAspect = true;
+            visualImage.raycastTarget = false;
+            visualImage.color = Color.white;
+            visualObject.transform.SetAsLastSibling();
         }
 
         private ItemIconDefinition FindItemIconDefinition(
@@ -327,6 +374,32 @@ namespace FFF.UI.Battle
             return null;
         }
 
+        private Sprite ResolveItemArtwork(
+            string itemId,
+            IReadOnlyList<ItemIconDefinition> iconDefinitions,
+            GameObject fallbackPrefab)
+        {
+            ItemIconDefinition definition = FindItemIconDefinition(itemId, iconDefinitions);
+            if (definition != null && definition.Icon != null)
+                return definition.Icon;
+
+            Sprite mappedSprite = ResolveBuiltInItemSprite(itemId);
+            if (mappedSprite != null)
+                return mappedSprite;
+
+            return ResolvePrefabImageSprite(fallbackPrefab);
+        }
+
+        private Sprite ResolveAccessoryArtwork(string itemId)
+        {
+            return ResolveItemArtwork(itemId, _accessoryIconDefinitions, _tempAccessoryIconPrefab);
+        }
+
+        private Sprite ResolveJokerArtwork(string itemId)
+        {
+            return ResolveItemArtwork(itemId, _jokerIconDefinitions, _jokerIconPrefab);
+        }
+
         private void EnsureTopHud()
         {
             if (_topHudRoot != null)
@@ -340,7 +413,7 @@ namespace FFF.UI.Battle
             rootRect.anchorMin = new Vector2(0f, 1f);
             rootRect.anchorMax = new Vector2(1f, 1f);
             rootRect.pivot = new Vector2(0.5f, 1f);
-            rootRect.sizeDelta = new Vector2(0f, 76f);
+            rootRect.sizeDelta = new Vector2(0f, 150f);
             rootRect.anchoredPosition = Vector2.zero;
             _topHudRoot.transform.SetAsLastSibling();
 
@@ -360,7 +433,7 @@ namespace FFF.UI.Battle
         {
             GameObject frame = CreateUIObject("PortraitFrame", parent);
             RectTransform rect = frame.GetComponent<RectTransform>();
-            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(58f, 58f), new Vector2(42f, 0f));
+            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(76f, 76f), new Vector2(54f, 0f));
 
             Image image = frame.AddComponent<Image>();
             image.sprite = _playerPortraitSprite;
@@ -369,7 +442,7 @@ namespace FFF.UI.Battle
 
             if (_playerPortraitSprite == null)
             {
-                TextMeshProUGUI label = CreateRewardText("Text_PortraitFallback", frame.transform, "P", 24,
+                TextMeshProUGUI label = CreateRewardText("Text_PortraitFallback", frame.transform, "P", 30,
                     TextAlignmentOptions.Center, FontStyles.Bold);
                 SetStretch(label.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             }
@@ -377,39 +450,40 @@ namespace FFF.UI.Battle
 
         private void BuildHealthBlock(Transform parent)
         {
-            TextMeshProUGUI heart = CreateRewardText("Text_HeartIcon", parent, "♥", 32,
+            TextMeshProUGUI heart = CreateRewardText("Text_HeartIcon", parent, "♥", 38,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             heart.color = new Color(1f, 0.25f, 0.28f, 1f);
-            SetStretch(heart.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(42f, 42f), new Vector2(114f, -1f));
+            SetStretch(heart.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(52f, 52f), new Vector2(130f, -1f));
 
-            _topHealthText = CreateRewardText("Text_TopHealth", parent, "0/0", 25,
+            _topHealthText = CreateRewardText("Text_TopHealth", parent, "0/0", 30,
                 TextAlignmentOptions.Left, FontStyles.Bold);
             _topHealthText.color = new Color(1f, 0.35f, 0.35f, 1f);
-            SetStretch(_topHealthText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(112f, 44f), new Vector2(188f, -1f));
+            SetStretch(_topHealthText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(132f, 52f), new Vector2(210f, -1f));
         }
 
         private void BuildGoldBlock(Transform parent)
         {
-            TextMeshProUGUI coin = CreateRewardText("Text_CoinIcon", parent, "전", 24,
+            TextMeshProUGUI coin = CreateRewardText("Text_CoinIcon", parent, "전", 30,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             coin.color = new Color(1f, 0.82f, 0.2f, 1f);
-            SetStretch(coin.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(42f, 42f), new Vector2(278f, -1f));
+            SetStretch(coin.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(52f, 52f), new Vector2(306f, -1f));
 
-            _topGoldText = CreateRewardText("Text_TopGold", parent, "0", 25,
+            _topGoldText = CreateRewardText("Text_TopGold", parent, "0", 30,
                 TextAlignmentOptions.Left, FontStyles.Bold);
             _topGoldText.color = new Color(1f, 0.84f, 0.28f, 1f);
-            SetStretch(_topGoldText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(90f, 44f), new Vector2(340f, -1f));
+            SetStretch(_topGoldText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(96f, 52f), new Vector2(372f, -1f));
         }
 
         private void BuildJokerBlock(Transform parent)
         {
             GameObject block = CreateUIObject("JokerHudBlock", parent);
             RectTransform rect = block.GetComponent<RectTransform>();
-            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(216f, 58f), new Vector2(482f, 0f));
+            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(452f, 138f), new Vector2(672f, 0f));
 
             Image bg = block.AddComponent<Image>();
             bg.color = new Color(0.02f, 0.04f, 0.06f, 0.56f);
             bg.raycastTarget = false;
+            block.AddComponent<RectMask2D>();
 
             Transform originalJokerLayout = _jokerLayoutGroup;
             if (originalJokerLayout == null)
@@ -428,8 +502,8 @@ namespace FFF.UI.Battle
             {
                 layoutRect.anchorMin = Vector2.zero;
                 layoutRect.anchorMax = Vector2.one;
-                layoutRect.offsetMin = new Vector2(10f, 7f);
-                layoutRect.offsetMax = new Vector2(-10f, -7f);
+                layoutRect.offsetMin = new Vector2(16f, 5f);
+                layoutRect.offsetMax = new Vector2(-16f, -5f);
                 layoutRect.anchoredPosition = Vector2.zero;
             }
 
@@ -437,7 +511,7 @@ namespace FFF.UI.Battle
             if (layout == null)
                 layout = _jokerLayoutGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 9f;
+            layout.spacing = 10f;
             layout.childControlWidth = false;
             layout.childControlHeight = false;
             layout.childForceExpandWidth = false;
@@ -453,8 +527,8 @@ namespace FFF.UI.Battle
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(0f, 44f);
-            rect.anchoredPosition = new Vector2(0f, -76f);
+            rect.sizeDelta = new Vector2(0f, 118f);
+            rect.anchoredPosition = new Vector2(0f, -150f);
 
             Image bg = block.AddComponent<Image>();
             bg.color = new Color(0.05f, 0.07f, 0.08f, 0.45f);
@@ -477,15 +551,15 @@ namespace FFF.UI.Battle
             {
                 layoutRect.anchorMin = new Vector2(0f, 0f);
                 layoutRect.anchorMax = new Vector2(1f, 1f);
-                layoutRect.offsetMin = new Vector2(18f, 4f);
-                layoutRect.offsetMax = new Vector2(-18f, -4f);
+                layoutRect.offsetMin = new Vector2(22f, 6f);
+                layoutRect.offsetMax = new Vector2(-22f, -6f);
             }
 
             HorizontalLayoutGroup layout = _accessoryLayoutGroup.GetComponent<HorizontalLayoutGroup>();
             if (layout == null)
                 layout = _accessoryLayoutGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleLeft;
-            layout.spacing = 8f;
+            layout.spacing = 12f;
             layout.childControlWidth = false;
             layout.childControlHeight = false;
             layout.childForceExpandWidth = false;
@@ -496,16 +570,16 @@ namespace FFF.UI.Battle
 
         private void BuildHudButtons(Transform parent)
         {
-            CreateHudButton("Button_TopMap", parent, "맵", new Vector2(-218f, 0f), ShowMapOverlay);
-            CreateHudButton("Button_TopDeck", parent, "덱", new Vector2(-146f, 0f), ShowDeckOverlay);
-            CreateHudButton("Button_TopSettings", parent, "설정", new Vector2(-66f, 0f), ShowSettingsOverlay);
+            CreateHudButton("Button_TopMap", parent, "맵", new Vector2(-244f, 0f), ShowMapOverlay);
+            CreateHudButton("Button_TopDeck", parent, "덱", new Vector2(-158f, 0f), ShowDeckOverlay);
+            CreateHudButton("Button_TopSettings", parent, "설정", new Vector2(-68f, 0f), ShowSettingsOverlay);
         }
 
         private Button CreateHudButton(string name, Transform parent, string label, Vector2 position, Action onClick)
         {
             GameObject go = CreateUIObject(name, parent);
             RectTransform rect = go.GetComponent<RectTransform>();
-            SetStretch(rect, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(64f, 48f), position);
+            SetStretch(rect, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(76f, 58f), position);
 
             Image image = go.AddComponent<Image>();
             image.color = new Color(0.16f, 0.2f, 0.23f, 0.95f);
@@ -518,7 +592,7 @@ namespace FFF.UI.Battle
                 onClick?.Invoke();
             });
 
-            TextMeshProUGUI text = CreateRewardText($"Text_{name}", go.transform, label, 18,
+            TextMeshProUGUI text = CreateRewardText($"Text_{name}", go.transform, label, 21,
                 TextAlignmentOptions.Center, FontStyles.Bold);
             SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             return button;
@@ -563,23 +637,25 @@ namespace FFF.UI.Battle
             go.transform.SetAsLastSibling();
         }
 
-        private void ConfigureHudIcon(GameObject icon)
+        private void ConfigureHudIcon(GameObject icon, bool isJoker)
         {
             if (icon == null)
                 return;
 
+            Vector2 size = isJoker ? HudJokerSlotSize : HudAccessorySlotSize;
+
             RectTransform rect = icon.GetComponent<RectTransform>();
             if (rect != null)
-                rect.sizeDelta = new Vector2(42f, 42f);
+                rect.sizeDelta = size;
 
             LayoutElement layout = icon.GetComponent<LayoutElement>();
             if (layout == null)
                 layout = icon.AddComponent<LayoutElement>();
 
-            layout.preferredWidth = 42f;
-            layout.preferredHeight = 42f;
-            layout.minWidth = 42f;
-            layout.minHeight = 42f;
+            layout.preferredWidth = size.x;
+            layout.preferredHeight = size.y;
+            layout.minWidth = size.x;
+            layout.minHeight = size.y;
             layout.flexibleWidth = 0f;
             layout.flexibleHeight = 0f;
         }
@@ -591,7 +667,7 @@ namespace FFF.UI.Battle
                 GameObject slot = CreateUIObject("EmptyJokerSlot", _jokerLayoutGroup);
                 Image image = slot.AddComponent<Image>();
                 image.color = new Color(0.15f, 0.18f, 0.19f, 0.74f);
-                ConfigureHudIcon(slot);
+                ConfigureHudIcon(slot, isJoker: true);
             }
         }
 
@@ -1324,9 +1400,9 @@ namespace FFF.UI.Battle
             if (_deckOverlay == null)
                 BuildDeckOverlay();
 
-            RefreshDeckOverlay();
             _deckOverlay.SetActive(true);
             _deckOverlay.transform.SetAsLastSibling();
+            RefreshDeckOverlay();
         }
 
         private void BuildDeckOverlay()
@@ -1355,21 +1431,18 @@ namespace FFF.UI.Battle
             viewportRect.anchorMax = Vector2.one;
             viewportRect.offsetMin = new Vector2(12f, 12f);
             viewportRect.offsetMax = new Vector2(-12f, -12f);
-            Mask mask = viewport.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
-            Image viewportImage = viewport.AddComponent<Image>();
-            viewportImage.color = new Color(0f, 0f, 0f, 0f);
+            viewport.AddComponent<RectMask2D>();
 
             GameObject content = CreateUIObject("DeckContent", viewport.transform);
             RectTransform contentRect = content.GetComponent<RectTransform>();
             contentRect.anchorMin = new Vector2(0f, 1f);
             contentRect.anchorMax = new Vector2(1f, 1f);
             contentRect.pivot = new Vector2(0.5f, 1f);
-            contentRect.sizeDelta = new Vector2(0f, 0f);
+            contentRect.sizeDelta = new Vector2(0f, 390f);
 
             GridLayoutGroup grid = content.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(98f, 146f);
-            grid.spacing = new Vector2(14f, 18f);
+            grid.cellSize = new Vector2(98f, 208f);
+            grid.spacing = new Vector2(14f, 24f);
             grid.padding = new RectOffset(10, 10, 10, 10);
             grid.childAlignment = TextAnchor.UpperLeft;
 
@@ -1387,10 +1460,20 @@ namespace FFF.UI.Battle
 
         private void RefreshDeckOverlay()
         {
+            EnsureDeckCardsForOverlay();
+
             Transform content = _deckOverlay != null ? _deckOverlay.transform.Find("Panel/DeckScrollView/Viewport/DeckContent") : null;
             ClearChildren(content);
             if (content == null)
                 return;
+
+            if (_currentDeckCardIds.Count == 0)
+            {
+                TextMeshProUGUI text = CreateRewardText("Text_EmptyDeck", content, "덱에 카드가 없습니다.", 22,
+                    TextAlignmentOptions.Center, FontStyles.Bold);
+                SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                return;
+            }
 
             foreach (string cardId in _currentDeckCardIds)
             {
@@ -1404,7 +1487,7 @@ namespace FFF.UI.Battle
 
                     CardUIComponent cardView = cardObject.GetComponent<CardUIComponent>();
                     if (cardView != null)
-                        cardView.Setup(card, _ => { }, HwaTuCardDatabase.GetArtwork(cardId));
+                        cardView.Setup(card, _ => { }, FindCardArtwork(cardId));
                 }
                 else
                 {
@@ -1416,6 +1499,32 @@ namespace FFF.UI.Battle
                     SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 }
             }
+
+            if (content is RectTransform contentRect)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+        }
+
+        private void EnsureDeckCardsForOverlay()
+        {
+            if (_currentDeckCardIds.Count > 0)
+                return;
+
+            bool hasAuthoritativeDeck = false;
+            PlayerDataSO masterData = GameManager.Instance != null ? GameManager.Instance.MasterPlayerData : null;
+            if (masterData != null && masterData.DeckCardIds != null)
+            {
+                hasAuthoritativeDeck = true;
+                _currentDeckCardIds.AddRange(masterData.DeckCardIds);
+            }
+
+            if (_currentDeckCardIds.Count > 0 || hasAuthoritativeDeck)
+                return;
+
+            foreach (HwaTuCard card in HwaTuCardDatabase.CreateDefaultInitialDeck())
+            {
+                if (card != null && !string.IsNullOrEmpty(card.CardId))
+                    _currentDeckCardIds.Add(card.CardId);
+            }
         }
 
         private void ShowMapOverlay()
@@ -1423,9 +1532,9 @@ namespace FFF.UI.Battle
             if (_mapOverlay == null)
                 BuildMapOverlay();
 
-            RefreshMapOverlay();
             _mapOverlay.SetActive(true);
             _mapOverlay.transform.SetAsLastSibling();
+            RefreshMapOverlay();
         }
 
         private void BuildMapOverlay()
@@ -1451,17 +1560,14 @@ namespace FFF.UI.Battle
             viewportRect.offsetMin = new Vector2(12f, 12f);
             viewportRect.offsetMax = new Vector2(-12f, -12f);
 
-            Image viewportImage = viewport.AddComponent<Image>();
-            viewportImage.color = new Color(0f, 0f, 0f, 0f);
-            Mask mask = viewport.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+            viewport.AddComponent<RectMask2D>();
 
             GameObject mapContent = CreateUIObject("MapContent", viewport.transform);
             RectTransform contentRect = mapContent.GetComponent<RectTransform>();
             contentRect.anchorMin = new Vector2(0.5f, 0f);
             contentRect.anchorMax = new Vector2(0.5f, 0f);
             contentRect.pivot = new Vector2(0.5f, 0f);
-            contentRect.sizeDelta = new Vector2(760f, 0f);
+            contentRect.sizeDelta = new Vector2(760f, 470f);
             contentRect.anchoredPosition = Vector2.zero;
 
             scroll.viewport = viewportRect;
@@ -1480,7 +1586,7 @@ namespace FFF.UI.Battle
             if (mapContent == null)
                 return;
 
-            MapData mapData = GameManager.Instance != null ? GameManager.Instance.CurrentMapData : null;
+            MapData mapData = ResolveMapDataForOverlay();
             if (mapData == null)
             {
                 TextMeshProUGUI text = CreateRewardText("Text_NoMap", mapContent, "확인할 스테이지 맵이 없습니다.", 24,
@@ -1489,15 +1595,32 @@ namespace FFF.UI.Battle
                 return;
             }
 
-            MapUIComponent mapView = mapContent.GetComponent<MapUIComponent>();
-            if (mapView == null)
-                mapView = mapContent.gameObject.AddComponent<MapUIComponent>();
+            try
+            {
+                MapUIComponent mapView = mapContent.GetComponent<MapUIComponent>();
+                if (mapView == null)
+                    mapView = mapContent.gameObject.AddComponent<MapUIComponent>();
 
-            mapView.BuildReadOnlyMap(mapContent.GetComponent<RectTransform>(), mapData);
+                mapView.BuildReadOnlyMap(mapContent.GetComponent<RectTransform>(), mapData);
 
-            ScrollRect scroll = _mapOverlay.GetComponentInChildren<ScrollRect>(true);
-            if (scroll != null)
-                scroll.verticalNormalizedPosition = 0f;
+                ScrollRect scroll = _mapOverlay.GetComponentInChildren<ScrollRect>(true);
+                if (scroll != null)
+                    scroll.verticalNormalizedPosition = 0f;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[BattleUI] 맵 오버레이 생성 실패: {ex.Message}\n{ex.StackTrace}");
+                ClearChildren(mapContent);
+                TextMeshProUGUI text = CreateRewardText("Text_MapError", mapContent, "맵을 표시하는 중 오류가 발생했습니다.", 23,
+                    TextAlignmentOptions.Center, FontStyles.Bold);
+                SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            }
+        }
+
+        private MapData ResolveMapDataForOverlay()
+        {
+            GameManager gameManager = GameManager.Instance;
+            return gameManager != null ? gameManager.GetCurrentOrRestoreRunMap() : null;
         }
 
         private void ShowSettingsOverlay()
@@ -1854,10 +1977,37 @@ namespace FFF.UI.Battle
             {
                 RewardKind.HwaTuCard => FindCardArtwork(
                     string.IsNullOrWhiteSpace(option.PayloadId) ? "M1_Gwang" : option.PayloadId),
-                RewardKind.Joker => ResolvePrefabImageSprite(_jokerIconPrefab),
-                RewardKind.Accessory => ResolvePrefabImageSprite(_tempAccessoryIconPrefab),
+                RewardKind.Joker => ResolveJokerArtwork(option.PayloadId),
+                RewardKind.Accessory => ResolveAccessoryArtwork(option.PayloadId),
                 _ => null
             };
+        }
+
+        private static Sprite ResolveBuiltInItemSprite(string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(itemId))
+                return null;
+
+#if UNITY_EDITOR
+            string path = itemId switch
+            {
+                "ACC_REROLL_BONUS" => "Assets/Project/Art/Accessories/norigae.png",
+                "ACC_DAMAGE_BONUS" => "Assets/Project/Art/Accessories/silverknife.png",
+                "ACC_JADE_RING" => "Assets/Project/Art/Accessories/jadering.png",
+                "ACC_GAT" => "Assets/Project/Art/Accessories/gat.png",
+                "ACC_MAPE" => "Assets/Project/Art/Accessories/mape.png",
+                "ACC_NORIGAE" => "Assets/Project/Art/Accessories/norigae.png",
+                "JKR_REROLL_BURST" => "Assets/Project/Art/Joker/boone.png",
+                "JKR_HIGH_CARD" => "Assets/Project/Art/Joker/yangban.png",
+                "JKR_DOUBLE_PIP" => "Assets/Project/Art/Joker/mokjoong.png",
+                "JKR_LUCKY_CHARM" => "Assets/Project/Art/Joker/gaksi.png",
+                _ => null
+            };
+
+            return string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<Sprite>(path);
+#else
+            return null;
+#endif
         }
 
         private static Sprite ResolvePrefabImageSprite(GameObject prefab)

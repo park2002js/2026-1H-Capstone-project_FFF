@@ -2078,8 +2078,35 @@ MonoBehaviour:
   _playerPortraitSprite: {fileID: 0}
   _tempAccessoryIconPrefab: {fileID: 5032530346131345919, guid: ca2aec7849c29ac4cb66df390273099a, type: 3}
   _jokerIconPrefab: {fileID: 241555248878021352, guid: 849e01543fe8b4744a2e6446f1503a68, type: 3}
-  _accessoryIconDefinitions: []
-  _jokerIconDefinitions: []
+  _accessoryIconDefinitions:
+  - _id: ACC_REROLL_BONUS
+    _icon: {fileID: 21300000, guid: 2a97bfa424d929c49bf0ec1d536ac5b8, type: 3}
+    _displayName: 
+  - _id: ACC_DAMAGE_BONUS
+    _icon: {fileID: 21300000, guid: 228fb5799cea11f43b10d7b2f58670e9, type: 3}
+    _displayName: 
+  - _id: ACC_JADE_RING
+    _icon: {fileID: 21300000, guid: 3eada804bf40a204cbb41cc2d9c35592, type: 3}
+    _displayName: 
+  - _id: ACC_GAT
+    _icon: {fileID: 21300000, guid: a0427d7e0be67484ebc6551bc988e12d, type: 3}
+    _displayName: 
+  - _id: ACC_MAPE
+    _icon: {fileID: 21300000, guid: 7c84690a4ac8f6e4cb2ac139867e79dd, type: 3}
+    _displayName: 
+  _jokerIconDefinitions:
+  - _id: JKR_REROLL_BURST
+    _icon: {fileID: 21300000, guid: 555b3cf694c8c4f49ba236579abd7a28, type: 3}
+    _displayName: 
+  - _id: JKR_HIGH_CARD
+    _icon: {fileID: 21300000, guid: 6eb005558e80ebc4ebee88cfe1a798e4, type: 3}
+    _displayName: 
+  - _id: JKR_DOUBLE_PIP
+    _icon: {fileID: 21300000, guid: cfebd2196462bf146a5f99d85c2a6a78, type: 3}
+    _displayName: 
+  - _id: JKR_LUCKY_CHARM
+    _icon: {fileID: 21300000, guid: d8a01c2f535317446bcdd121041f74c3, type: 3}
+    _displayName: 
   _handLayoutGroup: {fileID: 187381284}
   _cardPrefab: {fileID: 7540152865768367733, guid: 3afc21614e5ccc54da7252fa01108aa2, type: 3}
   _cardArtworkDefinitions:

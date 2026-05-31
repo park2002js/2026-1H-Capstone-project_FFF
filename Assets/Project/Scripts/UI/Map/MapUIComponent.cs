@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using FFF.UI.Core;
 using FFF.Map;
+using FFF.Audio;
 
 namespace FFF.UI.Map
 {
@@ -13,6 +15,28 @@ namespace FFF.UI.Map
     /// </summary>
     public class MapUIComponent : BaseUIComponent
     {
+        public sealed class EncounterChoice
+        {
+            public string Label;
+            public Action OnSelected;
+            public bool Interactable;
+
+            public EncounterChoice(string label, Action onSelected, bool interactable = true)
+            {
+                Label = label;
+                OnSelected = onSelected;
+                Interactable = interactable;
+            }
+        }
+
+        public sealed class EncounterViewModel
+        {
+            public string Title;
+            public string Story;
+            public Sprite Artwork;
+            public readonly List<EncounterChoice> Choices = new List<EncounterChoice>();
+        }
+
         /// <summary>GameManager가 연결하는 노드 선택 델리게이트.</summary>
         public Action<int> OnNodeSelected;
 
@@ -38,12 +62,22 @@ namespace FFF.UI.Map
         [SerializeField] private Sprite _iconShop;
         [SerializeField] private Sprite _iconBoss;
 
+        [Header("랜덤 인카운터")]
+        [SerializeField] private Sprite _defaultEncounterArtwork;
+
         private static Sprite _visitedRingShadowSprite;
         private static Sprite _visitedRingHighlightSprite;
+        private static Sprite _generatedEncounterArtwork;
 
         private MapData _mapData;
         private bool _nodeSelectionEnabled = true;
         private readonly Dictionary<MapNode, MapNodeView> _nodeViews = new Dictionary<MapNode, MapNodeView>();
+        private GameObject _encounterOverlay;
+        private TextMeshProUGUI _encounterTitleText;
+        private TextMeshProUGUI _encounterStoryText;
+        private Image _encounterArtworkImage;
+        private TextMeshProUGUI _encounterArtworkFallbackText;
+        private Transform _encounterChoiceContainer;
 
         public void SetMapData(MapData data)
         {
@@ -61,6 +95,53 @@ namespace FFF.UI.Map
             }
         }
 
+        public void ShowEncounter(EncounterViewModel encounter)
+        {
+            if (encounter == null)
+                return;
+
+            EnsureEncounterUI();
+            SetNodeSelectionEnabled(false);
+
+            _encounterOverlay.SetActive(true);
+            _encounterOverlay.transform.SetAsLastSibling();
+
+            _encounterTitleText.text = string.IsNullOrWhiteSpace(encounter.Title)
+                ? "기묘한 조우"
+                : encounter.Title;
+            _encounterStoryText.text = string.IsNullOrWhiteSpace(encounter.Story)
+                ? "아직 적히지 않은 이야기입니다."
+                : encounter.Story;
+
+            Sprite artwork = encounter.Artwork != null
+                ? encounter.Artwork
+                : _defaultEncounterArtwork != null
+                    ? _defaultEncounterArtwork
+                    : GetGeneratedEncounterArtwork();
+            _encounterArtworkImage.sprite = artwork;
+            _encounterArtworkImage.enabled = artwork != null;
+            _encounterArtworkFallbackText.gameObject.SetActive(artwork == null);
+
+            ClearChildren(_encounterChoiceContainer);
+            IReadOnlyList<EncounterChoice> choices = encounter.Choices;
+            if (choices == null || choices.Count == 0)
+            {
+                CreateEncounterChoiceButton(new EncounterChoice("떠난다", HideEncounter));
+                return;
+            }
+
+            for (int i = 0; i < choices.Count && i < 3; i++)
+                CreateEncounterChoiceButton(choices[i]);
+        }
+
+        public void HideEncounter()
+        {
+            if (_encounterOverlay != null)
+                _encounterOverlay.SetActive(false);
+
+            SetNodeSelectionEnabled(true);
+        }
+
         public void BuildReadOnlyMap(RectTransform mapContainer, MapData data)
         {
             _mapContainer = mapContainer;
@@ -76,6 +157,9 @@ namespace FFF.UI.Map
 
         protected override void OnHide()
         {
+            if (_encounterOverlay != null)
+                _encounterOverlay.SetActive(false);
+
             ClearMap();
         }
 
@@ -378,6 +462,312 @@ namespace FFF.UI.Map
                 Destroy(child.gameObject);
             }
             _nodeViews.Clear();
+        }
+
+        private void EnsureEncounterUI()
+        {
+            if (_encounterOverlay != null)
+                return;
+
+            _encounterOverlay = CreateUIObject("RandomEncounterOverlay", transform);
+            RectTransform overlayRect = _encounterOverlay.GetComponent<RectTransform>();
+            Stretch(overlayRect);
+
+            Image dim = _encounterOverlay.AddComponent<Image>();
+            dim.color = new Color(0f, 0f, 0f, 0.72f);
+            dim.raycastTarget = true;
+
+            GameObject panel = CreateUIObject("EncounterPanel", _encounterOverlay.transform);
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            Center(panelRect, new Vector2(1120f, 620f), Vector2.zero);
+            Image panelImage = panel.AddComponent<Image>();
+            panelImage.color = new Color(0.025f, 0.023f, 0.02f, 0.96f);
+
+            GameObject ribbon = CreateUIObject("TitleRibbon", panel.transform);
+            RectTransform ribbonRect = ribbon.GetComponent<RectTransform>();
+            Center(ribbonRect, new Vector2(420f, 66f), new Vector2(-300f, 284f));
+            Image ribbonImage = ribbon.AddComponent<Image>();
+            ribbonImage.color = new Color(0.72f, 0.62f, 0.48f, 1f);
+
+            _encounterTitleText = CreateEncounterText(
+                "Text_EncounterTitle",
+                ribbon.transform,
+                "기묘한 조우",
+                30,
+                TextAlignmentOptions.Center,
+                new Color(0.19f, 0.12f, 0.04f, 1f),
+                Vector2.zero,
+                new Vector2(380f, 54f),
+                FontStyles.Bold);
+
+            GameObject artFrame = CreateUIObject("EncounterArtworkFrame", panel.transform);
+            RectTransform artRect = artFrame.GetComponent<RectTransform>();
+            Center(artRect, new Vector2(380f, 380f), new Vector2(-330f, 54f));
+            Image artFrameImage = artFrame.AddComponent<Image>();
+            artFrameImage.color = new Color(0.08f, 0.07f, 0.08f, 1f);
+
+            GameObject artObject = CreateUIObject("Image_EncounterArtwork", artFrame.transform);
+            RectTransform imageRect = artObject.GetComponent<RectTransform>();
+            Stretch(imageRect, new Vector2(18f, 18f), new Vector2(-18f, -18f));
+            _encounterArtworkImage = artObject.AddComponent<Image>();
+            _encounterArtworkImage.preserveAspect = true;
+            _encounterArtworkImage.raycastTarget = false;
+
+            _encounterArtworkFallbackText = CreateEncounterText(
+                "Text_EncounterArtworkFallback",
+                artFrame.transform,
+                "?",
+                126,
+                TextAlignmentOptions.Center,
+                new Color(0.78f, 0.72f, 0.58f, 1f),
+                Vector2.zero,
+                new Vector2(340f, 340f),
+                FontStyles.Bold);
+
+            _encounterStoryText = CreateEncounterText(
+                "Text_EncounterStory",
+                panel.transform,
+                "",
+                25,
+                TextAlignmentOptions.TopLeft,
+                new Color(0.93f, 0.9f, 0.82f, 1f),
+                new Vector2(230f, 104f),
+                new Vector2(620f, 292f));
+            _encounterStoryText.textWrappingMode = TextWrappingModes.Normal;
+            _encounterStoryText.enableAutoSizing = true;
+            _encounterStoryText.fontSizeMin = 18;
+            _encounterStoryText.fontSizeMax = 25;
+            _encounterStoryText.overflowMode = TextOverflowModes.Truncate;
+
+            GameObject choiceContainer = CreateUIObject("EncounterChoices", panel.transform);
+            RectTransform choicesRect = choiceContainer.GetComponent<RectTransform>();
+            Center(choicesRect, new Vector2(680f, 166f), new Vector2(220f, -190f));
+            VerticalLayoutGroup layout = choiceContainer.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 13f;
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            _encounterChoiceContainer = choiceContainer.transform;
+
+            _encounterOverlay.SetActive(false);
+        }
+
+        private Button CreateEncounterChoiceButton(EncounterChoice choice)
+        {
+            GameObject go = CreateUIObject("Button_EncounterChoice", _encounterChoiceContainer);
+            LayoutElement layout = go.AddComponent<LayoutElement>();
+            layout.preferredWidth = 680f;
+            layout.preferredHeight = 46f;
+            layout.minHeight = 46f;
+
+            Image image = go.AddComponent<Image>();
+            image.color = new Color(0.14f, 0.42f, 0.42f, 0.96f);
+
+            Button button = go.AddComponent<Button>();
+            button.targetGraphic = image;
+            button.interactable = choice != null && choice.Interactable && choice.OnSelected != null;
+            ColorBlock colors = button.colors;
+            colors.normalColor = new Color(0.14f, 0.42f, 0.42f, 0.96f);
+            colors.highlightedColor = new Color(0.2f, 0.56f, 0.55f, 1f);
+            colors.pressedColor = new Color(0.1f, 0.28f, 0.3f, 1f);
+            colors.disabledColor = new Color(0.16f, 0.16f, 0.16f, 0.65f);
+            button.colors = colors;
+
+            TextMeshProUGUI label = CreateEncounterText(
+                "Text_Choice",
+                go.transform,
+                choice != null ? choice.Label : "",
+                22,
+                TextAlignmentOptions.Center,
+                Color.white,
+                Vector2.zero,
+                new Vector2(640f, 40f),
+                FontStyles.Bold);
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 16;
+            label.fontSizeMax = 22;
+            label.overflowMode = TextOverflowModes.Ellipsis;
+
+            EncounterChoice captured = choice;
+            button.onClick.AddListener(() =>
+            {
+                SoundManager.PlayDefaultUiClick();
+                captured?.OnSelected?.Invoke();
+            });
+
+            return button;
+        }
+
+        private TextMeshProUGUI CreateEncounterText(
+            string name,
+            Transform parent,
+            string text,
+            int fontSize,
+            TextAlignmentOptions alignment,
+            Color color,
+            Vector2 anchoredPosition,
+            Vector2 size,
+            FontStyles style = FontStyles.Normal)
+        {
+            GameObject go = CreateUIObject(name, parent);
+            RectTransform rect = go.GetComponent<RectTransform>();
+            Center(rect, size, anchoredPosition);
+
+            TextMeshProUGUI label = go.AddComponent<TextMeshProUGUI>();
+            label.text = text;
+            label.fontSize = fontSize;
+            label.alignment = alignment;
+            label.color = color;
+            label.fontStyle = style;
+            label.raycastTarget = false;
+            return label;
+        }
+
+        private static GameObject CreateUIObject(string name, Transform parent)
+        {
+            GameObject go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            return go;
+        }
+
+        private static void ClearChildren(Transform parent)
+        {
+            if (parent == null)
+                return;
+
+            for (int i = parent.childCount - 1; i >= 0; i--)
+                Destroy(parent.GetChild(i).gameObject);
+        }
+
+        private static void Center(RectTransform rect, Vector2 size, Vector2 anchoredPosition)
+        {
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = anchoredPosition;
+        }
+
+        private static void Stretch(RectTransform rect)
+        {
+            Stretch(rect, Vector2.zero, Vector2.zero);
+        }
+
+        private static void Stretch(RectTransform rect, Vector2 offsetMin, Vector2 offsetMax)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = offsetMin;
+            rect.offsetMax = offsetMax;
+        }
+
+        private static Sprite GetGeneratedEncounterArtwork()
+        {
+            if (_generatedEncounterArtwork != null)
+                return _generatedEncounterArtwork;
+
+            const int width = 384;
+            const int height = 384;
+            Texture2D texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            texture.filterMode = FilterMode.Point;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.hideFlags = HideFlags.HideAndDontSave;
+
+            Color bottom = new Color(0.04f, 0.08f, 0.1f, 1f);
+            Color top = new Color(0.16f, 0.09f, 0.22f, 1f);
+            Vector2 center = new Vector2(width * 0.5f, height * 0.5f);
+            float maxDistance = Mathf.Sqrt(center.x * center.x + center.y * center.y);
+
+            for (int y = 0; y < height; y++)
+            {
+                float t = y / (height - 1f);
+                for (int x = 0; x < width; x++)
+                {
+                    float distance = Vector2.Distance(new Vector2(x, y), center) / maxDistance;
+                    Color color = Color.Lerp(bottom, top, t);
+                    color *= Mathf.Lerp(1.05f, 0.48f, Mathf.Clamp01(distance));
+                    color.a = 1f;
+                    texture.SetPixel(x, y, color);
+                }
+            }
+
+            DrawCircle(texture, 300, 258, 58, new Color(0.11f, 0.36f, 0.36f, 1f));
+            DrawCircle(texture, 305, 253, 44, new Color(0.21f, 0.72f, 0.64f, 1f));
+            DrawDiamond(texture, 305, 253, 35, new Color(0.92f, 0.78f, 0.35f, 1f));
+            DrawDiamond(texture, 305, 253, 20, new Color(1f, 0.92f, 0.55f, 1f));
+            DrawCircle(texture, 294, 268, 6, new Color(1f, 0.98f, 0.82f, 1f));
+
+            Color sleeve = new Color(0.09f, 0.08f, 0.12f, 1f);
+            Color skin = new Color(0.72f, 0.55f, 0.42f, 1f);
+            Color skinLight = new Color(0.86f, 0.68f, 0.5f, 1f);
+            DrawRect(texture, 18, 165, 120, 223, sleeve);
+            DrawRect(texture, 70, 180, 205, 210, skin);
+            DrawCircle(texture, 203, 195, 34, skinLight);
+            DrawRect(texture, 212, 212, 284, 230, skinLight);
+            DrawCircle(texture, 285, 221, 9, skinLight);
+            DrawRect(texture, 214, 189, 273, 205, skinLight);
+            DrawCircle(texture, 274, 197, 8, skinLight);
+            DrawRect(texture, 207, 165, 256, 181, skin);
+            DrawCircle(texture, 257, 173, 8, skin);
+            DrawCircle(texture, 181, 204, 9, new Color(0.95f, 0.78f, 0.58f, 1f));
+
+            DrawCircle(texture, 74, 292, 18, new Color(0.28f, 0.2f, 0.48f, 1f));
+            DrawCircle(texture, 95, 306, 7, new Color(0.72f, 0.63f, 0.94f, 1f));
+            DrawCircle(texture, 125, 86, 14, new Color(0.2f, 0.5f, 0.44f, 1f));
+            DrawCircle(texture, 142, 95, 5, new Color(0.7f, 0.95f, 0.82f, 1f));
+
+            texture.Apply();
+            _generatedEncounterArtwork = Sprite.Create(texture, new Rect(0f, 0f, width, height), new Vector2(0.5f, 0.5f), 100f);
+            _generatedEncounterArtwork.hideFlags = HideFlags.HideAndDontSave;
+            return _generatedEncounterArtwork;
+        }
+
+        private static void DrawRect(Texture2D texture, int xMin, int yMin, int xMax, int yMax, Color color)
+        {
+            for (int y = yMin; y <= yMax; y++)
+            {
+                for (int x = xMin; x <= xMax; x++)
+                    SetPixelSafe(texture, x, y, color);
+            }
+        }
+
+        private static void DrawCircle(Texture2D texture, int centerX, int centerY, int radius, Color color)
+        {
+            int radiusSqr = radius * radius;
+            for (int y = centerY - radius; y <= centerY + radius; y++)
+            {
+                for (int x = centerX - radius; x <= centerX + radius; x++)
+                {
+                    int dx = x - centerX;
+                    int dy = y - centerY;
+                    if (dx * dx + dy * dy <= radiusSqr)
+                        SetPixelSafe(texture, x, y, color);
+                }
+            }
+        }
+
+        private static void DrawDiamond(Texture2D texture, int centerX, int centerY, int radius, Color color)
+        {
+            for (int y = centerY - radius; y <= centerY + radius; y++)
+            {
+                for (int x = centerX - radius; x <= centerX + radius; x++)
+                {
+                    int distance = Mathf.Abs(x - centerX) + Mathf.Abs(y - centerY);
+                    if (distance <= radius)
+                        SetPixelSafe(texture, x, y, color);
+                }
+            }
+        }
+
+        private static void SetPixelSafe(Texture2D texture, int x, int y, Color color)
+        {
+            if (x < 0 || y < 0 || x >= texture.width || y >= texture.height)
+                return;
+
+            texture.SetPixel(x, y, color);
         }
     }
 }

@@ -298,10 +298,18 @@ namespace FFF.UI.Shop
                 if (rect != null)
                     rect.sizeDelta = new Vector2(112f, 168f);
 
+                LayoutElement layout = cardObject.GetComponent<LayoutElement>();
+                if (layout == null)
+                    layout = cardObject.AddComponent<LayoutElement>();
+                layout.preferredWidth = 112f;
+                layout.preferredHeight = 168f;
+                layout.minWidth = 112f;
+                layout.minHeight = 168f;
+
                 CardUIComponent cardView = cardObject.GetComponent<CardUIComponent>();
                 if (cardView != null)
                 {
-                    cardView.Setup(card, clicked => SelectRemovalCard(cardId, clicked), HwaTuCardDatabase.GetArtwork(cardId));
+                    cardView.Setup(card, clicked => SelectRemovalCard(cardId, clicked));
                 }
                 else
                 {

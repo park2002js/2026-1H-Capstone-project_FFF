@@ -370,11 +370,10 @@ namespace FFF.UI.Shop
             scroll.horizontal = true;
             scroll.vertical = false;
 
-            GameObject viewport = CreateImage("Viewport", scrollRoot.transform, new Color(0f, 0f, 0f, 0f));
+            GameObject viewport = CreateUIObject("Viewport", scrollRoot.transform);
             RectTransform viewportRect = viewport.GetComponent<RectTransform>();
             StretchToParent(viewportRect);
-            Mask mask = viewport.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+            viewport.AddComponent<RectMask2D>();
 
             GameObject content = CreateUIObject("Content", viewport.transform);
             RectTransform contentRect = content.GetComponent<RectTransform>();

@@ -27,6 +27,48 @@ namespace FFF.Core
     /// </summary>
     public class GameManager : Singleton<GameManager>
     {
+        private enum MapEncounterKind
+        {
+            Battle,
+            Shop,
+            Reward
+        }
+
+        private readonly struct RewardCatalogItem
+        {
+            public readonly string Id;
+            public readonly string DisplayName;
+
+            public RewardCatalogItem(string id, string displayName)
+            {
+                Id = id;
+                DisplayName = displayName;
+            }
+        }
+
+        private sealed class MapEventRewardCandidate
+        {
+            public string Label;
+            public string Feedback;
+            public string SoundId;
+            public System.Action Apply;
+        }
+
+        private static readonly RewardCatalogItem[] EventJokerRewardPool =
+        {
+            new RewardCatalogItem("JKR_REROLL_BURST", "리롤 폭죽 조커"),
+            new RewardCatalogItem("JKR_HIGH_CARD", "광패 조커"),
+            new RewardCatalogItem("JKR_DOUBLE_PIP", "쌍피 조커"),
+            new RewardCatalogItem("JKR_LUCKY_CHARM", "행운 부적 조커")
+        };
+
+        private static readonly RewardCatalogItem[] EventAccessoryRewardPool =
+        {
+            new RewardCatalogItem("ACC_REROLL_BONUS", "노리개"),
+            new RewardCatalogItem("ACC_DAMAGE_BONUS", "은장도"),
+            new RewardCatalogItem("ACC_JADE_RING", "옥가락지"),
+            new RewardCatalogItem("ACC_GAT", "갓")
+        };
 
         [Header("=== Master Data ===")]
         [Tooltip("Map 및 게임 전반에서 원본으로 사용할 플레이어 데이터 SO")]
@@ -35,6 +77,7 @@ namespace FFF.Core
 
         private MapData _currentMapData;
         public MapData CurrentMapData => _currentMapData;
+        private MapUIComponent _activeMapView;
 
         // === 적 목록 관리 필드 ===
         private List<string> _normalEnemyList = new List<string>();
@@ -89,9 +132,19 @@ namespace FFF.Core
             return _currentMapData;
         }
 
+        public MapData GetCurrentOrRestoreRunMap()
+        {
+            if (_currentMapData != null)
+                return _currentMapData;
+
+            TryRestoreRunMapFromPlayerData();
+            return _currentMapData;
+        }
+
         public void OnMapSceneReady(MapUIComponent view, MapData mapData)
         {
             _currentMapData = mapData;
+            _activeMapView = view;
             view.SetMapData(mapData);
             view.OnNodeSelected = HandleStageSelect;
             UIManager.Instance.RegisterScreen(UIScreenNames.MAP, view);
@@ -103,6 +156,7 @@ namespace FFF.Core
         {
             UIManager.Instance.RegisterScreen(UIScreenNames.BATTLE, view);
             UIManager.Instance.ShowScreen(UIScreenNames.BATTLE);
+            HydrateBattleHud(view);
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.BATTLE);
         }
 
@@ -183,21 +237,261 @@ namespace FFF.Core
             VisitMapNode(selectedNode);
             SaveRunMapProgress();
 
-            if (selectedNode.RoomType == RoomType.Shop)
+            if (selectedNode.RoomType == RoomType.Event)
             {
-                SoundManager.PlaySfxSound(SoundIds.SfxMapEnterShop);
-                SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
+                ShowRandomMapEncounter(selectedNode);
                 return;
             }
 
+            if (selectedNode.RoomType == RoomType.Shop)
+            {
+                EnterShopFromMap();
+                return;
+            }
+
+            EnterBattleFromMap(selectedNode.RoomType);
+        }
+
+        private void ShowRandomMapEncounter(MapNode selectedNode)
+        {
+            if (_activeMapView == null)
+            {
+                EnterBattleFromMap(RoomType.Monster);
+                return;
+            }
+
+            MapEncounterKind kind = RollMapEncounterKind(selectedNode);
+            switch (kind)
+            {
+                case MapEncounterKind.Battle:
+                    ShowBattleEncounter();
+                    break;
+                case MapEncounterKind.Shop:
+                    ShowShopEncounter();
+                    break;
+                default:
+                    ShowRewardEncounter(selectedNode);
+                    break;
+            }
+        }
+
+        private MapEncounterKind RollMapEncounterKind(MapNode node)
+        {
+            var rng = new System.Random(BuildMapNodeSeed(node, 9173));
+            int roll = rng.Next(0, 100);
+            if (roll < 35)
+                return MapEncounterKind.Battle;
+            if (roll < 60)
+                return MapEncounterKind.Shop;
+            return MapEncounterKind.Reward;
+        }
+
+        private void ShowBattleEncounter()
+        {
+            var encounter = new MapUIComponent.EncounterViewModel
+            {
+                Title = "낯선 기척",
+                Story = "길 위의 안개가 갈라지자 누군가가 길목을 막아섭니다.\n\n돌아갈 길은 이미 사라졌고, 남은 것은 정면으로 맞서는 일뿐입니다."
+            };
+            encounter.Choices.Add(new MapUIComponent.EncounterChoice("맞선다", () => EnterBattleFromMap(RoomType.Monster)));
+            _activeMapView.ShowEncounter(encounter);
+        }
+
+        private void ShowShopEncounter()
+        {
+            var encounter = new MapUIComponent.EncounterViewModel
+            {
+                Title = "길목의 보따리",
+                Story = "빛이 거의 닿지 않는 길목에 낡은 보따리 하나가 놓여 있습니다.\n\n보따리 옆의 표식은 이곳이 잠깐 숨을 고르고 물건을 살 수 있는 자리임을 알려줍니다."
+            };
+            encounter.Choices.Add(new MapUIComponent.EncounterChoice("상점을 살펴본다", EnterShopFromMap));
+            _activeMapView.ShowEncounter(encounter);
+        }
+
+        private void ShowRewardEncounter(MapNode selectedNode)
+        {
+            var encounter = new MapUIComponent.EncounterViewModel
+            {
+                Title = "미지의 손",
+                Story = "장막 너머에서 정체를 알 수 없는 손이 천천히 나타납니다.\n\n세부 이야기는 이곳에 작성하면 됩니다. 선택한 보상만 손 안에 남습니다."
+            };
+
+            foreach (MapUIComponent.EncounterChoice choice in BuildRewardEncounterChoices(selectedNode))
+                encounter.Choices.Add(choice);
+
+            _activeMapView.ShowEncounter(encounter);
+        }
+
+        private List<MapUIComponent.EncounterChoice> BuildRewardEncounterChoices(MapNode selectedNode)
+        {
+            var rng = new System.Random(BuildMapNodeSeed(selectedNode, 41389));
+            var rewards = new List<MapEventRewardCandidate>();
+
+            int goldAmount = rng.Next(25, 51);
+            rewards.Add(new MapEventRewardCandidate
+            {
+                Label = $"{goldAmount}전 받기",
+                Feedback = $"장막 너머의 손이 {goldAmount}전을 남기고 사라졌습니다.",
+                SoundId = SoundIds.SfxGoldGain,
+                Apply = () => _masterPlayerData?.AddGold(goldAmount)
+            });
+
+            MapEventRewardCandidate cardReward = CreateRandomCardEventReward(rng);
+            if (cardReward != null)
+                rewards.Add(cardReward);
+
+            MapEventRewardCandidate jokerReward = CreateRandomJokerEventReward(rng);
+            if (jokerReward != null)
+                rewards.Add(jokerReward);
+
+            MapEventRewardCandidate accessoryReward = CreateRandomAccessoryEventReward(rng);
+            if (accessoryReward != null)
+                rewards.Add(accessoryReward);
+
+            ShuffleList(rewards, rng);
+            int choiceCount = Mathf.Min(rewards.Count, rng.Next(1, 4));
+            var choices = new List<MapUIComponent.EncounterChoice>();
+            for (int i = 0; i < choiceCount; i++)
+            {
+                MapEventRewardCandidate reward = rewards[i];
+                choices.Add(new MapUIComponent.EncounterChoice(reward.Label, () => ClaimMapEventReward(reward)));
+            }
+
+            return choices;
+        }
+
+        private MapEventRewardCandidate CreateRandomCardEventReward(System.Random rng)
+        {
+            List<HwaTuCard> cards = HwaTuCardDatabase.CreateAllCards();
+            if (cards == null || cards.Count == 0)
+                return null;
+
+            HwaTuCard card = cards[rng.Next(0, cards.Count)];
+            return new MapEventRewardCandidate
+            {
+                Label = $"{card.DisplayName} 받기",
+                Feedback = $"{card.DisplayName} 카드가 덱에 추가되었습니다.",
+                SoundId = SoundIds.SfxRewardClaim,
+                Apply = () => _masterPlayerData?.AddDeckCard(card.CardId)
+            };
+        }
+
+        private MapEventRewardCandidate CreateRandomJokerEventReward(System.Random rng)
+        {
+            if (_masterPlayerData != null && _masterPlayerData.HeldJokerIds != null &&
+                _masterPlayerData.HeldJokerIds.Count >= PlayerDataSO.MaxHeldJokerCount)
+            {
+                return null;
+            }
+
+            RewardCatalogItem? item = PickUnownedCatalogReward(EventJokerRewardPool, _masterPlayerData?.HeldJokerIds, rng);
+            if (!item.HasValue)
+                return null;
+
+            RewardCatalogItem reward = item.Value;
+            return new MapEventRewardCandidate
+            {
+                Label = $"{reward.DisplayName} 받기",
+                Feedback = $"{reward.DisplayName}가 조커 보유 목록에 추가되었습니다.",
+                SoundId = SoundIds.SfxRewardClaim,
+                Apply = () => _masterPlayerData?.AddJoker(reward.Id)
+            };
+        }
+
+        private MapEventRewardCandidate CreateRandomAccessoryEventReward(System.Random rng)
+        {
+            RewardCatalogItem? item = PickUnownedCatalogReward(EventAccessoryRewardPool, _masterPlayerData?.EquippedAccessoryIds, rng);
+            if (!item.HasValue)
+                return null;
+
+            RewardCatalogItem reward = item.Value;
+            return new MapEventRewardCandidate
+            {
+                Label = $"{reward.DisplayName} 받기",
+                Feedback = $"{reward.DisplayName} 장신구를 얻었습니다.",
+                SoundId = SoundIds.SfxItemEquip,
+                Apply = () => _masterPlayerData?.AddAccessory(reward.Id)
+            };
+        }
+
+        private RewardCatalogItem? PickUnownedCatalogReward(
+            IReadOnlyList<RewardCatalogItem> pool,
+            IReadOnlyCollection<string> ownedIds,
+            System.Random rng)
+        {
+            if (pool == null || pool.Count == 0)
+                return null;
+
+            var owned = ownedIds != null ? new HashSet<string>(ownedIds) : new HashSet<string>();
+            var candidates = new List<RewardCatalogItem>();
+            var usedIds = new HashSet<string>();
+            for (int i = 0; i < pool.Count; i++)
+            {
+                RewardCatalogItem item = pool[i];
+                if (string.IsNullOrEmpty(item.Id) || !usedIds.Add(item.Id) || owned.Contains(item.Id))
+                    continue;
+
+                candidates.Add(item);
+            }
+
+            if (candidates.Count == 0)
+                return null;
+
+            return candidates[rng.Next(0, candidates.Count)];
+        }
+
+        private void ClaimMapEventReward(MapEventRewardCandidate reward)
+        {
+            if (reward == null)
+                return;
+
+            reward.Apply?.Invoke();
+            if (!string.IsNullOrEmpty(reward.SoundId))
+                SoundManager.PlaySfxSound(reward.SoundId);
+
+            var result = new MapUIComponent.EncounterViewModel
+            {
+                Title = "손 안의 보상",
+                Story = reward.Feedback
+            };
+            result.Choices.Add(new MapUIComponent.EncounterChoice("떠난다", CompleteMapEncounter));
+            _activeMapView.ShowEncounter(result);
+        }
+
+        private void CompleteMapEncounter()
+        {
+            SaveRunMapProgress();
+            _activeMapView?.HideEncounter();
+        }
+
+        private void EnterShopFromMap()
+        {
+            SoundManager.PlaySfxSound(SoundIds.SfxMapEnterShop);
+            SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
+        }
+
+        private void EnterBattleFromMap(RoomType roomType)
+        {
             // 시드값을 받아올 수 없는 경우 임의값 1을 전달
             int currentSeed = _currentMapData != null ? _currentMapData.Seed : 1;
 
             // RoomType에 맞춰 몬스터 ID를 추출하여 배정
-            TargetEnemyId = PopEnemyFromList(selectedNode.RoomType, currentSeed);
+            TargetEnemyId = PopEnemyFromList(roomType, currentSeed);
 
-            SoundManager.PlaySfxSound(selectedNode.RoomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
+            SoundManager.PlaySfxSound(roomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
+        }
+
+        private int BuildMapNodeSeed(MapNode node, int salt)
+        {
+            unchecked
+            {
+                int seed = _currentMapData != null ? _currentMapData.Seed : 1;
+                seed = seed * 397 ^ salt;
+                seed = seed * 397 ^ (node != null ? node.Floor : 0);
+                seed = seed * 397 ^ (node != null ? node.Column : 0);
+                return seed & int.MaxValue;
+            }
         }
 
         private MapNode ResolveSelectedNode(int nodeId)
@@ -423,6 +717,19 @@ namespace FFF.Core
             return _masterPlayerData != null && _masterPlayerData.SpendGold(amount);
         }
 
+        private void HydrateBattleHud(BattleUIComponent view)
+        {
+            if (view == null || _masterPlayerData == null)
+                return;
+
+            GetCurrentOrRestoreRunMap();
+
+            view.SetPlayerHealth(_masterPlayerData.CurrentHealth, _masterPlayerData.MaxHealth);
+            view.SetPlayerGold(_masterPlayerData.CurrentGold);
+            view.SetDeckCards(_masterPlayerData.DeckCardIds);
+            view.SetupItemIcons(_masterPlayerData.EquippedAccessoryIds, _masterPlayerData.HeldJokerIds);
+        }
+
         /// <summary>
         /// 전투가 끝나고 Map으로 돌아갈 때 호출됩니다.
         /// </summary>
@@ -466,8 +773,11 @@ namespace FFF.Core
         /// <summary>
         /// Fisher-Yates 알고리즘을 이용해 리스트 요소를 무작위로 섞습니다.
         /// </summary>
-        private void ShuffleList(List<string> list, System.Random rng)
+        private void ShuffleList<T>(List<T> list, System.Random rng)
         {
+            if (list == null || rng == null)
+                return;
+
             for (int i = list.Count - 1; i > 0; i--)
             {
                 int j = rng.Next(i + 1);
