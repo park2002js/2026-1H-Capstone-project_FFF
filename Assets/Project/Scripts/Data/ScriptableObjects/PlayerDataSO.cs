@@ -28,8 +28,8 @@ namespace FFF.Data
         [Header("=== 초기 플레이어 데이터 ===")]
         [SerializeField] private int _initialMaxHealth = 300;
         [SerializeField] private int _initialCurrentHealth = 300;
-        [SerializeField] private List<string> _initialEquippedAccessoryIds = new List<string> { "ACC_REROLL_BONUS" };
-        [SerializeField] private List<string> _initialHeldJokerIds = new List<string> { "JKR_REROLL_BURST" };
+        [SerializeField] private List<string> _initialEquippedAccessoryIds = new List<string>();
+        [SerializeField] private List<string> _initialHeldJokerIds = new List<string>();
         [SerializeField] private List<string> _initialDeckCardIds = new List<string>(DefaultInitialDeckIds);
 
         [Header("=== 체력 정보 ===")]
@@ -42,8 +42,8 @@ namespace FFF.Data
 
         [Header("=== 장착/보유 아이템 정보 ===")]
         // 추후 이 ID를 바탕으로 팩토리에서 실제 객체를 찍어냅니다.
-        public List<string> EquippedAccessoryIds = new List<string> { "ACC_REROLL_BONUS" };
-        public List<string> HeldJokerIds = new List<string> { "JKR_REROLL_BURST" };
+        public List<string> EquippedAccessoryIds = new List<string>();
+        public List<string> HeldJokerIds = new List<string>();
 
         public const int MaxHeldJokerCount = 3;
 

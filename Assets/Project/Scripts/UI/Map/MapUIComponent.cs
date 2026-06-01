@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using FFF.UI.Core;
+using FFF.UI.Common;
 using FFF.Map;
 using FFF.Audio;
 
@@ -479,13 +480,13 @@ namespace FFF.UI.Map
 
             GameObject panel = CreateUIObject("EncounterPanel", _encounterOverlay.transform);
             RectTransform panelRect = panel.GetComponent<RectTransform>();
-            Center(panelRect, new Vector2(1120f, 620f), Vector2.zero);
+            Center(panelRect, new Vector2(1320f, 760f), new Vector2(0f, -18f));
             Image panelImage = panel.AddComponent<Image>();
             panelImage.color = new Color(0.025f, 0.023f, 0.02f, 0.96f);
 
             GameObject ribbon = CreateUIObject("TitleRibbon", panel.transform);
             RectTransform ribbonRect = ribbon.GetComponent<RectTransform>();
-            Center(ribbonRect, new Vector2(420f, 66f), new Vector2(-300f, 284f));
+            Center(ribbonRect, new Vector2(620f, 74f), new Vector2(0f, 328f));
             Image ribbonImage = ribbon.AddComponent<Image>();
             ribbonImage.color = new Color(0.72f, 0.62f, 0.48f, 1f);
 
@@ -493,16 +494,16 @@ namespace FFF.UI.Map
                 "Text_EncounterTitle",
                 ribbon.transform,
                 "기묘한 조우",
-                30,
+                34,
                 TextAlignmentOptions.Center,
                 new Color(0.19f, 0.12f, 0.04f, 1f),
                 Vector2.zero,
-                new Vector2(380f, 54f),
+                new Vector2(560f, 58f),
                 FontStyles.Bold);
 
             GameObject artFrame = CreateUIObject("EncounterArtworkFrame", panel.transform);
             RectTransform artRect = artFrame.GetComponent<RectTransform>();
-            Center(artRect, new Vector2(380f, 380f), new Vector2(-330f, 54f));
+            Center(artRect, new Vector2(440f, 440f), new Vector2(-390f, 52f));
             Image artFrameImage = artFrame.AddComponent<Image>();
             artFrameImage.color = new Color(0.08f, 0.07f, 0.08f, 1f);
 
@@ -521,29 +522,29 @@ namespace FFF.UI.Map
                 TextAlignmentOptions.Center,
                 new Color(0.78f, 0.72f, 0.58f, 1f),
                 Vector2.zero,
-                new Vector2(340f, 340f),
+                new Vector2(390f, 390f),
                 FontStyles.Bold);
 
             _encounterStoryText = CreateEncounterText(
                 "Text_EncounterStory",
                 panel.transform,
                 "",
-                25,
+                27,
                 TextAlignmentOptions.TopLeft,
                 new Color(0.93f, 0.9f, 0.82f, 1f),
-                new Vector2(230f, 104f),
-                new Vector2(620f, 292f));
+                new Vector2(300f, 45f),
+                new Vector2(700f, 344f));
             _encounterStoryText.textWrappingMode = TextWrappingModes.Normal;
             _encounterStoryText.enableAutoSizing = true;
-            _encounterStoryText.fontSizeMin = 18;
-            _encounterStoryText.fontSizeMax = 25;
+            _encounterStoryText.fontSizeMin = 20;
+            _encounterStoryText.fontSizeMax = 27;
             _encounterStoryText.overflowMode = TextOverflowModes.Truncate;
 
             GameObject choiceContainer = CreateUIObject("EncounterChoices", panel.transform);
             RectTransform choicesRect = choiceContainer.GetComponent<RectTransform>();
-            Center(choicesRect, new Vector2(680f, 166f), new Vector2(220f, -190f));
+            Center(choicesRect, new Vector2(700f, 206f), new Vector2(300f, -253f));
             VerticalLayoutGroup layout = choiceContainer.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 13f;
+            layout.spacing = 16f;
             layout.childAlignment = TextAnchor.UpperCenter;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
@@ -559,8 +560,8 @@ namespace FFF.UI.Map
             GameObject go = CreateUIObject("Button_EncounterChoice", _encounterChoiceContainer);
             LayoutElement layout = go.AddComponent<LayoutElement>();
             layout.preferredWidth = 680f;
-            layout.preferredHeight = 46f;
-            layout.minHeight = 46f;
+            layout.preferredHeight = 56f;
+            layout.minHeight = 56f;
 
             Image image = go.AddComponent<Image>();
             image.color = new Color(0.14f, 0.42f, 0.42f, 0.96f);
@@ -579,15 +580,15 @@ namespace FFF.UI.Map
                 "Text_Choice",
                 go.transform,
                 choice != null ? choice.Label : "",
-                22,
+                24,
                 TextAlignmentOptions.Center,
                 Color.white,
                 Vector2.zero,
-                new Vector2(640f, 40f),
+                new Vector2(700f, 48f),
                 FontStyles.Bold);
             label.enableAutoSizing = true;
-            label.fontSizeMin = 16;
-            label.fontSizeMax = 22;
+            label.fontSizeMin = 18;
+            label.fontSizeMax = 24;
             label.overflowMode = TextOverflowModes.Ellipsis;
 
             EncounterChoice captured = choice;
@@ -617,6 +618,7 @@ namespace FFF.UI.Map
 
             TextMeshProUGUI label = go.AddComponent<TextMeshProUGUI>();
             label.text = text;
+            GameUIFont.Apply(label);
             label.fontSize = fontSize;
             label.alignment = alignment;
             label.color = color;

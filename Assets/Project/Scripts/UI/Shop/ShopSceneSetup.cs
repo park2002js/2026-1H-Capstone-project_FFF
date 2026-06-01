@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using FFF.Core;
 using FFF.Data;
 using FFF.UI.Battle;
+using FFF.UI.Common;
 using FFF.UI.Core;
 
 namespace FFF.UI.Shop
@@ -183,7 +184,7 @@ namespace FFF.UI.Shop
                 root.transform,
                 "지나가기",
                 new Vector2(154f, 44f),
-                new Vector2(-82f, -38f),
+                new Vector2(-82f, -188f),
                 new Vector2(1f, 1f),
                 new Vector2(1f, 1f),
                 new Color(0.12f, 0.15f, 0.18f, 0.62f),
@@ -299,27 +300,22 @@ namespace FFF.UI.Shop
             RectTransform panelRect = panel.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(1110f, 610f);
-            panelRect.anchoredPosition = new Vector2(0f, -2f);
+            panelRect.sizeDelta = new Vector2(1110f, 554f);
+            panelRect.anchoredPosition = new Vector2(0f, -67f);
             panel.AddComponent<Shadow>().effectDistance = new Vector2(8f, -8f);
 
             TextMeshProUGUI title = CreateText("Text_ShopTitle", panel.transform, "상점보따리",
-                34, TextAlignmentOptions.Left, Ink, new Vector2(360f, 48f), new Vector2(-334f, 268f));
+                34, TextAlignmentOptions.Left, Ink, new Vector2(360f, 48f), new Vector2(-334f, 242f));
             title.fontStyle = FontStyles.Bold;
 
-            goldText = CreateText("Text_Gold", panel.transform, "엽전 216", 26,
-                TextAlignmentOptions.Right, new Color(0.94f, 0.77f, 0.27f, 1f),
-                new Vector2(220f, 44f), new Vector2(390f, 270f));
-            goldText.fontStyle = FontStyles.Bold;
-
             closeButton = CreateTextButton("Button_CloseShop", panel.transform, "보따리 닫기",
-                new Vector2(138f, 42f), new Vector2(454f, 268f), new Vector2(0.5f, 0.5f),
+                new Vector2(138f, 42f), new Vector2(454f, 242f), new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f), new Color(0.24f, 0.28f, 0.25f, 0.92f), Color.white);
 
             GameObject gridGo = CreateUIObject("ShopItemGrid", panel.transform);
             RectTransform gridRect = gridGo.GetComponent<RectTransform>();
             gridRect.sizeDelta = new Vector2(920f, 446f);
-            gridRect.anchoredPosition = new Vector2(18f, 2f);
+            gridRect.anchoredPosition = new Vector2(18f, -12f);
 
             GridLayoutGroup grid = gridGo.AddComponent<GridLayoutGroup>();
             grid.cellSize = new Vector2(166f, 206f);
@@ -335,8 +331,27 @@ namespace FFF.UI.Shop
             }
 
             leaveButton = CreateTextButton("Button_LeaveShop", panel.transform, "지나가기",
-                new Vector2(188f, 54f), new Vector2(-462f, -266f), new Vector2(0.5f, 0.5f),
+                new Vector2(188f, 54f), new Vector2(-462f, -242f), new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f), new Color(0.55f, 0.14f, 0.13f, 1f), Color.white);
+
+            GameObject goldBox = CreateImage("GoldStatusBox", panel.transform, new Color(0.18f, 0.16f, 0.11f, 0.76f));
+            RectTransform goldBoxRect = goldBox.GetComponent<RectTransform>();
+            goldBoxRect.sizeDelta = new Vector2(270f, 54f);
+            goldBoxRect.anchoredPosition = new Vector2(386f, -242f);
+            Image goldBoxImage = goldBox.GetComponent<Image>();
+            if (goldBoxImage != null)
+                goldBoxImage.raycastTarget = false;
+            goldBox.AddComponent<Outline>().effectColor = new Color(0.92f, 0.76f, 0.32f, 0.52f);
+
+            TextMeshProUGUI goldLabel = CreateText("Text_GoldLabel", goldBox.transform, "보유 금액", 18,
+                TextAlignmentOptions.Left, new Color(0.92f, 0.86f, 0.66f, 1f),
+                new Vector2(98f, 32f), new Vector2(-76f, 0f));
+            goldLabel.fontStyle = FontStyles.Bold;
+
+            goldText = CreateText("Text_Gold", goldBox.transform, "엽전 216", 24,
+                TextAlignmentOptions.Right, new Color(0.94f, 0.77f, 0.27f, 1f),
+                new Vector2(130f, 34f), new Vector2(56f, 0f));
+            goldText.fontStyle = FontStyles.Bold;
 
             cardRemovalPanel = BuildCardRemovalPanel(panel.transform);
 
@@ -688,8 +703,7 @@ namespace FFF.UI.Shop
             GameObject go = CreateUIObject(name, parent);
             TextMeshProUGUI label = go.AddComponent<TextMeshProUGUI>();
             label.text = text;
-            if (_fontAsset != null)
-                label.font = _fontAsset;
+            GameUIFont.Apply(label, _fontAsset);
             label.fontSize = fontSize;
             label.alignment = alignment;
             label.color = color;

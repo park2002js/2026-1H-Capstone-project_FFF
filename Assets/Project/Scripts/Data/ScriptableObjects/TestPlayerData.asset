@@ -14,10 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _initialMaxHealth: 1000
   _initialCurrentHealth: 1000
-  _initialEquippedAccessoryIds:
-  - ACC_REROLL_BONUS
-  _initialHeldJokerIds:
-  - JKR_REROLL_BURST
+  _initialEquippedAccessoryIds: []
+  _initialHeldJokerIds: []
   _initialDeckCardIds:
   - M1_Pi
   - M2_Yeolkkeut
@@ -31,10 +29,8 @@ MonoBehaviour:
   - M10_Yeolkkeut
   MaxHealth: 1000
   CurrentHealth: 1000
-  EquippedAccessoryIds:
-  - ACC_REROLL_BONUS
-  HeldJokerIds:
-  - JKR_REROLL_BURST
+  EquippedAccessoryIds: []
+  HeldJokerIds: []
   DeckCardIds:
   - M1_Pi
   - M2_Yeolkkeut

@@ -68,6 +68,36 @@ namespace FFF.UI.Battle
             SetSelected(false); // 초기 상태는 선택 해제 (크기 1.0)
         }
 
+        public Sprite ResolveArtworkForCardId(string cardId)
+        {
+            if (string.IsNullOrEmpty(cardId))
+                return null;
+
+            Sprite artwork = FindLocalArtwork(cardId);
+            if (artwork != null)
+                return artwork;
+
+            artwork = HwaTuCardDatabase.GetArtwork(cardId);
+            if (artwork != null)
+                return artwork;
+
+#if UNITY_EDITOR
+            artwork = LoadFlowerCardSpriteInEditor(cardId);
+            if (artwork != null)
+                return artwork;
+
+            HwaTuCard cardData = HwaTuCardDatabase.FindById(cardId);
+            if (cardData != null)
+            {
+                artwork = LoadFlowerCardAtlasSpriteInEditor(cardData);
+                if (artwork != null)
+                    return artwork;
+            }
+#endif
+
+            return null;
+        }
+
         public void SetSelected(bool isSelected)
         {
             // 기존 즉시 스케일 (CardAnimator가 없을 경우의 폴백)
@@ -126,19 +156,11 @@ namespace FFF.UI.Battle
             if (artworkOverride != null)
                 return artworkOverride;
 
-            Sprite artwork = FindLocalArtwork(cardData.CardId);
-            if (artwork != null)
-                return artwork;
-
-            artwork = HwaTuCardDatabase.GetArtwork(cardData.CardId);
+            Sprite artwork = ResolveArtworkForCardId(cardData.CardId);
             if (artwork != null)
                 return artwork;
 
 #if UNITY_EDITOR
-            artwork = LoadFlowerCardSpriteInEditor(cardData.CardId);
-            if (artwork != null)
-                return artwork;
-
             artwork = LoadFlowerCardAtlasSpriteInEditor(cardData);
             if (artwork != null)
                 return artwork;

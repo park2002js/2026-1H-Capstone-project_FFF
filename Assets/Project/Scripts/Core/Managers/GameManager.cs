@@ -5,6 +5,7 @@ using FFF.UI.Title;
 using FFF.UI.Main;
 using FFF.UI.Map;
 using FFF.UI.Shop;
+using FFF.UI.Common;
 using FFF.Map;
 using FFF.UI.Battle;
 using FFF.Data;
@@ -75,9 +76,15 @@ namespace FFF.Core
         [SerializeField] private PlayerDataSO _masterPlayerData;
         public PlayerDataSO MasterPlayerData => _masterPlayerData;
 
+        [Header("=== 랜덤 인카운터 아트워크 ===")]
+        [SerializeField] private Sprite _battleEncounterArtwork;
+        [SerializeField] private Sprite _shopEncounterArtwork;
+        [SerializeField] private Sprite _rewardEncounterArtwork;
+
         private MapData _currentMapData;
         public MapData CurrentMapData => _currentMapData;
         private MapUIComponent _activeMapView;
+        private TopRunHudComponent _activeRunHud;
 
         // === 적 목록 관리 필드 ===
         private List<string> _normalEnemyList = new List<string>();
@@ -149,6 +156,7 @@ namespace FFF.Core
             view.OnNodeSelected = HandleStageSelect;
             UIManager.Instance.RegisterScreen(UIScreenNames.MAP, view);
             UIManager.Instance.ShowScreen(UIScreenNames.MAP);
+            HydrateRunHud(view);
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.MAP);
         }
 
@@ -171,6 +179,7 @@ namespace FFF.Core
             view.OnSpendGold = HandleSpendGold;
             UIManager.Instance.RegisterScreen(UIScreenNames.SHOP, view);
             UIManager.Instance.ShowScreen(UIScreenNames.SHOP);
+            HydrateRunHud(view);
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.SHOP);
         }
 
@@ -291,7 +300,8 @@ namespace FFF.Core
             var encounter = new MapUIComponent.EncounterViewModel
             {
                 Title = "낯선 기척",
-                Story = "길 위의 안개가 갈라지자 누군가가 길목을 막아섭니다.\n\n돌아갈 길은 이미 사라졌고, 남은 것은 정면으로 맞서는 일뿐입니다."
+                Story = "길 위의 안개가 갈라지자 누군가가 길목을 막아섭니다.\n\n돌아갈 길은 이미 사라졌고, 남은 것은 정면으로 맞서는 일뿐입니다.",
+                Artwork = _battleEncounterArtwork
             };
             encounter.Choices.Add(new MapUIComponent.EncounterChoice("맞선다", () => EnterBattleFromMap(RoomType.Monster)));
             _activeMapView.ShowEncounter(encounter);
@@ -302,7 +312,8 @@ namespace FFF.Core
             var encounter = new MapUIComponent.EncounterViewModel
             {
                 Title = "길목의 보따리",
-                Story = "빛이 거의 닿지 않는 길목에 낡은 보따리 하나가 놓여 있습니다.\n\n보따리 옆의 표식은 이곳이 잠깐 숨을 고르고 물건을 살 수 있는 자리임을 알려줍니다."
+                Story = "빛이 거의 닿지 않는 길목에 낡은 보따리 하나가 놓여 있습니다.\n\n보따리 옆의 표식은 이곳이 잠깐 숨을 고르고 물건을 살 수 있는 자리임을 알려줍니다.",
+                Artwork = _shopEncounterArtwork
             };
             encounter.Choices.Add(new MapUIComponent.EncounterChoice("상점을 살펴본다", EnterShopFromMap));
             _activeMapView.ShowEncounter(encounter);
@@ -313,7 +324,8 @@ namespace FFF.Core
             var encounter = new MapUIComponent.EncounterViewModel
             {
                 Title = "미지의 손",
-                Story = "장막 너머에서 정체를 알 수 없는 손이 천천히 나타납니다.\n\n세부 이야기는 이곳에 작성하면 됩니다. 선택한 보상만 손 안에 남습니다."
+                Story = "장막 너머에서 정체를 알 수 없는 손이 천천히 나타납니다.\n\n세부 이야기는 이곳에 작성하면 됩니다. 선택한 보상만 손 안에 남습니다.",
+                Artwork = _rewardEncounterArtwork
             };
 
             foreach (MapUIComponent.EncounterChoice choice in BuildRewardEncounterChoices(selectedNode))
@@ -446,6 +458,7 @@ namespace FFF.Core
                 return;
 
             reward.Apply?.Invoke();
+            RefreshActiveRunHud();
             if (!string.IsNullOrEmpty(reward.SoundId))
                 SoundManager.PlaySfxSound(reward.SoundId);
 
@@ -694,17 +707,20 @@ namespace FFF.Core
         private void HandleShopAddDeckCard(string cardId)
         {
             _masterPlayerData?.AddDeckCard(cardId);
+            RefreshActiveRunHud();
         }
 
         private void HandleShopAddAccessory(string accessoryId)
         {
             _masterPlayerData?.AddAccessory(accessoryId);
+            RefreshActiveRunHud();
         }
 
         private void HandleShopRemoveDeckCard(string cardId)
         {
             if (_masterPlayerData != null && !_masterPlayerData.RemoveDeckCard(cardId))
                 Debug.LogWarning($"[GameManager] 제거할 카드가 덱에 없습니다. CardId={cardId}");
+            RefreshActiveRunHud();
         }
 
         private int GetPlayerGold()
@@ -714,7 +730,32 @@ namespace FFF.Core
 
         private bool HandleSpendGold(int amount)
         {
-            return _masterPlayerData != null && _masterPlayerData.SpendGold(amount);
+            if (_masterPlayerData == null || !_masterPlayerData.SpendGold(amount))
+                return false;
+
+            RefreshActiveRunHud();
+            return true;
+        }
+
+        private void HydrateRunHud(BaseUIComponent view)
+        {
+            if (view == null || _masterPlayerData == null)
+                return;
+
+            TopRunHudComponent hud = view.GetComponent<TopRunHudComponent>();
+            if (hud == null)
+                hud = view.gameObject.AddComponent<TopRunHudComponent>();
+
+            _activeRunHud = hud;
+            RefreshActiveRunHud();
+        }
+
+        private void RefreshActiveRunHud()
+        {
+            if (_activeRunHud == null || _masterPlayerData == null)
+                return;
+
+            _activeRunHud.SetPlayerData(_masterPlayerData);
         }
 
         private void HydrateBattleHud(BattleUIComponent view)

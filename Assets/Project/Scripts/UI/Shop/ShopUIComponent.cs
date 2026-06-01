@@ -474,10 +474,28 @@ namespace FFF.UI.Shop
 
         private void PlayPanelIn(GameObject panel)
         {
-            if (panel == null || !panel.activeInHierarchy)
+            if (panel == null)
                 return;
 
+            if (!panel.activeInHierarchy)
+            {
+                SetPanelVisible(panel.transform);
+                return;
+            }
+
             StartCoroutine(PanelIn(panel.transform));
+        }
+
+        private static void SetPanelVisible(Transform panel)
+        {
+            if (panel == null)
+                return;
+
+            CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+                canvasGroup.alpha = 1f;
+
+            panel.localScale = Vector3.one;
         }
 
         private IEnumerator PanelIn(Transform panel)
