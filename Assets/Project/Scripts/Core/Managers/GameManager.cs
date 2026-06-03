@@ -512,16 +512,15 @@ namespace FFF.Core
             SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
         }
 
-<<<<<<< Updated upstream
-        private int bonusHealthCount = 0; // 난이도 조절을 위해 임시로 추가한 변수. 실제로는 더 고도화된 난이도 조절 객체가 필요
-=======
         private void EnterRestFromMap()
         {
             SoundManager.PlayUiSound(SoundIds.UiConfirm);
             SceneLoader.LoadScene(SceneLoader.SceneNames.REST);
         }
 
->>>>>>> Stashed changes
+
+        private int bonusHealthCount = 0; // 난이도 조절을 위해 임시로 추가한 변수. 실제로는 더 고도화된 난이도 조절 객체가 필요
+
         private void EnterBattleFromMap(RoomType roomType)
         {
             // 시드값을 받아올 수 없는 경우 임의값 1을 전달
