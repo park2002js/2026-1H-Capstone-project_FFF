@@ -83,6 +83,8 @@ namespace FFF.Audio
                     return BgmMain;
                 case "StageScene":
                     return BgmMap;
+                case "RestScene":
+                    return BgmMap;
                 case "ShopScene":
                     return BgmShop;
                 case "BattleScene":

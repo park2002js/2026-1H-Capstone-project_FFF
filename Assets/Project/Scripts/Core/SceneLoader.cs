@@ -17,6 +17,7 @@ namespace FFF.Core
             public const string MAP = "StageScene";
             public const string BATTLE = "BattleScene";
             public const string SHOP = "ShopScene";
+            public const string REST = "RestScene";
         }
 
         public static event Action<string> OnSceneLoaded;

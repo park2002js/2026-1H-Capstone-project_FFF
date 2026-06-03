@@ -5,6 +5,7 @@ using FFF.UI.Title;
 using FFF.UI.Main;
 using FFF.UI.Map;
 using FFF.UI.Shop;
+using FFF.UI.Rest;
 using FFF.UI.Common;
 using FFF.Map;
 using FFF.UI.Battle;
@@ -193,6 +194,18 @@ namespace FFF.Core
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.SHOP);
         }
 
+        public void OnRestSceneReady(RestUIComponent view)
+        {
+            view.OnRestRequested = HandleRestRequested;
+            if (_masterPlayerData != null)
+                view.SetPlayerHealth(_masterPlayerData.CurrentHealth, _masterPlayerData.MaxHealth);
+
+            UIManager.Instance.RegisterScreen(UIScreenNames.REST, view);
+            UIManager.Instance.ShowScreen(UIScreenNames.REST);
+            HydrateRunHud(view);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.REST);
+        }
+
         public void UnregisterScreen(string screenName)
         {
             UIManager.Instance?.UnregisterScreen(screenName);
@@ -265,6 +278,12 @@ namespace FFF.Core
             if (selectedNode.RoomType == RoomType.Shop)
             {
                 EnterShopFromMap();
+                return;
+            }
+
+            if (selectedNode.RoomType == RoomType.Rest)
+            {
+                EnterRestFromMap();
                 return;
             }
 
@@ -493,7 +512,16 @@ namespace FFF.Core
             SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
         }
 
+<<<<<<< Updated upstream
         private int bonusHealthCount = 0; // 난이도 조절을 위해 임시로 추가한 변수. 실제로는 더 고도화된 난이도 조절 객체가 필요
+=======
+        private void EnterRestFromMap()
+        {
+            SoundManager.PlayUiSound(SoundIds.UiConfirm);
+            SceneLoader.LoadScene(SceneLoader.SceneNames.REST);
+        }
+
+>>>>>>> Stashed changes
         private void EnterBattleFromMap(RoomType roomType)
         {
             // 시드값을 받아올 수 없는 경우 임의값 1을 전달
@@ -760,6 +788,27 @@ namespace FFF.Core
 
             RefreshActiveRunHud();
             return true;
+        }
+
+        private void HandleRestRequested()
+        {
+            if (_masterPlayerData == null)
+            {
+                Debug.LogWarning("[GameManager] 휴식할 PlayerDataSO가 없어 Map으로 돌아갑니다.");
+                SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
+                return;
+            }
+
+            int beforeHealth = _masterPlayerData.CurrentHealth;
+            int healAmount = Mathf.Max(1, Mathf.CeilToInt(_masterPlayerData.MaxHealth * 0.15f));
+            _masterPlayerData.CurrentHealth = Mathf.Clamp(
+                _masterPlayerData.CurrentHealth + healAmount,
+                0,
+                _masterPlayerData.MaxHealth);
+
+            RefreshActiveRunHud();
+            Debug.Log($"[GameManager] 휴식 완료: {beforeHealth} -> {_masterPlayerData.CurrentHealth} (+{healAmount})");
+            SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
         }
 
         private void HydrateRunHud(BaseUIComponent view)
