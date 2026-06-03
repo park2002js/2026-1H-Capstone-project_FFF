@@ -72,18 +72,20 @@ namespace FFF.Battle.FSM
         {
             // Battle내에서 사용할 BattleContext 생성
             Context = new BattleContext();
-            
-            /// ----------  Player Data ---------------
-            // GameManager에서 Master Data(SO)를 가져와 복제 생성
-            var masterData = GameManager.Instance.MasterPlayerData;
 
-            // 로컬 플레이어 데이터(PlayerDataBattle) 초기화
-            Context.PlayerData = new PlayerDataBattle(masterData);
+            // GameManager로부터 구조체 형태의 전달 데이터 획득
+            BattleEntryData entryData = GameManager.Instance.CurrentBattleEntryData;
+
+            /// ----------  Player Data ---------------
+            // 전달받은 구조체 내부의 Master Data(SO)를 복제 생성
+            Context.PlayerData = new PlayerDataBattle(entryData.PlayerMasterData);
             /// --------------------------------------
             
             /// ----------  Enemy Data ---------------
-            // GameManager로부터 전달받은 적 ID를 이번 전투 Context에 할당
-            Context.TargetEnemyId = GameManager.Instance.TargetEnemyId;
+            // 구조체에 담긴 적 ID를 이번 전투 Context에 할당
+            Context.TargetEnemyId = entryData.TargetEnemyId;
+
+            // TODO: [Step 4] entryData.EnemyBonusHealth 값을 EnemyDataBattle 생성/초기화 과정에 적용 필요.
             /// --------------------------------------
             Debug.Log($"적 아이디 : {Context.TargetEnemyId}");
 
