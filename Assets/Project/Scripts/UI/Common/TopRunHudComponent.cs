@@ -15,8 +15,8 @@ namespace FFF.UI.Common
     public class TopRunHudComponent : MonoBehaviour
     {
         private static readonly Vector2 HudReferenceResolution = new Vector2(2560f, 1440f);
-        private static readonly Vector2 JokerSlotSize = new Vector2(132f, 128f);
-        private static readonly Vector2 JokerVisualSize = new Vector2(150f, 188f);
+        private static readonly Vector2 JokerSlotSize = new Vector2(120f, 160f);
+        private static readonly Vector2 JokerVisualSize = new Vector2(120f, 160f);
         private static readonly Vector2 AccessorySlotSize = new Vector2(100f, 100f);
         private static readonly Vector2 AccessoryVisualSize = new Vector2(160f, 160f);
         private GameObject _hudCanvasRoot;
@@ -154,7 +154,7 @@ namespace FFF.UI.Common
             rootRect.anchorMin = new Vector2(0f, 1f);
             rootRect.anchorMax = new Vector2(1f, 1f);
             rootRect.pivot = new Vector2(0.5f, 1f);
-            rootRect.sizeDelta = new Vector2(0f, 150f);
+            rootRect.sizeDelta = new Vector2(0f, 174f);
             rootRect.anchoredPosition = Vector2.zero;
             _root.transform.SetAsLastSibling();
 
@@ -227,7 +227,7 @@ namespace FFF.UI.Common
         {
             GameObject block = CreateUIObject("JokerHudBlock", parent);
             SetRect(block.GetComponent<RectTransform>(), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                new Vector2(456f, 138f), new Vector2(756f, 0f));
+                new Vector2(424f, 170f), new Vector2(756f, 0f));
 
             Image bg = block.AddComponent<Image>();
             bg.color = Color.clear;
@@ -337,7 +337,7 @@ namespace FFF.UI.Common
 
                 Image image = visual.AddComponent<Image>();
                 image.sprite = sprite;
-                image.preserveAspect = true;
+                image.preserveAspect = !isJoker;
                 image.raycastTarget = false;
                 image.color = Color.white;
                 return;
@@ -378,29 +378,39 @@ namespace FFF.UI.Common
         }
 
 
-        // TODO : 지금처럼 전부다 로드한 다음에 구성하는 로직이 아니라, 필요한 것만 로드하도록 변경이 필요
-        // 수정: 기존 하드코딩 및 에디터 전용 로직을 완전히 제거하고, Resources에서 동적 로드하도록 변경
-        // 목적: 변경된 Item ID 체계("Accessory_00X") 호환 및 상점과 동일한 데이터 참조(ItemDataSO) 보장
         private static Sprite ResolveBuiltInItemSprite(string itemId)
         {
             if (string.IsNullOrWhiteSpace(itemId))
                 return null;
 
-            // Resources 폴더에 존재하는 모든 ItemDataSO 로드
             ItemDataSO[] allItemData = Resources.LoadAll<ItemDataSO>("SO/Item");
-
-            // 전달받은 itemId와 일치하는 데이터 검색 (대소문자 무시)
             ItemDataSO itemData = allItemData.FirstOrDefault(data => 
                 data != null && 
                 string.Equals(data.Id, itemId, System.StringComparison.OrdinalIgnoreCase));
 
-            // 데이터가 존재하고 할당된 Icon이 있다면 반환
             if (itemData != null && itemData.Icon != null)
-            {
                 return itemData.Icon;
-            }
 
-            // 검색 실패 시 null 반환 (CreateItemSlot에서 텍스트 풀백이 작동함)
+#if UNITY_EDITOR
+            string path = itemId.ToUpperInvariant() switch
+            {
+                "ACC_REROLL_BONUS" => "Assets/Project/Art/Accessories/norigae.png",
+                "ACC_DAMAGE_BONUS" => "Assets/Project/Art/Accessories/silverknife.png",
+                "ACC_JADE_RING" => "Assets/Project/Art/Accessories/jadering.png",
+                "ACC_GAT" => "Assets/Project/Art/Accessories/gat.png",
+                "ACC_MAPE" => "Assets/Project/Art/Accessories/mape.png",
+                "ACC_NORIGAE" => "Assets/Project/Art/Accessories/norigae.png",
+                "JKR_REROLL_BURST" => "Assets/Project/Art/Joker/boone.png",
+                "JKR_HIGH_CARD" => "Assets/Project/Art/Joker/yangban.png",
+                "JKR_DOUBLE_PIP" => "Assets/Project/Art/Joker/mokjoong.png",
+                "JKR_LUCKY_CHARM" => "Assets/Project/Art/Joker/gaksi.png",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(path))
+                return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+#endif
+
             return null;
         }
 

@@ -39,8 +39,8 @@ namespace FFF.UI.Battle
         private static readonly Vector2 CombatCardSize = new Vector2(136f, 204f);
         private static readonly Vector2 CombatFirstCardPosition = new Vector2(-86f, 48f);
         private static readonly Vector2 CombatSecondCardPosition = new Vector2(86f, 48f);
-        private static readonly Vector2 HudJokerSlotSize = new Vector2(132f, 128f);
-        private static readonly Vector2 HudJokerVisualSize = new Vector2(150f, 188f);
+        private static readonly Vector2 HudJokerSlotSize = new Vector2(120f, 160f);
+        private static readonly Vector2 HudJokerVisualSize = new Vector2(120f, 160f);
         private static readonly Vector2 HudAccessorySlotSize = new Vector2(100f, 100f);
         private static readonly Vector2 HudAccessoryVisualSize = new Vector2(160f, 160f);
         private const float RewardBoxWidth = 280f;
@@ -364,7 +364,7 @@ namespace FFF.UI.Battle
                 visualImage = visualObject.AddComponent<Image>();
 
             visualImage.sprite = sprite;
-            visualImage.preserveAspect = true;
+            visualImage.preserveAspect = !isJoker;
             visualImage.raycastTarget = false;
             visualImage.color = Color.white;
             visualObject.transform.SetAsLastSibling();
@@ -424,7 +424,7 @@ namespace FFF.UI.Battle
             rootRect.anchorMin = new Vector2(0f, 1f);
             rootRect.anchorMax = new Vector2(1f, 1f);
             rootRect.pivot = new Vector2(0.5f, 1f);
-            rootRect.sizeDelta = new Vector2(0f, 150f);
+            rootRect.sizeDelta = new Vector2(0f, 174f);
             rootRect.anchoredPosition = Vector2.zero;
             _topHudRoot.transform.SetAsLastSibling();
 
@@ -469,7 +469,7 @@ namespace FFF.UI.Battle
         {
             GameObject block = CreateUIObject("JokerHudBlock", parent);
             RectTransform rect = block.GetComponent<RectTransform>();
-            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(456f, 138f), new Vector2(756f, 0f));
+            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(424f, 170f), new Vector2(756f, 0f));
 
             Image bg = block.AddComponent<Image>();
             bg.color = Color.clear;

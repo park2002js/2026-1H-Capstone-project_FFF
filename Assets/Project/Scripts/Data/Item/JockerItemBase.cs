@@ -9,8 +9,7 @@ namespace FFF.Data
     /// </summary>
     public abstract class JokerItemBase : ItemBase, IClickable
     {
-        // 사용자가 요청한 철자 유지
-        protected override string BaseFolderPath => "Assets/Project/Art/Jocker";
+        protected override string BaseFolderPath => "Assets/Project/Art/Joker";
 
         public bool IsUsed { get; protected set; } = false;
 

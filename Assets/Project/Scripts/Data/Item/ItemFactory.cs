@@ -14,7 +14,7 @@ namespace FFF.Data
             // TODO: 실제 기믹 스크립트 작성 후 switch 문에 매핑 추가 필요
             if (string.IsNullOrEmpty(id)) return null;
 
-            switch (id.ToUpper())
+            switch (id.ToUpperInvariant())
             {
                 // === 장신구 (Accessory) 매핑 ===
                 case "ACCESSORY_001":
@@ -29,6 +29,14 @@ namespace FFF.Data
                     return new Accessory_005();
 
                 // === 조커 (Joker) 매핑 ===
+                case RerollBurstJokerItem.JokerId:
+                    return new RerollBurstJokerItem();
+                case HighCardJokerItem.JokerId:
+                    return new HighCardJokerItem();
+                case DoublePipJokerItem.JokerId:
+                    return new DoublePipJokerItem();
+                case LuckyCharmJokerItem.JokerId:
+                    return new LuckyCharmJokerItem();
                 case "JOCKER_001":
                     return new Jocker_001();
 

@@ -539,6 +539,9 @@ namespace FFF.Core
 
             // TableSystemManager API를 호출하여 RoomType에 맞는 몬스터 ID 추출
             string targetEnemyId = TableSystem.PopEnemyId(roomType);
+            TargetEnemyId = targetEnemyId;
+            TargetRoomType = roomType;
+            TargetEnemyVisualId = null;
 
             // TODO: [Step 4] 난이도 조절 시스템 매니저
             // 층이 올라갈 때마다 기본체력에서 40의 체력을 추가로 부여하는 로직 추가 필요.

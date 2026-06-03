@@ -172,13 +172,12 @@ namespace FFF.Battle.Managers
                 jokerIndex = correctedIndex;
             }
 
-            // if (_jokerManager == null || !_jokerManager.UseJoker(jokerIndex))
-            // {
-            //     SoundManager.PlayUiSound(SoundIds.UiError);
-            //     return;
-            // }
+            if (_jokerManager == null || !_jokerManager.UseJoker(jokerIndex, battleManager.CurrentModifierContext))
+            {
+                SoundManager.PlayUiSound(SoundIds.UiError);
+                return;
+            }
 
-            player.ConsumeJoker(player.HeldJokerIds[jokerIndex]);
             SoundManager.PlaySfxSound(SoundIds.SfxJokerActivate);
 
             _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
