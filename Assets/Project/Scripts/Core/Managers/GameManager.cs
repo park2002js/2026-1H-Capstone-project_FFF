@@ -93,6 +93,10 @@ namespace FFF.Core
         private System.Random _enemyRng;
 
         public string TargetEnemyId { get; private set; } // 전투로 넘길 적 ID 보관소
+        public RoomType TargetRoomType { get; private set; } = RoomType.Monster;
+        public string TargetEnemyVisualId { get; private set; }
+
+        private readonly List<string> _runtimeSeenNormalEnemyVisualIds = new List<string>();
 
         // ================================================================
         // 씬별 준비 완료 알림 (SceneSetup → GameManager)
@@ -221,10 +225,12 @@ namespace FFF.Core
             if (_masterPlayerData == null)
             {
                 Debug.LogWarning("[GameManager] 초기화할 PlayerDataSO가 없습니다.");
+                _runtimeSeenNormalEnemyVisualIds.Clear();
                 return;
             }
 
             _masterPlayerData.ResetToInitialState();
+            _runtimeSeenNormalEnemyVisualIds.Clear();
             Debug.Log("[GameManager] 플레이어 데이터를 초기 상태로 되돌렸습니다.");
         }
 
@@ -490,9 +496,82 @@ namespace FFF.Core
 
             // RoomType에 맞춰 몬스터 ID를 추출하여 배정
             TargetEnemyId = PopEnemyFromList(roomType, currentSeed);
+            TargetRoomType = roomType;
+            TargetEnemyVisualId = null;
 
             SoundManager.PlaySfxSound(roomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
+        }
+
+        public string SelectEnemyVisualId(IReadOnlyList<string> candidateVisualIds)
+        {
+            if (!string.IsNullOrEmpty(TargetEnemyVisualId))
+                return TargetEnemyVisualId;
+
+            TargetEnemyVisualId = ResolveEnemyVisualId(TargetRoomType, candidateVisualIds);
+            return TargetEnemyVisualId;
+        }
+
+        private string ResolveEnemyVisualId(RoomType roomType, IReadOnlyList<string> candidateVisualIds)
+        {
+            if (roomType != RoomType.Monster)
+                return null;
+
+            List<string> candidates = BuildVisualCandidateList(candidateVisualIds);
+            if (candidates.Count == 0)
+                return null;
+
+            List<string> seenVisualIds = GetSeenNormalEnemyVisualIds();
+            string selectedId = null;
+            foreach (string candidate in candidates)
+            {
+                if (!seenVisualIds.Contains(candidate))
+                {
+                    selectedId = candidate;
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(selectedId))
+            {
+                seenVisualIds.Clear();
+                selectedId = candidates[0];
+            }
+
+            seenVisualIds.Add(selectedId);
+            Debug.Log($"[GameManager] 일반 몬스터 외형 선택: {selectedId}");
+            return selectedId;
+        }
+
+        private static List<string> BuildVisualCandidateList(IReadOnlyList<string> candidateVisualIds)
+        {
+            var candidates = new List<string>();
+            var usedIds = new HashSet<string>();
+
+            if (candidateVisualIds == null)
+                return candidates;
+
+            for (int i = 0; i < candidateVisualIds.Count; i++)
+            {
+                string id = candidateVisualIds[i];
+                if (string.IsNullOrWhiteSpace(id) || !usedIds.Add(id))
+                    continue;
+
+                candidates.Add(id);
+            }
+
+            return candidates;
+        }
+
+        private List<string> GetSeenNormalEnemyVisualIds()
+        {
+            if (_masterPlayerData != null)
+            {
+                _masterPlayerData.SeenNormalEnemyVisualIds ??= new List<string>();
+                return _masterPlayerData.SeenNormalEnemyVisualIds;
+            }
+
+            return _runtimeSeenNormalEnemyVisualIds;
         }
 
         private int BuildMapNodeSeed(MapNode node, int salt)

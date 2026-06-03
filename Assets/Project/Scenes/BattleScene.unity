@@ -1250,6 +1250,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _idleVisual: {fileID: 358664363}
   _attackVisual: {fileID: 1850873015}
+  _playIdleBreath: 1
+  _idleBreathScale: 1.025
+  _idleBreathDuration: 1.1
 --- !u!1 &518100505
 GameObject:
   m_ObjectHideFlags: 0
@@ -1447,6 +1450,7 @@ MonoBehaviour:
   _jokerManager: {fileID: 550716245}
   _enemyDataBattle: {fileID: 550716248}
   _battleUI: {fileID: 731945297}
+  _enemyVisualSelector: {fileID: 0}
   _onBattleStartEvent: {fileID: 11400000, guid: e2f42644fdf6823499e52e7b3754a7c7, type: 2}
 --- !u!114 &550716251
 MonoBehaviour:
@@ -2075,7 +2079,6 @@ MonoBehaviour:
   _enemyHpText: {fileID: 410541276}
   _accessoryLayoutGroup: {fileID: 1119089599}
   _jokerLayoutGroup: {fileID: 1750964192}
-  _playerPortraitSprite: {fileID: 0}
   _tempAccessoryIconPrefab: {fileID: 5032530346131345919, guid: ca2aec7849c29ac4cb66df390273099a, type: 3}
   _jokerIconPrefab: {fileID: 241555248878021352, guid: 849e01543fe8b4744a2e6446f1503a68, type: 3}
   _accessoryIconDefinitions:
@@ -2163,6 +2166,8 @@ MonoBehaviour:
   _deckAreaRect: {fileID: 1247294128}
   _drawStaggerDelay: 0.1
   _maxTiltAngle: 4
+  _jokboGuideSprite: {fileID: 0}
+  _jokboGuideResourcePath: UI/Jokbo/seotda_jokbo
 --- !u!225 &731945298
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3839,6 +3844,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _idleVisual: {fileID: 436038204}
   _attackVisual: {fileID: 865536414}
+  _playIdleBreath: 1
+  _idleBreathScale: 1.025
+  _idleBreathDuration: 1.1
 --- !u!1 &1247294127
 GameObject:
   m_ObjectHideFlags: 0
@@ -5607,6 +5615,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _idleVisual: {fileID: 860397590}
   _attackVisual: {fileID: 518100505}
+  _playIdleBreath: 1
+  _idleBreathScale: 1.025
+  _idleBreathDuration: 1.1
 --- !u!1 &1990370787
 GameObject:
   m_ObjectHideFlags: 0
