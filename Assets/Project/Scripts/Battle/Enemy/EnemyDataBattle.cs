@@ -35,7 +35,7 @@ namespace FFF.Battle.Enemy
         /// 전투 시작 시 BattleStartManager가 SO 데이터를 넘기며 호출합니다.
         /// 인자로 넘어온 SO 데이터를 바탕으로 현재 전투의 적 정보를 초기화합니다.
         /// </summary>
-        public void Initialize(EnemyDataSO enemyData)
+        public void Initialize(EnemyDataSO enemyData, int bonusHealth = 0) // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
         {
             // Enemy Data 누락으로 인해 게임 에러 방지를 위한 임시 데이터 
             if (enemyData == null)
@@ -52,8 +52,9 @@ namespace FFF.Battle.Enemy
             EnemyAILogic = enemyData.AILogic;
             EnemyId = enemyData.EnemyId;
             EnemyName = enemyData.EnemyName;
-            MaxHealth = enemyData.MaxHealth;
-            CurrentHealth = enemyData.MaxHealth;
+
+            MaxHealth = enemyData.MaxHealth + bonusHealth;      // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
+            CurrentHealth = enemyData.MaxHealth + bonusHealth;  // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
             
             if (enemyData.GimmickLogic != null)
             {

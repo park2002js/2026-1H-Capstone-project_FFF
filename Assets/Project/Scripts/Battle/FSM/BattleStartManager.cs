@@ -4,15 +4,13 @@ using FFF.Battle.Data;
 using FFF.Battle.FSM;
 using FFF.Battle.Card;
 using FFF.Battle.Enemy;
-using FFF.Battle.Item.Joker;
-using FFF.Battle.Item.Accessory;
-using FFF.Core;
 using FFF.UI.Battle;
 using FFF.UI.Animation;
 using FFF.Core.Events;
 using FFF.Data;
 using FFF.Audio;
 using FFF.Battle.Damage;
+using FFF.Core;
 
 namespace FFF.Battle.Managers
 {
@@ -76,7 +74,7 @@ namespace FFF.Battle.Managers
                 _deckSystem.Initialize(playerDeck);
                 _battleUI.Show();
                 _battleUI.SetJokerClickHandler(HandleJokerClicked);
-                _jokerManager?.SetJokersFromIds(player.HeldJokerIds);
+                //_jokerManager?.SetJokersFromIds(player.HeldJokerIds);
 
                 // 4. 적 데이터 연동 및 초기화
                 // BattleContext에서 타겟 EnemyId 로드
@@ -84,9 +82,21 @@ namespace FFF.Battle.Managers
                 // 데이터베이스에서 해당 ID를 가진 SO 파일을 로드
                 EnemyDataSO enemySO = EnemyDatabase.FindById(targetEnemyId);
                 // 해당 SO로 배틀 전용 객체를 초기화
-                _enemyDataBattle.Initialize(enemySO);
+                _enemyDataBattle.Initialize(enemySO, GameManager.Instance.CurrentBattleEntryData.EnemyBonusHealth); // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
 
-                // 5. UI 초기화
+                
+
+
+                // 5. 아이템 시스템 ID 기반 초기화 및 장신구 버프 적용
+                // 장신구 객체 생성 및 전투 컨텍스트에 영구 버프 등록
+                _accessoryManager.Initialize(player.EquippedAccessoryIds);
+                _accessoryManager.ApplyAllAccessories(BattleManager.Instance.CurrentModifierContext);
+
+                // 조커 객체 생성 (실행 대기 상태)
+                _jokerManager.Initialize(player.HeldJokerIds);
+
+
+                // 6. UI 초기화
                 _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
                 _battleUI.SetPlayerGold(player.CurrentGold);
                 _battleUI.SetDeckCards(player.DeckCardIds);
@@ -162,11 +172,11 @@ namespace FFF.Battle.Managers
                 jokerIndex = correctedIndex;
             }
 
-            if (_jokerManager == null || !_jokerManager.UseJoker(jokerIndex))
-            {
-                SoundManager.PlayUiSound(SoundIds.UiError);
-                return;
-            }
+            // if (_jokerManager == null || !_jokerManager.UseJoker(jokerIndex))
+            // {
+            //     SoundManager.PlayUiSound(SoundIds.UiError);
+            //     return;
+            // }
 
             player.ConsumeJoker(player.HeldJokerIds[jokerIndex]);
             SoundManager.PlaySfxSound(SoundIds.SfxJokerActivate);

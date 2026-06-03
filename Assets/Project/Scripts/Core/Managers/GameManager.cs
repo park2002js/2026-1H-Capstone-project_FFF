@@ -5,6 +5,7 @@ using FFF.UI.Title;
 using FFF.UI.Main;
 using FFF.UI.Map;
 using FFF.UI.Shop;
+using FFF.UI.Rest;
 using FFF.UI.Common;
 using FFF.Map;
 using FFF.UI.Battle;
@@ -85,6 +86,16 @@ namespace FFF.Core
         public MapData CurrentMapData => _currentMapData;
         private MapUIComponent _activeMapView;
         private TopRunHudComponent _activeRunHud;
+        
+        // === <ver 1.2.2 System> 신규 추가 ===
+        // ================================================================
+        // 씬 간 공유되는 데이터 관리
+        // ================================================================
+        /// <summary> TableSystemManager 접근용 프로퍼티 </summary>
+        public TableSystemManager TableSystem { get; private set; }
+        
+        /// <summary> 전투 씬으로 전달할 데이터를 담은 구조체 </summary>
+        public BattleEntryData CurrentBattleEntryData { get; private set; }
 
         // === 적 목록 관리 필드 ===
         private List<string> _normalEnemyList = new List<string>();
@@ -97,6 +108,14 @@ namespace FFF.Core
         public string TargetEnemyVisualId { get; private set; }
 
         private readonly List<string> _runtimeSeenNormalEnemyVisualIds = new List<string>();
+
+        protected override void OnInitialize()
+        {
+            base.OnInitialize(); // 상위 Singleton의 OnInitialize가 있다면 호출
+            
+            // TableSystemManager 객체 초기화 생성
+            TableSystem = new TableSystemManager();
+        }
 
         // ================================================================
         // 씬별 준비 완료 알림 (SceneSetup → GameManager)
@@ -135,8 +154,8 @@ namespace FFF.Core
             InitializeMapProgress(_currentMapData);
             SaveRunMapProgress();
 
-            // 맵 생성 완료 후 해당 시드값으로 적 목록 생성
-            InitializeEnemyLists(seed);
+            // TableSystemManager 시드값 전달 및 테이블 초기화 트리거
+            TableSystem.Initialize(seed);
 
             Debug.Log($"[GameManager] 스테이지 맵 생성 및 적 목록 초기화 완료. seed={seed}");
 
@@ -185,6 +204,18 @@ namespace FFF.Core
             UIManager.Instance.ShowScreen(UIScreenNames.SHOP);
             HydrateRunHud(view);
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.SHOP);
+        }
+
+        public void OnRestSceneReady(RestUIComponent view)
+        {
+            view.OnRestRequested = HandleRestRequested;
+            if (_masterPlayerData != null)
+                view.SetPlayerHealth(_masterPlayerData.CurrentHealth, _masterPlayerData.MaxHealth);
+
+            UIManager.Instance.RegisterScreen(UIScreenNames.REST, view);
+            UIManager.Instance.ShowScreen(UIScreenNames.REST);
+            HydrateRunHud(view);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.REST);
         }
 
         public void UnregisterScreen(string screenName)
@@ -261,6 +292,12 @@ namespace FFF.Core
             if (selectedNode.RoomType == RoomType.Shop)
             {
                 EnterShopFromMap();
+                return;
+            }
+
+            if (selectedNode.RoomType == RoomType.Rest)
+            {
+                EnterRestFromMap();
                 return;
             }
 
@@ -489,15 +526,33 @@ namespace FFF.Core
             SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
         }
 
+        private int bonusHealthCount = 0; // 난이도 조절을 위해 임시로 추가한 변수. 실제로는 더 고도화된 난이도 조절 객체가 필요
+        private void EnterRestFromMap()
+        {
+            SoundManager.PlayUiSound(SoundIds.UiConfirm);
+            SceneLoader.LoadScene(SceneLoader.SceneNames.REST);
+        }
         private void EnterBattleFromMap(RoomType roomType)
         {
             // 시드값을 받아올 수 없는 경우 임의값 1을 전달
             int currentSeed = _currentMapData != null ? _currentMapData.Seed : 1;
 
-            // RoomType에 맞춰 몬스터 ID를 추출하여 배정
-            TargetEnemyId = PopEnemyFromList(roomType, currentSeed);
-            TargetRoomType = roomType;
-            TargetEnemyVisualId = null;
+            // TableSystemManager API를 호출하여 RoomType에 맞는 몬스터 ID 추출
+            string targetEnemyId = TableSystem.PopEnemyId(roomType);
+
+            // TODO: [Step 4] 난이도 조절 시스템 매니저
+            // 층이 올라갈 때마다 기본체력에서 40의 체력을 추가로 부여하는 로직 추가 필요.
+            // 현재는 임시로 0 할당.
+            int bonusHealth = 40;
+
+            // 전투 전달용 데이터 구조체 패키징
+            CurrentBattleEntryData = new BattleEntryData
+            {
+                TargetEnemyId = targetEnemyId,
+                EnemyBonusHealth = bonusHealth * bonusHealthCount,
+                PlayerMasterData = _masterPlayerData
+            };
+            bonusHealthCount++;
 
             SoundManager.PlaySfxSound(roomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);
@@ -670,8 +725,8 @@ namespace FFF.Core
             ApplySavedMapProgress(restoredMap);
             _currentMapData = restoredMap;
 
-            // 복원된 맵의 시드값으로 적 목록 재생성
-            InitializeEnemyLists(_masterPlayerData.SavedMapSeed);
+            // 복원된 맵 시드값 기반 TableSystemManager 초기화 트리거
+            TableSystem.Initialize(_masterPlayerData.SavedMapSeed);
 
             Debug.Log($"[GameManager] 시드값 기반으로 저장된 스테이지 맵 및 적 List 재생성. seed={_masterPlayerData.SavedMapSeed}");
             return true;
@@ -816,6 +871,27 @@ namespace FFF.Core
             return true;
         }
 
+        private void HandleRestRequested()
+        {
+            if (_masterPlayerData == null)
+            {
+                Debug.LogWarning("[GameManager] 휴식할 PlayerDataSO가 없어 Map으로 돌아갑니다.");
+                SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
+                return;
+            }
+
+            int beforeHealth = _masterPlayerData.CurrentHealth;
+            int healAmount = Mathf.Max(1, Mathf.CeilToInt(_masterPlayerData.MaxHealth * 0.15f));
+            _masterPlayerData.CurrentHealth = Mathf.Clamp(
+                _masterPlayerData.CurrentHealth + healAmount,
+                0,
+                _masterPlayerData.MaxHealth);
+
+            RefreshActiveRunHud();
+            Debug.Log($"[GameManager] 휴식 완료: {beforeHealth} -> {_masterPlayerData.CurrentHealth} (+{healAmount})");
+            SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
+        }
+
         private void HydrateRunHud(BaseUIComponent view)
         {
             if (view == null || _masterPlayerData == null)
@@ -868,27 +944,6 @@ namespace FFF.Core
             SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
         }
 
-        // ================================================================
-        #region 적 목록 초기화 및 셔플 로직
-
-        /// <summary>
-        /// 시드값을 기반으로 등급별 적 목록을 구성하고 셔플합니다.
-        /// </summary>
-        private void InitializeEnemyLists(int seed)
-        {
-            _enemyRng = new System.Random(seed);
-
-            _normalEnemyList = new List<string> { "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005" };
-            ShuffleList(_normalEnemyList, _enemyRng);
-
-            _eliteEnemyList = new List<string> { "Enemy_006", "Enemy_007" };
-            ShuffleList(_eliteEnemyList, _enemyRng);
-
-            _bossEnemyList = new List<string> { "Enemy_008" };
-            ShuffleList(_bossEnemyList, _enemyRng);
-
-            Debug.Log($"[GameManager] 등급별 적 목록 초기화 및 셔플 완료. 적용된 시드값: {seed}");
-        }
 
         /// <summary>
         /// Fisher-Yates 알고리즘을 이용해 리스트 요소를 무작위로 섞습니다.
@@ -904,52 +959,5 @@ namespace FFF.Core
                 (list[i], list[j]) = (list[j], list[i]);
             }
         }
-
-        /// <summary>
-        /// 룸 타입에 맞는 적 목록에서 마지막 요소를 꺼내(Pop) 반환합니다.
-        /// 리스트가 비어있을 경우 원본 ID 목록으로 재충전 후 다시 셔플합니다.
-        /// </summary>
-        private string PopEnemyFromList(RoomType roomType, int fallbackSeed)
-        {
-            // RNG가 초기화되지 않은 예외 상황 시 폴백(Fallback) 시드값으로 생성
-            if (_enemyRng == null)
-            {
-                _enemyRng = new System.Random(fallbackSeed);
-            }
-
-            List<string> targetList;
-            List<string> defaultIds;
-
-            switch (roomType)
-            {
-                // 엘리트 룸 타입이 MapSystem 내부에 구현되어 있다고 가정합니다. (구현에 따라 Enum명 변경 요망)
-                case RoomType.Elite: 
-                    targetList = _eliteEnemyList;
-                    defaultIds = new List<string> { "Enemy_006", "Enemy_007" };
-                    break;
-                case RoomType.Boss:
-                    targetList = _bossEnemyList;
-                    defaultIds = new List<string> { "Enemy_008" };
-                    break;
-                default: 
-                    targetList = _normalEnemyList;
-                    defaultIds = new List<string> { "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005" };
-                    break;
-            }
-
-            // 리스트 고갈 시 재충전 및 셔플 진행
-            if (targetList.Count == 0)
-            {
-                targetList.AddRange(defaultIds);
-                ShuffleList(targetList, _enemyRng);
-                Debug.Log($"[GameManager] {roomType} 등급 적 목록이 고갈되어 리스트를 재충전하고 셔플했습니다.");
-            }
-
-            string selectedEnemyId = targetList[targetList.Count - 1];
-            targetList.RemoveAt(targetList.Count - 1);
-
-            return selectedEnemyId;
-        }
-        #endregion
     }
 }
