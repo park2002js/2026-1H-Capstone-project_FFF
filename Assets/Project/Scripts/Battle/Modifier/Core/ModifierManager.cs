@@ -23,6 +23,11 @@ namespace FFF.Battle.Modifier
         // 개발을 위해 임시로 인스턴스를 전역 변수화 하여 어디서든 참조하여 API 호출이 가능하도록 함
         public static ModifierManager Instance { get; private set; }
 
+        [Header("=== 캐싱 대상 참조 ===")]
+        [SerializeField] private DeckSystem _deckSystem;
+
+        private readonly ModifierContext _cachedValueContext = new ModifierContext();
+
         /// <summary>
         /// 현재 활성화된 모든 모디파이어(아이템/버프) 목록.
         /// (※ BattleModifier는 조건과 효과가 조립된 Composition 형태의 객체입니다)
@@ -96,6 +101,7 @@ namespace FFF.Battle.Modifier
             }
 
             Debug.Log($"[ModifierManager] 버프 등록 완료: {modifier.Id} (대상: {modifier.TargetType})");
+            SyncCachedValues();
         }
 
         /// <summary>
@@ -119,6 +125,8 @@ namespace FFF.Battle.Modifier
                     case ModifierValueType.MaxRerolls: 
                         _onMaxRerollsModifiers -= modifier.AttachedAction; break;
                 }
+
+                SyncCachedValues();
             }
         }
 
@@ -169,6 +177,23 @@ namespace FFF.Battle.Modifier
         {
             context.Reset();
             _onMaxRerollsModifiers?.Invoke(context);
+        }
+
+        public void SyncCachedValues(ModifierContext context = null)
+        {
+            if (_deckSystem == null)
+                return;
+
+            ModifierContext syncContext = context ?? _cachedValueContext;
+
+            ProcessMaxRerolls(syncContext);
+            int extraRerolls = syncContext.ExtraRerollCount;
+
+            ProcessDrawCount(syncContext);
+            int extraDrawCount = syncContext.ExtraDrawCount;
+
+            _deckSystem.SetBonusMaxRerolls(extraRerolls);
+            _deckSystem.SetBonusDrawCount(extraDrawCount);
         }
 
         #endregion

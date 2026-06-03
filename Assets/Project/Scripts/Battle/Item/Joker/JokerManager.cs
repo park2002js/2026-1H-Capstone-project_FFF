@@ -86,6 +86,17 @@ namespace FFF.Battle.Item.Joker
             Debug.Log($"[JokerManager] 조커 획득: {joker.DisplayName}");
         }
 
+        public void SetJokersFromIds(IReadOnlyList<string> jokerIds)
+        {
+            _heldJokers.Clear();
+
+            List<JokerBase> jokers = JokerFactory.CreateMany(jokerIds, PlayerDataSO.MaxHeldJokerCount);
+            foreach (JokerBase joker in jokers)
+                AddJoker(joker);
+
+            Debug.Log($"[JokerManager] 보유 조커 로드 완료: {_heldJokers.Count}개");
+        }
+
         /// <summary>
         /// 플레이어가 조커를 사용한다.
         /// TurnProceed 상태에서 카드 선택 완료 전에 호출.
@@ -114,10 +125,18 @@ namespace FFF.Battle.Item.Joker
             if (success)
             {
                 _heldJokers.RemoveAt(jokerIndex);
+                SyncCachedDeckBonuses();
                 Debug.Log($"[JokerManager] 조커 사용 완료 및 소멸: {joker.DisplayName}. 남은 조커: {_heldJokers.Count}개");
             }
 
             return success;
+        }
+
+        public void SyncCachedDeckBonuses()
+        {
+            ModifierManager modifierManager = _modifierManager != null ? _modifierManager : ModifierManager.Instance;
+            if (modifierManager != null)
+                modifierManager.SyncCachedValues(BattleManager.Instance != null ? BattleManager.Instance.CurrentModifierContext : null);
         }
 
         #endregion
@@ -187,5 +206,195 @@ namespace FFF.Battle.Item.Joker
         }
 
         #endregion
+    }
+
+    public static class JokerFactory
+    {
+        public static JokerBase Create(string jokerId)
+        {
+            return jokerId switch
+            {
+                RerollBurstJoker.JokerId => new RerollBurstJoker(),
+                HighCardJoker.JokerId => new HighCardJoker(),
+                DoublePipJoker.JokerId => new DoublePipJoker(),
+                LuckyCharmJoker.JokerId => new LuckyCharmJoker(),
+                _ => null
+            };
+        }
+
+        public static List<JokerBase> CreateMany(IReadOnlyList<string> jokerIds, int limit)
+        {
+            var jokers = new List<JokerBase>();
+            if (jokerIds == null)
+                return jokers;
+
+            int count = Mathf.Min(jokerIds.Count, limit);
+            for (int i = 0; i < count; i++)
+            {
+                JokerBase joker = Create(jokerIds[i]);
+                if (joker != null)
+                {
+                    jokers.Add(joker);
+                    continue;
+                }
+
+                Debug.LogWarning($"[JokerFactory] 알 수 없는 조커 ID입니다: {jokerIds[i]}");
+            }
+
+            return jokers;
+        }
+    }
+
+    public abstract class JokerBaseWithHelpers : JokerBase
+    {
+        protected static ModifierManager ResolveModifierManager(JokerContext context)
+        {
+            ModifierManager modifierManager = context?.ModifierManager != null
+                ? context.ModifierManager
+                : ModifierManager.Instance;
+
+            if (modifierManager == null)
+                Debug.LogWarning("[Joker] ModifierManager가 없어 조커 효과를 적용할 수 없습니다.");
+
+            return modifierManager;
+        }
+    }
+
+    public sealed class RerollBurstJoker : JokerBaseWithHelpers
+    {
+        public const string JokerId = "JKR_REROLL_BURST";
+
+        public override string Id => JokerId;
+        public override string DisplayName => "리롤 폭죽 조커";
+        public override string Description => "이번 턴 리롤 횟수를 4회 늘립니다.";
+
+        protected override void Activate(JokerContext context)
+        {
+            ModifierManager modifierManager = ResolveModifierManager(context);
+            if (modifierManager == null)
+                return;
+
+            modifierManager.AddModifier(new BattleModifier(
+                "JKR_REROLL_BURST_MaxRerolls",
+                ModifierValueType.MaxRerolls,
+                new AlwaysTrueCondition(),
+                new ExtraRerollCountEffect(4),
+                turns: 1));
+        }
+    }
+
+    public sealed class HighCardJoker : JokerBaseWithHelpers
+    {
+        public const string JokerId = "JKR_HIGH_CARD";
+
+        public override string Id => JokerId;
+        public override string DisplayName => "광패 조커";
+        public override string Description => "이번 턴 광 카드가 포함된 패의 공격력을 60 올립니다.";
+
+        protected override void Activate(JokerContext context)
+        {
+            ModifierManager modifierManager = ResolveModifierManager(context);
+            if (modifierManager == null)
+                return;
+
+            modifierManager.AddModifier(new BattleModifier(
+                "JKR_HIGH_CARD_Strength",
+                ModifierValueType.Strength,
+                new HandIncludesCardTypeCondition(CardType.Gwang),
+                new StrengthConstantEffect(60),
+                turns: 1));
+        }
+    }
+
+    public sealed class DoublePipJoker : JokerBaseWithHelpers
+    {
+        public const string JokerId = "JKR_DOUBLE_PIP";
+
+        public override string Id => JokerId;
+        public override string DisplayName => "쌍피 조커";
+        public override string Description => "이번 턴 피 카드 2장으로 낸 패의 공격력을 45 올립니다.";
+
+        protected override void Activate(JokerContext context)
+        {
+            ModifierManager modifierManager = ResolveModifierManager(context);
+            if (modifierManager == null)
+                return;
+
+            modifierManager.AddModifier(new BattleModifier(
+                "JKR_DOUBLE_PIP_Strength",
+                ModifierValueType.Strength,
+                new HandCardTypeCountCondition(CardType.Pi, 2),
+                new StrengthConstantEffect(45),
+                turns: 1));
+        }
+    }
+
+    public sealed class LuckyCharmJoker : JokerBaseWithHelpers
+    {
+        public const string JokerId = "JKR_LUCKY_CHARM";
+
+        public override string Id => JokerId;
+        public override string DisplayName => "행운 부적 조커";
+        public override string Description => "이번 턴 낸 패의 공격력을 25 올립니다.";
+
+        protected override void Activate(JokerContext context)
+        {
+            ModifierManager modifierManager = ResolveModifierManager(context);
+            if (modifierManager == null)
+                return;
+
+            modifierManager.AddModifier(new BattleModifier(
+                "JKR_LUCKY_CHARM_Strength",
+                ModifierValueType.Strength,
+                new AlwaysTrueCondition(),
+                new StrengthConstantEffect(25),
+                turns: 1));
+        }
+    }
+
+    internal sealed class HandIncludesCardTypeCondition : IModifierCondition
+    {
+        private readonly CardType _cardType;
+
+        public HandIncludesCardTypeCondition(CardType cardType)
+        {
+            _cardType = cardType;
+        }
+
+        public bool IsMet(ModifierContext context = null)
+        {
+            if (context?.ActionHandResult == null)
+                return false;
+
+            SeotdaResult result = context.ActionHandResult.Value;
+            return result.Card1.Type == _cardType || result.Card2.Type == _cardType;
+        }
+    }
+
+    internal sealed class HandCardTypeCountCondition : IModifierCondition
+    {
+        private readonly CardType _cardType;
+        private readonly int _requiredCount;
+
+        public HandCardTypeCountCondition(CardType cardType, int requiredCount)
+        {
+            _cardType = cardType;
+            _requiredCount = Mathf.Max(1, requiredCount);
+        }
+
+        public bool IsMet(ModifierContext context = null)
+        {
+            if (context?.ActionHandResult == null)
+                return false;
+
+            SeotdaResult result = context.ActionHandResult.Value;
+            int count = 0;
+            if (result.Card1.Type == _cardType)
+                count++;
+            if (result.Card2.Type == _cardType)
+                count++;
+
+            return count >= _requiredCount;
+        }
     }
 }

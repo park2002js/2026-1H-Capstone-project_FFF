@@ -33,4 +33,22 @@ namespace FFF.Battle.Modifier
             //return currentValue + _amount;
         }
     }
+
+    public class ExtraRerollCountEffect : IModifierEffect
+    {
+        private readonly int _amount;
+
+        public ExtraRerollCountEffect(int amount)
+        {
+            _amount = amount;
+        }
+
+        public void Apply(ModifierContext context)
+        {
+            if (context == null)
+                return;
+
+            context.ExtraRerollCount += _amount;
+        }
+    }
 }
