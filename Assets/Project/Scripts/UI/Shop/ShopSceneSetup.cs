@@ -9,6 +9,7 @@ using FFF.Data;
 using FFF.UI.Battle;
 using FFF.UI.Common;
 using FFF.UI.Core;
+using System.Linq;
 
 namespace FFF.UI.Shop
 {
@@ -53,15 +54,7 @@ namespace FFF.UI.Shop
             }
         }
 
-        [Serializable]
-        private sealed class ShopAccessoryOffer
-        {
-            public string Id;
-            public string DisplayName;
-            public string Description;
-            public int Price = 100;
-            public Sprite Icon = null;
-        }
+        // ShopAccessory Offer는 지움 -> 사유 : 데이터를 받아온 다음에 위의 Item 틀에 맞춰서 정의하도록 하기 위함
 
         [SerializeField] private ShopUIComponent _shopUI;
         [SerializeField] private bool _buildRuntimeUIIfMissing = true;
@@ -83,45 +76,6 @@ namespace FFF.UI.Shop
         [SerializeField] private int _cardOfferCount = 5;
         [SerializeField] private int _accessoryOfferCount = 2;
         [SerializeField] private int _cardRemovalPrice = 75;
-        [SerializeField]
-        private List<ShopAccessoryOffer> _accessoryOfferPool = new List<ShopAccessoryOffer>
-        {
-            new ShopAccessoryOffer
-            {
-                Id = "ACC_NORIGAE",
-                DisplayName = "노리개",
-                Description = "전투 시작 시\n리롤 +1",
-                Price = 88
-            },
-            new ShopAccessoryOffer
-            {
-                Id = "ACC_DAMAGE_BONUS",
-                DisplayName = "은장도",
-                Description = "승리 피해량\n+5",
-                Price = 149
-            },
-            new ShopAccessoryOffer
-            {
-                Id = "ACC_JADE_RING",
-                DisplayName = "옥가락지",
-                Description = "족보 공격력\n소폭 증가",
-                Price = 126
-            },
-            new ShopAccessoryOffer
-            {
-                Id = "ACC_GAT",
-                DisplayName = "갓",
-                Description = "첫 턴 방어적\n보정 획득",
-                Price = 112
-            },
-            new ShopAccessoryOffer
-            {
-                Id = "ACC_MAPE",
-                DisplayName = "마패",
-                Description = "땡 공격 시 공격력 +50",
-                Price = 150
-            }
-        };
 
         private static readonly Color Parchment = new Color(0.73f, 0.78f, 0.63f, 0.96f);
         private static readonly Color Ink = new Color(0.13f, 0.12f, 0.1f, 1f);
@@ -597,30 +551,48 @@ namespace FFF.UI.Shop
             }
         }
 
+        // TODO : 지금처럼 전부다 로드한 다음에 구성하는 로직이 아니라, 필요한 것만 로드하도록 변경이 필요
         private void AddRandomAccessoryOffers(List<ShopItemDefinition> items)
         {
-            var offers = new List<ShopAccessoryOffer>();
-            foreach (ShopAccessoryOffer offer in _accessoryOfferPool)
+            // TableSystemManager 부재 시 안전 종료 처리
+            if (GameManager.Instance == null || GameManager.Instance.TableSystem == null)
             {
-                if (offer != null && !string.IsNullOrEmpty(offer.Id))
-                    offers.Add(offer);
+                Debug.LogWarning("[ShopSceneSetup] TableSystemManager 검색 실패. 상점 악세서리 구성을 건너뜀.");
+                return;
             }
 
-            Shuffle(offers);
+            // TableSystemManager API 호출을 통한 악세서리 ID 추출
+            List<string> accessoryIds = GameManager.Instance.TableSystem.PopItemIds(ItemType.Accessory, _accessoryOfferCount);
 
-            int count = Mathf.Min(Mathf.Max(0, _accessoryOfferCount), offers.Count);
-            for (int i = 0; i < count; i++)
+            // 추출된 ID가 없을 경우 조기 종료
+            if (accessoryIds == null || accessoryIds.Count == 0) {Debug.LogError("[ShopSceneSetup] 악세서리 ID 추출 실패"); return;}
+            
+            // 추가: Resources 경로 내 모든 ItemDataSO 일괄 로드 (캐싱 및 검색용) : 후에는 Jocker와 Item 모두 공용으로 미리 불러와서 사용할 수 있도록 하는 것이 목적
+            ItemDataSO[] allItemData = Resources.LoadAll<ItemDataSO>("SO/Item");
+            foreach (string id in accessoryIds)
             {
-                ShopAccessoryOffer offer = offers[i];
-                items.Add(new ShopItemDefinition(
-                    $"ACCESSORY_{offer.Id}",
-                    offer.DisplayName,
-                    "장신구",
-                    offer.Description,
-                    offer.Price,
-                    offer.Icon,
-                    ShopUIComponent.ShopItemKind.Accessory,
-                    offer.Id));
+                // 대소문자 무시(OrdinalIgnoreCase) 규칙을 적용하여 일치하는 데이터 검색
+                ItemDataSO itemData = allItemData.FirstOrDefault(data => 
+                    data != null && 
+                    string.Equals(data.Id, id, System.StringComparison.OrdinalIgnoreCase));
+                
+                if (itemData != null)
+                {
+                    // 로드된 ItemDataSO의 실제 데이터를 기반으로 상점 아이템 정의 추가
+                    items.Add(new ShopItemDefinition(
+                        $"ACCESSORY_{itemData.Id}",
+                        itemData.DisplayName,
+                        "장신구",
+                        itemData.Description,
+                        itemData.Price,
+                        itemData.Icon,
+                        ShopUIComponent.ShopItemKind.Accessory,
+                        itemData.Id));
+                }
+                else
+                {
+                    Debug.LogWarning($"[ShopSceneSetup] ID '{id}'에 해당하는 상점 UI 데이터를 풀에서 찾을 수 없음.");
+                }
             }
         }
 
