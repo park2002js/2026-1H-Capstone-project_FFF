@@ -19,6 +19,14 @@ namespace FFF.Data
                 // === 장신구 (Accessory) 매핑 ===
                 case "ACCESSORY_001":
                     return new Accessory_001();
+                case "ACCESSORY_002":
+                    return new Accessory_002();
+                case "ACCESSORY_003":
+                    return new Accessory_003();
+                case "ACCESSORY_004":
+                    return new Accessory_004();
+                case "ACCESSORY_005":
+                    return new Accessory_005();
 
                 // === 조커 (Joker) 매핑 ===
                 case "JOCKER_001":

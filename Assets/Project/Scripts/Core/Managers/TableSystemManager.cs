@@ -21,6 +21,13 @@ namespace FFF.Core
         /// <summary> 보스 적 ID 보관 리스트 </summary>
         private List<string> _bossEnemyList = new List<string>();
 
+        // === 아이템 ID 풀 ===
+        /// <summary> 악세서리 ID 보관 리스트 </summary>
+        private List<string> _accessoryIdList = new List<string>();
+
+        /// <summary> 악세서리 원본 데이터 (리필 목적) </summary>
+        private readonly string[] _defaultAccessoryIds = { "Accessory_001", "Accessory_002", "Accessory_003", "Accessory_004", "Accessory_005" };
+
         // === 원본 데이터 (리필 목적) ===
         // 후에 Json이나 Text로 저장된 리스트를 불러와서 초기화하도록 로직을 변경할 예정. 코드내에서 전부다 추가하는것이 오히려 불편
         private readonly string[] _defaultNormalEnemies = { "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005" };
@@ -85,6 +92,48 @@ namespace FFF.Core
             targetList.RemoveAt(targetList.Count - 1);
             
             return selectedId;
+        }
+
+        /// <summary>
+        /// 지정된 타입의 아이템 ID 지정 수량 추출 및 반환.
+        /// 내부 리스트 고갈 시 원본 데이터 삽입 및 재셔플 처리.
+        /// </summary>
+        public List<string> PopItemIds(FFF.Data.ItemType itemType, int count)
+        {
+            if (_rng == null)
+            {
+                Debug.LogWarning("[TableSystemManager] RNG 미초기화 상태. 폴백 시드 1 적용.");
+                Initialize(1);
+            }
+
+            List<string> result = new List<string>();
+            List<string> targetList = null;
+            string[] defaultArray = null;
+
+            if (itemType == FFF.Data.ItemType.Accessory)
+            {
+                targetList = _accessoryIdList;
+                defaultArray = _defaultAccessoryIds;
+            }
+            else
+            {
+                return result; // 조커 등 기타 타입은 추후 확장에 대비함
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                if (targetList.Count == 0)
+                {
+                    RefillAndShuffle(ref targetList, defaultArray);
+                    Debug.Log($"[TableSystemManager] {itemType} 목록 고갈. 리필 및 셔플 적용.");
+                }
+                
+                string selectedId = targetList[targetList.Count - 1];
+                targetList.RemoveAt(targetList.Count - 1);
+                result.Add(selectedId);
+            }
+            
+            return result;
         }
 
         /// <summary>

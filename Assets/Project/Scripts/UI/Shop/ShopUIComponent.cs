@@ -8,6 +8,7 @@ using FFF.Audio;
 using FFF.Data;
 using FFF.UI.Battle;
 using FFF.UI.Core;
+using FFF.Core;
 
 namespace FFF.UI.Shop
 {
@@ -228,10 +229,23 @@ namespace FFF.UI.Shop
                 return;
 
             SoundManager.PlaySfxSound(SoundIds.SfxShopBuy);
+
+            // 아이템 종류에 따른 연동 처리
             if (item.Kind == ShopItemKind.Card)
+            {
                 OnAddDeckCard?.Invoke(item.PayloadId);
+            }
             else if (item.Kind == ShopItemKind.Accessory)
+            {
+                // UI 이벤트를 통한 1차 데이터 연동 발송 (GameManager 수신)
                 OnAddAccessory?.Invoke(item.PayloadId);
+                
+                // 이벤트 미연결 대비 Player 정보 직접 추가 (안전장치 적용)
+                if (OnAddAccessory == null && GameManager.Instance != null && GameManager.Instance.MasterPlayerData != null)
+                {
+                    GameManager.Instance.MasterPlayerData.AddAccessory(item.PayloadId);
+                }
+            }
 
             SetFeedback($"{item.DisplayName}을(를) 샀다냥.");
         }
