@@ -165,6 +165,7 @@ namespace FFF.UI.Battle
         private readonly List<string> _currentDeckCardIds = new List<string>();
         private int _lastPlayerHealth = -1;
         private int _lastEnemyHealth = -1;
+        private Action<int, string> _onJokerIconClicked;
 
         protected override void OnInitialize()
         {
@@ -227,6 +228,11 @@ namespace FFF.UI.Battle
                 _currentDeckCardIds.AddRange(deckCardIds);
         }
 
+        public void SetJokerClickHandler(Action<int, string> onJokerIconClicked)
+        {
+            _onJokerIconClicked = onJokerIconClicked;
+        }
+
         public void SetEnemyHealth(int current, int max)
         {
             if (_enemyHpText != null) 
@@ -258,7 +264,7 @@ namespace FFF.UI.Battle
             int jokerCount = Mathf.Min(jokerIds.Count, PlayerDataSO.MaxHeldJokerCount);
             for (int i = 0; i < jokerCount; i++)
             {
-                CreateItemIcon(jokerIds[i], _jokerIconPrefab, _jokerLayoutGroup, _jokerIconDefinitions, isJoker: true);
+                CreateItemIcon(jokerIds[i], _jokerIconPrefab, _jokerLayoutGroup, _jokerIconDefinitions, isJoker: true, jokerIndex: i);
             }
 
             CreateJokerSlotPlaceholders(PlayerDataSO.MaxHeldJokerCount - jokerCount);
@@ -286,7 +292,8 @@ namespace FFF.UI.Battle
             GameObject iconPrefab,
             Transform parent,
             IReadOnlyList<ItemIconDefinition> iconDefinitions,
-            bool isJoker)
+            bool isJoker,
+            int jokerIndex = -1)
         {
             if (string.IsNullOrEmpty(itemId) || iconPrefab == null || parent == null) return;
 
@@ -295,6 +302,8 @@ namespace FFF.UI.Battle
             icon.transform.SetAsLastSibling();
             ApplyItemIconDefinition(icon, itemId, iconDefinitions, isJoker);
             ConfigureHudIcon(icon, isJoker);
+            if (isJoker)
+                ConfigureJokerButton(icon, itemId, jokerIndex);
             StartCoroutine(PopIn(icon.transform, 0f, 1.08f, 0.18f));
         }
 
@@ -640,6 +649,36 @@ namespace FFF.UI.Battle
             layout.minHeight = size.y;
             layout.flexibleWidth = 0f;
             layout.flexibleHeight = 0f;
+        }
+
+        private void ConfigureJokerButton(GameObject icon, string itemId, int jokerIndex)
+        {
+            if (icon == null || jokerIndex < 0)
+                return;
+
+            Image hitArea = icon.GetComponent<Image>();
+            if (hitArea == null)
+                hitArea = icon.AddComponent<Image>();
+
+            hitArea.enabled = true;
+            hitArea.color = new Color(1f, 1f, 1f, 0f);
+            hitArea.raycastTarget = true;
+
+            Button button = icon.GetComponent<Button>();
+            if (button == null)
+                button = icon.AddComponent<Button>();
+
+            button.targetGraphic = hitArea;
+            button.transition = Selectable.Transition.None;
+            button.onClick.RemoveAllListeners();
+
+            int capturedIndex = jokerIndex;
+            string capturedId = itemId;
+            button.onClick.AddListener(() =>
+            {
+                SoundManager.PlayDefaultUiClick();
+                _onJokerIconClicked?.Invoke(capturedIndex, capturedId);
+            });
         }
 
         private void CreateJokerSlotPlaceholders(int count)

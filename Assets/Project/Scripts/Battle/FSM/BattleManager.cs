@@ -27,6 +27,7 @@ namespace FFF.Battle.FSM
 
         // --- 현재 상태 읽기 전용 프로퍼티 ---
         public TurnState CurrentPhase { get; private set; } = TurnState.None;
+        public bool IsBattleActive { get; private set; }
 
         // --- 현재 전투의 데이터를 담을 공용 문맥 객체 (매 전투 스테이지마다 새로 갱신됨) ---
         public BattleContext Context { get; private set; }
@@ -70,6 +71,14 @@ namespace FFF.Battle.FSM
         /// </summary>
         public void StartBattle()
         {
+            if (IsBattleActive)
+            {
+                Debug.LogWarning("[BattleManager] 이미 전투가 진행 중이라 StartBattle 중복 호출을 무시합니다.");
+                return;
+            }
+
+            IsBattleActive = true;
+
             // Battle내에서 사용할 BattleContext 생성
             Context = new BattleContext();
 
@@ -112,6 +121,7 @@ namespace FFF.Battle.FSM
         /// </summary>
         public void EndBattle()
         {
+            IsBattleActive = false;
             CurrentPhase = TurnState.None;
             
             // 전투 종료 이벤트 호출

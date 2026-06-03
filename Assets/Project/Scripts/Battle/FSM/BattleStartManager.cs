@@ -5,8 +5,11 @@ using FFF.Battle.FSM;
 using FFF.Battle.Card;
 using FFF.Battle.Enemy;
 using FFF.UI.Battle;
+using FFF.UI.Animation;
 using FFF.Core.Events;
 using FFF.Data;
+using FFF.Audio;
+using FFF.Battle.Damage;
 using FFF.Core;
 
 namespace FFF.Battle.Managers
@@ -26,6 +29,7 @@ namespace FFF.Battle.Managers
         [SerializeField] private JokerManager _jokerManager;
         [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
+        [SerializeField] private EnemyVisualSelector _enemyVisualSelector;
 
         [Header("=== 수신할 이벤트 ===")]
         [Tooltip("BattleManager가 방송하는 BattleStart 이벤트")]
@@ -55,6 +59,7 @@ namespace FFF.Battle.Managers
                 // 1. 플레이어 데이터 로드
                 // BattleManager의 Context에 있는 로컬 데이터를 가져옴
                 PlayerDataBattle player = BattleManager.Instance.Context.PlayerData;
+                ApplyEnemyVisual();
 
                 // 2. 플레이어가 보유한 덱 ID 목록을 카드 SO 원본에서 복사해 전투용 덱으로 만든다.
                 // 같은 CardId가 여러 번 들어있으면 같은 카드가 여러 장 생성된다.
@@ -68,6 +73,8 @@ namespace FFF.Battle.Managers
                 // 3. DeckSystem 초기화 (시드값을 고정하고 싶다면 두 번째 인자로 전달)
                 _deckSystem.Initialize(playerDeck);
                 _battleUI.Show();
+                _battleUI.SetJokerClickHandler(HandleJokerClicked);
+                //_jokerManager?.SetJokersFromIds(player.HeldJokerIds);
 
                 // 4. 적 데이터 연동 및 초기화
                 // BattleContext에서 타겟 EnemyId 로드
@@ -103,6 +110,99 @@ namespace FFF.Battle.Managers
             {
                 Debug.LogError($"[BattleStartManager] 초기화 중 치명적 에러 발생 (여기서 중단됨!): {ex.Message}\n{ex.StackTrace}");
             }
+        }
+
+        private void ApplyEnemyVisual()
+        {
+            if (_enemyVisualSelector == null)
+                _enemyVisualSelector = FindFirstObjectByType<EnemyVisualSelector>();
+
+            if (_enemyVisualSelector == null)
+            {
+                Debug.LogWarning("[BattleStartManager] EnemyVisualSelector를 찾을 수 없어 기본 적 외형을 유지합니다.");
+                return;
+            }
+
+            GameManager gameManager = GameManager.Instance;
+            if (gameManager == null)
+                return;
+
+            string visualId = gameManager.SelectEnemyVisualId(_enemyVisualSelector.GetRegisteredIds());
+            if (string.IsNullOrEmpty(visualId))
+                return;
+
+            if (!_enemyVisualSelector.TrySelect(visualId))
+                Debug.LogWarning($"[BattleStartManager] 적 외형 적용 실패: {visualId}");
+        }
+
+        private void HandleJokerClicked(int jokerIndex, string jokerId)
+        {
+            BattleManager battleManager = BattleManager.Instance;
+            if (battleManager == null || battleManager.Context?.PlayerData == null)
+            {
+                SoundManager.PlayUiSound(SoundIds.UiError);
+                return;
+            }
+
+            if (!CanUseJokerInCurrentPhase(battleManager.CurrentPhase))
+            {
+                SoundManager.PlayUiSound(SoundIds.UiError);
+                Debug.LogWarning($"[BattleStartManager] 현재 페이즈에서는 조커를 사용할 수 없습니다: {battleManager.CurrentPhase}");
+                return;
+            }
+
+            PlayerDataBattle player = battleManager.Context.PlayerData;
+            if (player.HeldJokerIds == null || jokerIndex < 0 || jokerIndex >= player.HeldJokerIds.Count)
+            {
+                SoundManager.PlayUiSound(SoundIds.UiError);
+                Debug.LogWarning($"[BattleStartManager] 잘못된 조커 클릭 인덱스: {jokerIndex}");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(jokerId) && player.HeldJokerIds[jokerIndex] != jokerId)
+            {
+                int correctedIndex = player.HeldJokerIds.IndexOf(jokerId);
+                if (correctedIndex < 0)
+                {
+                    SoundManager.PlayUiSound(SoundIds.UiError);
+                    Debug.LogWarning($"[BattleStartManager] 보유 중이 아닌 조커입니다: {jokerId}");
+                    return;
+                }
+
+                jokerIndex = correctedIndex;
+            }
+
+            // if (_jokerManager == null || !_jokerManager.UseJoker(jokerIndex))
+            // {
+            //     SoundManager.PlayUiSound(SoundIds.UiError);
+            //     return;
+            // }
+
+            player.ConsumeJoker(player.HeldJokerIds[jokerIndex]);
+            SoundManager.PlaySfxSound(SoundIds.SfxJokerActivate);
+
+            _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
+            _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
+            RefreshExpectedStrengthIfNeeded(battleManager);
+        }
+
+        private static bool CanUseJokerInCurrentPhase(TurnState phase)
+        {
+            return phase == TurnState.TurnReady || phase == TurnState.TurnProceed;
+        }
+
+        private void RefreshExpectedStrengthIfNeeded(BattleManager battleManager)
+        {
+            if (battleManager.CurrentPhase != TurnState.TurnProceed || _deckSystem.SelectedCards.Count != 2)
+                return;
+
+            var calculator = new CombatCalculator();
+            int expectedPower = calculator.Strength.CalculateExpectedStrength(
+                _deckSystem.SelectedCards[0],
+                _deckSystem.SelectedCards[1],
+                battleManager.CurrentModifierContext);
+
+            _battleUI.SetExpectedStrengthText(expectedPower.ToString());
         }
     }
 }

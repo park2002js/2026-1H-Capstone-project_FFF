@@ -50,11 +50,32 @@ namespace FFF.UI.Animation
                 Select(_defaultId);
         }
 
+        public List<string> GetRegisteredIds()
+        {
+            var ids = new List<string>();
+            var usedIds = new HashSet<string>();
+
+            foreach (var entry in _entries)
+            {
+                if (entry == null || string.IsNullOrWhiteSpace(entry.Id) || !usedIds.Add(entry.Id))
+                    continue;
+
+                ids.Add(entry.Id);
+            }
+
+            return ids;
+        }
+
         /// <summary>
         /// 지정한 ID의 몬스터만 활성화하고, BattleAnimationController에 외형/RectTransform을 주입한다.
         /// 스테이지 시작 시 BattleStartManager 또는 스테이지 컨트롤러에서 호출.
         /// </summary>
         public void Select(string id)
+        {
+            TrySelect(id);
+        }
+
+        public bool TrySelect(string id)
         {
             MonsterEntry chosen = null;
 
@@ -69,7 +90,7 @@ namespace FFF.UI.Animation
             if (chosen == null)
             {
                 Debug.LogError($"[EnemyVisualSelector] '{id}'에 해당하는 몬스터 항목을 찾을 수 없습니다.");
-                return;
+                return false;
             }
 
             _currentId = id;
@@ -84,6 +105,8 @@ namespace FFF.UI.Animation
             {
                 Debug.LogWarning("[EnemyVisualSelector] BattleAnimationController 참조가 비어 있어 주입을 생략합니다.");
             }
+
+            return true;
         }
     }
 }

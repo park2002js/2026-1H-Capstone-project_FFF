@@ -68,6 +68,9 @@ namespace FFF.Data
         public List<int> SavedVisitedNodeIds = new List<int>();
         public List<int> SavedReachableNodeIds = new List<int>();
 
+        [Header("=== 적 외형 진행 정보 ===")]
+        public List<string> SeenNormalEnemyVisualIds = new List<string>();
+
         public void AddAccessory(string accessoryId)
         {
             if (string.IsNullOrEmpty(accessoryId)) return;
@@ -141,6 +144,7 @@ namespace FFF.Data
             SavedMapSeed = -1;
             SavedVisitedNodeIds = new List<int>();
             SavedReachableNodeIds = new List<int>();
+            SeenNormalEnemyVisualIds = new List<string>();
         }
 
         private static List<string> CopyList(List<string> source)

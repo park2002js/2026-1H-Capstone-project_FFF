@@ -101,11 +101,7 @@ namespace FFF.Battle.Managers
 
             if (damageResult.HasWinner)
             {
-                if (damageResult.DamagesEnemy)
-                    _onPlayerAttack?.Raise(damageResult.Damage);
-                else
-                    _onEnemyAttack?.Raise(damageResult.Damage);
-
+                RaiseAttackEventSafely(damageResult);
                 yield return new WaitForSeconds(AttackImpactDelaySeconds);
                 ApplyCombatDamage(damageResult);
             }
@@ -185,6 +181,21 @@ namespace FFF.Battle.Managers
             }
 
             return new CombatDamageResult(false, false, 0);
+        }
+
+        private void RaiseAttackEventSafely(CombatDamageResult result)
+        {
+            try
+            {
+                if (result.DamagesEnemy)
+                    _onPlayerAttack?.Raise(result.Damage);
+                else
+                    _onEnemyAttack?.Raise(result.Damage);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[TurnEnd] 공격 연출 이벤트 처리 중 오류가 발생했습니다. 피해 적용은 계속 진행합니다.\n{ex}");
+            }
         }
 
         private void ApplyCombatDamage(CombatDamageResult result)
