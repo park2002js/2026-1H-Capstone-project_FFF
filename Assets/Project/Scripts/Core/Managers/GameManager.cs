@@ -518,7 +518,6 @@ namespace FFF.Core
             SoundManager.PlayUiSound(SoundIds.UiConfirm);
             SceneLoader.LoadScene(SceneLoader.SceneNames.REST);
         }
-
         private void EnterBattleFromMap(RoomType roomType)
         {
             // 시드값을 받아올 수 없는 경우 임의값 1을 전달
