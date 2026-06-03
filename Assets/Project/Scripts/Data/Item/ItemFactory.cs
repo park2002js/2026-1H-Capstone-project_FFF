@@ -17,12 +17,12 @@ namespace FFF.Data
             switch (id.ToUpper())
             {
                 // === 장신구 (Accessory) 매핑 ===
-                case "ACC_BOONE":
-                    return new Acc_Boone();
+                case "ACCESSORY_001":
+                    return new Accessory_001();
 
                 // === 조커 (Joker) 매핑 ===
-                case "JKR_GAKSI":
-                    return new Jkr_Gaksi();
+                case "JOCKER_001":
+                    return new Jocker_001();
 
                 default:
                     Debug.LogWarning($"[ItemFactory] 등록되지 않은 아이템 ID 생성 시도: {id}");
