@@ -158,33 +158,42 @@ namespace FFF.Battle.FSM
         
         private void Update()
         {
-            // '~' 키(BackQuote) 입력 감지
+            // 백틱(`) 키를 누르면 즉시 적을 처치하고 전투 종료
             if (Input.GetKeyDown(KeyCode.BackQuote))
             {
-                // 전투가 진행 중이 아닐 때는 무시
-                if (CurrentPhase == TurnState.None || Context == null) return;
-
-                // 씬 내에 존재하는 현재 적 객체 탐색
-                var currentEnemy = FindFirstObjectByType<FFF.Battle.Enemy.EnemyDataBattle>();
-                if (currentEnemy != null)
-                {
-                    Debug.Log("[BattleManager - Temp] 갓 코드 발동: 적에게 최대 데미지를 입힙니다.");
-                    
-                    // int.MaxValue 데미지 적용
-                    currentEnemy.TakeDamage(int.MaxValue);
-
-                    // 체력이 0 이하가 되었는지 확인 후 즉시 승리 및 전투 종료 처리
-                    if (currentEnemy.CurrentHealth <= 0)
-                    {
-                        Context.IsPlayerWinner = true;
-                        EndBattle();
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning("[BattleManager - Temp] 씬 내에 적(EnemyDataBattle) 객체를 찾을 수 없습니다.");
-                }
+                TempKillCodeInBattle();
             }
+        }
+
+        private void TempKillCodeInBattle()
+        {
+            // 1. 중복 실행 방지: 이미 전투가 종료되었거나 종료 연출 중이라면 무시
+            // (CurrentPhase 변수명은 실제 BattleManager 내부의 상태 변수명에 맞게 수정해주세요)
+            if (CurrentPhase == TurnState.TurnEnd) 
+            {
+                return;
+            }
+
+            Debug.Log("[BattleManager] ☠️ 임시 킬 코드 발동! 적에게 99999 피해를 가하고 즉시 승리 처리합니다.");
+
+            // 2. 씬 내의 적 객체(EnemyDataBattle)를 찾아서 99999 데미지 가하기
+            // BattleManager에 직접적인 참조가 없을 수 있으므로 FindFirstObjectByType을 사용해 안전하게 탐색합니다.
+            var enemy = UnityEngine.Object.FindFirstObjectByType<FFF.Battle.Enemy.EnemyDataBattle>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(99999);
+            }
+
+            // 3. BattleContext의 승리 판정 플래그를 강제로 '플레이어 승리'로 설정
+            if (Context != null)
+            {
+                Context.IsPlayerWinner = true;
+            }
+
+            // 4. 기존 FSM 흐름에 맞게 전투 종료 호출
+            // 강제로 씬을 넘기는 것이 아니라 EndBattle()을 호출함으로써, 
+            // BattleEndManager가 정상적으로 이벤트를 수신하고 보상 선택 UI를 띄우도록 합니다.
+            EndBattle();
         }
         
         #endregion
