@@ -923,10 +923,11 @@ namespace FFF.Core
 
             GetCurrentOrRestoreRunMap();
 
-            view.SetPlayerHealth(_masterPlayerData.CurrentHealth, _masterPlayerData.MaxHealth);
-            view.SetPlayerGold(_masterPlayerData.CurrentGold);
-            view.SetDeckCards(_masterPlayerData.DeckCardIds);
-            view.SetupItemIcons(_masterPlayerData.EquippedAccessoryIds, _masterPlayerData.HeldJokerIds);
+            // BattleStartManager에서 구성하도록 이곳의 기능을 잠시 차단
+            // view.SetPlayerHealth(_masterPlayerData.CurrentHealth, _masterPlayerData.MaxHealth);
+            // view.SetPlayerGold(_masterPlayerData.CurrentGold);
+            // view.SetDeckCards(_masterPlayerData.DeckCardIds);
+            // view.SetupItemIcons(_masterPlayerData.EquippedAccessories, _masterPlayerData.HeldJokerIds);
         }
 
         /// <summary>

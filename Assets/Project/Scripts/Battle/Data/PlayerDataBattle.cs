@@ -48,6 +48,7 @@ namespace FFF.Battle.Data
             HeldJokerIds = masterData.HeldJokerIds != null
                 ? new List<string>(masterData.HeldJokerIds)
                 : new List<string>();
+
             TrimJokersToLimit();
             DeckCardIds = masterData.DeckCardIds != null
                 ? new List<string>(masterData.DeckCardIds)

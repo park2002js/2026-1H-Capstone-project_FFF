@@ -25,6 +25,9 @@ namespace FFF.Battle.Modifier
         /// <summary> 방금 제출한 카드의 족보 (공격 연산 시에만 존재, 평소엔 null) </summary>
         public SeotdaResult? ActionHandResult { get; set; }
 
+        /// <summary> 데미지 연산 시 플레이어가 타격자인지(승리했는지) 판별하는 플래그 </summary>
+        public bool IsPlayerAttacking { get; set; }
+
         // === 효과 누적용 휘발성 데이터 ===
         public int StrengthAddConstant { get; set; }
         public float StrengthMultiplier { get; set; }

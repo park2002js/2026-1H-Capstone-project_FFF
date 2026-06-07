@@ -247,93 +247,67 @@ namespace FFF.UI.Battle
             Debug.Log($"[BattleUI] 적 체력 갱신: {current} / {max}");
         }
 
-        public void SetupItemIcons(List<string> accessoryIds, List<string> jokerIds)
+        public void SetupItemIcons(IReadOnlyList<ItemBase> accessories, IReadOnlyList<ItemBase> jokers)
         {
             EnsureTopHud();
-
-            accessoryIds ??= new List<string>();
-            jokerIds ??= new List<string>();
+            // null 방어 및 빈 리스트 초기화용 할당
+            var safeAccessories = accessories ?? new List<ItemBase>();
+            var safeJokers = jokers ?? new List<ItemBase>();
 
             ClearChildren(_accessoryLayoutGroup);
             ClearChildren(_jokerLayoutGroup);
 
-            CreateOrderedItemIcons(accessoryIds, _tempAccessoryIconPrefab, _accessoryLayoutGroup, _accessoryIconDefinitions, isJoker: false);
-            if (accessoryIds.Count == 0)
+            // ItemBase 객체를 바탕으로 아이콘 생성 지시
+            CreateOrderedItemIcons(safeAccessories, _tempAccessoryIconPrefab, _accessoryLayoutGroup, isJoker: false);
+
+            if (safeAccessories.Count == 0)
                 CreateEmptyHudSlot(_accessoryLayoutGroup, isJoker: false);
 
-            int jokerCount = Mathf.Min(jokerIds.Count, PlayerDataSO.MaxHeldJokerCount);
+            int jokerCount = Mathf.Min(safeJokers.Count, PlayerDataSO.MaxHeldJokerCount);
             for (int i = 0; i < jokerCount; i++)
             {
-                CreateItemIcon(jokerIds[i], _jokerIconPrefab, _jokerLayoutGroup, _jokerIconDefinitions, isJoker: true, jokerIndex: i);
+                CreateItemIcon(safeJokers[i], _jokerIconPrefab, _jokerLayoutGroup, isJoker: true, jokerIndex: i);
             }
 
             CreateJokerSlotPlaceholders(PlayerDataSO.MaxHeldJokerCount - jokerCount);
-
-            Debug.Log($"[BattleUI] 🎒 장신구 {accessoryIds.Count}개, 조커 {jokerIds.Count}개 아이콘 생성 (프리팹 기준)");
+            Debug.Log($"[BattleUI] 🎒 장신구 {safeAccessories.Count}개, 조커 {safeJokers.Count}개 아이콘 생성 완료");
         }
 
         private void CreateOrderedItemIcons(
-            IReadOnlyList<string> itemIds,
+            IReadOnlyList<ItemBase> items,
             GameObject iconPrefab,
             Transform parent,
-            IReadOnlyList<ItemIconDefinition> iconDefinitions,
             bool isJoker)
         {
             if (iconPrefab == null || parent == null) return;
 
-            foreach (string itemId in itemIds)
+            foreach (ItemBase item in items)
             {
-                CreateItemIcon(itemId, iconPrefab, parent, iconDefinitions, isJoker);
+                CreateItemIcon(item, iconPrefab, parent, isJoker);
             }
         }
 
         private void CreateItemIcon(
-            string itemId,
+            ItemBase item,
             GameObject iconPrefab,
             Transform parent,
-            IReadOnlyList<ItemIconDefinition> iconDefinitions,
             bool isJoker,
             int jokerIndex = -1)
         {
-            if (string.IsNullOrEmpty(itemId) || iconPrefab == null || parent == null) return;
+            if (item == null || iconPrefab == null || parent == null) return;
 
-            GameObject icon = Instantiate(iconPrefab, parent, false);
-            icon.name = itemId;
-            icon.transform.SetAsLastSibling();
-            ApplyItemIconDefinition(icon, itemId, iconDefinitions, isJoker);
-            ConfigureHudIcon(icon, isJoker);
+            GameObject iconObject = Instantiate(iconPrefab, parent, false);
+            iconObject.name = item.Id;
+            iconObject.transform.SetAsLastSibling();
+
+            // ItemBase 내부의 Icon 속성을 직접 참조하여 UI 렌더링
+            ApplyHudItemVisual(iconObject, item.Icon, isJoker);
+            ConfigureHudIcon(iconObject, isJoker);
+
             if (isJoker)
-                ConfigureJokerButton(icon, itemId, jokerIndex);
-            StartCoroutine(PopIn(icon.transform, 0f, 1.08f, 0.18f));
-        }
+                ConfigureJokerButton(iconObject, item.Id, jokerIndex);
 
-        private void ApplyItemIconDefinition(
-            GameObject iconObject,
-            string itemId,
-            IReadOnlyList<ItemIconDefinition> iconDefinitions,
-            bool isJoker)
-        {
-            ItemIconDefinition definition = FindItemIconDefinition(itemId, iconDefinitions);
-            string displayName = definition != null ? definition.DisplayName : null;
-            if (!string.IsNullOrEmpty(displayName))
-                iconObject.name = definition.DisplayName;
-
-            Image image = iconObject.GetComponent<Image>();
-            if (image == null)
-                image = iconObject.GetComponentInChildren<Image>();
-
-            Sprite icon = ResolveItemArtwork(itemId, iconDefinitions, null);
-            if (image != null)
-                image.enabled = false;
-
-            if (icon != null)
-            {
-                ApplyHudItemVisual(iconObject, icon, isJoker);
-            }
-
-            TextMeshProUGUI label = iconObject.GetComponentInChildren<TextMeshProUGUI>();
-            if (label != null)
-                label.text = string.IsNullOrEmpty(displayName) ? itemId : displayName;
+            StartCoroutine(PopIn(iconObject.transform, 0f, 1.08f, 0.18f));
         }
 
         private void ApplyHudItemVisual(GameObject iconObject, Sprite sprite, bool isJoker)

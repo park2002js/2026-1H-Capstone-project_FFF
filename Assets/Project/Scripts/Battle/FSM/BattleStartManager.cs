@@ -73,8 +73,7 @@ namespace FFF.Battle.Managers
                 // 3. DeckSystem 초기화 (시드값을 고정하고 싶다면 두 번째 인자로 전달)
                 _deckSystem.Initialize(playerDeck);
                 _battleUI.Show();
-                _battleUI.SetJokerClickHandler(HandleJokerClicked);
-                //_jokerManager?.SetJokersFromIds(player.HeldJokerIds);
+                
 
                 // 4. 적 데이터 연동 및 초기화
                 // BattleContext에서 타겟 EnemyId 로드
@@ -101,8 +100,12 @@ namespace FFF.Battle.Managers
                 _battleUI.SetPlayerGold(player.CurrentGold);
                 _battleUI.SetDeckCards(player.DeckCardIds);
                 _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
-                _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
                 _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
+
+                // Manager가 관리하는 ItemBase 객체 리스트를 UI로 직접 전달
+                _battleUI.SetJokerClickHandler(_jokerManager.HandleJokerClicked);
+                _battleUI.SetupItemIcons(_accessoryManager.EquippedAccessories, _jokerManager.HeldJokers);
+                
 
                 Debug.Log("[BattleStartManager] 전투 초기화 완료. 턴 시작 준비 끝!");
             }
@@ -133,75 +136,6 @@ namespace FFF.Battle.Managers
 
             if (!_enemyVisualSelector.TrySelect(visualId))
                 Debug.LogWarning($"[BattleStartManager] 적 외형 적용 실패: {visualId}");
-        }
-
-        private void HandleJokerClicked(int jokerIndex, string jokerId)
-        {
-            BattleManager battleManager = BattleManager.Instance;
-            if (battleManager == null || battleManager.Context?.PlayerData == null)
-            {
-                SoundManager.PlayUiSound(SoundIds.UiError);
-                return;
-            }
-
-            if (!CanUseJokerInCurrentPhase(battleManager.CurrentPhase))
-            {
-                SoundManager.PlayUiSound(SoundIds.UiError);
-                Debug.LogWarning($"[BattleStartManager] 현재 페이즈에서는 조커를 사용할 수 없습니다: {battleManager.CurrentPhase}");
-                return;
-            }
-
-            PlayerDataBattle player = battleManager.Context.PlayerData;
-            if (player.HeldJokerIds == null || jokerIndex < 0 || jokerIndex >= player.HeldJokerIds.Count)
-            {
-                SoundManager.PlayUiSound(SoundIds.UiError);
-                Debug.LogWarning($"[BattleStartManager] 잘못된 조커 클릭 인덱스: {jokerIndex}");
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(jokerId) && player.HeldJokerIds[jokerIndex] != jokerId)
-            {
-                int correctedIndex = player.HeldJokerIds.IndexOf(jokerId);
-                if (correctedIndex < 0)
-                {
-                    SoundManager.PlayUiSound(SoundIds.UiError);
-                    Debug.LogWarning($"[BattleStartManager] 보유 중이 아닌 조커입니다: {jokerId}");
-                    return;
-                }
-
-                jokerIndex = correctedIndex;
-            }
-
-            if (_jokerManager == null || !_jokerManager.UseJoker(jokerIndex, battleManager.CurrentModifierContext))
-            {
-                SoundManager.PlayUiSound(SoundIds.UiError);
-                return;
-            }
-
-            SoundManager.PlaySfxSound(SoundIds.SfxJokerActivate);
-
-            _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
-            _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
-            RefreshExpectedStrengthIfNeeded(battleManager);
-        }
-
-        private static bool CanUseJokerInCurrentPhase(TurnState phase)
-        {
-            return phase == TurnState.TurnReady || phase == TurnState.TurnProceed;
-        }
-
-        private void RefreshExpectedStrengthIfNeeded(BattleManager battleManager)
-        {
-            if (battleManager.CurrentPhase != TurnState.TurnProceed || _deckSystem.SelectedCards.Count != 2)
-                return;
-
-            var calculator = new CombatCalculator();
-            int expectedPower = calculator.Strength.CalculateExpectedStrength(
-                _deckSystem.SelectedCards[0],
-                _deckSystem.SelectedCards[1],
-                battleManager.CurrentModifierContext);
-
-            _battleUI.SetExpectedStrengthText(expectedPower.ToString());
         }
     }
 }

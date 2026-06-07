@@ -11,7 +11,7 @@ namespace FFF.Data
     public class Accessory_002 : AccessoryItemBase
     {
         public override string Id => "Accessory_002"; 
-        protected override string SpriteFileName => "accessory_002"; // 임시 이미지 파일명
+        protected override string SpriteFileName => "gat"; // 임시 이미지 파일명
 
         private BattleModifier _modifier;
 
