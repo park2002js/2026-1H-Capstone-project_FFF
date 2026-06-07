@@ -11,7 +11,7 @@ namespace FFF.Data
     public class Accessory_005 : AccessoryItemBase
     {
         public override string Id => "Accessory_005";
-        protected override string SpriteFileName => "accessory_005";
+        protected override string SpriteFileName => "norigae";
 
         private BattleModifier _modifier;
 

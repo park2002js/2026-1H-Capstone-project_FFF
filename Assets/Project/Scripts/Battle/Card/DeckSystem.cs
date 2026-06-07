@@ -206,6 +206,19 @@ namespace FFF.Battle.Card
         }
 
         /// <summary>
+        /// 지정한 수량만큼 즉시 드로우한다. (조커 등 특수 효과용)
+        /// </summary>
+        public List<HwaTuCard> DrawCards(int count)
+        {
+            var drawn = _drawHandler.DrawCards(count);
+            if (drawn.Count > 0)
+                SoundManager.PlaySfxSound(SoundIds.SfxCardDraw);
+
+            _onCardsDrawn?.Raise();
+            return drawn;
+        }
+
+        /// <summary>
         /// 리롤을 수행한다.
         /// CardDrawHandler에게 위임. SO Event 발행.
         /// </summary>

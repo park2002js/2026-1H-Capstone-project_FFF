@@ -28,6 +28,11 @@ namespace FFF.Core
         /// <summary> 악세서리 원본 데이터 (리필 목적) </summary>
         private readonly string[] _defaultAccessoryIds = { "Accessory_001", "Accessory_002", "Accessory_003", "Accessory_004", "Accessory_005" };
 
+        /// <summary> 조커 ID 보관 리스트 </summary>
+        private List<string> _jokerIdList = new List<string>();
+        /// <summary> 조커 원본 데이터 (리필 목적) </summary>
+        private readonly string[] _defaultJokerIds = { "Jocker_001", "Jocker_002", "Jocker_003", "Jocker_004", "Jocker_005"};
+
         // === 원본 데이터 (리필 목적) ===
         // 후에 Json이나 Text로 저장된 리스트를 불러와서 초기화하도록 로직을 변경할 예정. 코드내에서 전부다 추가하는것이 오히려 불편
         private readonly string[] _defaultNormalEnemies = { "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005" };
@@ -45,6 +50,9 @@ namespace FFF.Core
             RefillAndShuffle(ref _normalEnemyList, _defaultNormalEnemies);
             RefillAndShuffle(ref _eliteEnemyList, _defaultEliteEnemies);
             RefillAndShuffle(ref _bossEnemyList, _defaultBossEnemies);
+
+            RefillAndShuffle(ref _accessoryIdList, _defaultAccessoryIds);
+            RefillAndShuffle(ref _jokerIdList, _defaultJokerIds);
             
             Debug.Log($"[TableSystemManager] 적 목록 초기화 및 셔플 완료. Seed: {seed}");
         }
@@ -115,22 +123,28 @@ namespace FFF.Core
                 targetList = _accessoryIdList;
                 defaultArray = _defaultAccessoryIds;
             }
+            else if (itemType == FFF.Data.ItemType.Joker)
+            {
+                targetList = _jokerIdList;
+                defaultArray = _defaultJokerIds;
+            }
             else
             {
                 return result; // 조커 등 기타 타입은 추후 확장에 대비함
             }
 
-            for (int i = 0; i < count; i++)
+            // 요구량이 남은 풀보다 크면 뽑기 시작 '전'에 리필 및 셔플 진행 (당장의 중복 노출 방지)
+            if (targetList.Count < count)
             {
-                if (targetList.Count == 0)
-                {
-                    RefillAndShuffle(ref targetList, defaultArray);
-                    Debug.Log($"[TableSystemManager] {itemType} 목록 고갈. 리필 및 셔플 적용.");
-                }
-                
-                string selectedId = targetList[targetList.Count - 1];
-                targetList.RemoveAt(targetList.Count - 1);
-                result.Add(selectedId);
+                RefillAndShuffle(ref targetList, defaultArray);
+            }
+
+            // 실제 뽑기 진행 (원본 배열 크기 이상을 요구하는 엣지 케이스 방어)
+            int actualCount = Mathf.Min(count, targetList.Count);
+            for (int i = 0; i < actualCount; i++)
+            {
+                result.Add(targetList[0]);
+                targetList.RemoveAt(0);
             }
             
             return result;

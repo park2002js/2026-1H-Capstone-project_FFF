@@ -162,6 +162,9 @@ namespace FFF.Battle.Managers
         {
             if (playerStrength > enemyStrength)
             {
+                // 플레이어 타격 상태 기록
+                _battleManager.CurrentModifierContext.IsPlayerAttacking = true;
+
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
                     playerStrength,
                     enemyStrength,
@@ -172,6 +175,9 @@ namespace FFF.Battle.Managers
 
             if (enemyStrength > playerStrength)
             {
+                // 적 타격(플레이어 피격) 상태 기록
+                _battleManager.CurrentModifierContext.IsPlayerAttacking = false;
+                
                 int finalDamage = _combatCalculator.Damage.CalculateFinalDamage(
                     enemyStrength,
                     playerStrength,

@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using FFF.Battle.FSM;
+using FFF.Core;
 using FFF.UI.Battle;
 using FFF.Core.Events;
 using FFF.Battle.Data;
@@ -11,36 +11,6 @@ namespace FFF.Battle.FSM
 {
     public class BattleEndManager : MonoBehaviour
     {
-        private readonly struct RewardCatalogItem
-        {
-            public readonly string Id;
-            public readonly string DisplayName;
-            public readonly string Description;
-
-            public RewardCatalogItem(string id, string displayName, string description)
-            {
-                Id = id;
-                DisplayName = displayName;
-                Description = description;
-            }
-        }
-
-        private static readonly RewardCatalogItem[] JokerRewardPool =
-        {
-            new RewardCatalogItem("JKR_REROLL_BURST", "리롤 폭죽 조커", "전투 중 사용할 수 있는\n조커 카드"),
-            new RewardCatalogItem("JKR_HIGH_CARD", "광패 조커", "높은 족보를 노리는\n조커 카드"),
-            new RewardCatalogItem("JKR_DOUBLE_PIP", "쌍피 조커", "피 카드에 힘을 싣는\n조커 카드"),
-            new RewardCatalogItem("JKR_LUCKY_CHARM", "행운 부적 조커", "위기를 넘기는\n조커 카드")
-        };
-
-        private static readonly RewardCatalogItem[] AccessoryRewardPool =
-        {
-            new RewardCatalogItem("ACC_REROLL_BONUS", "노리개", "전투 시작 시\n리롤 +1"),
-            new RewardCatalogItem("ACC_DAMAGE_BONUS", "은장도", "승리 피해량\n+5"),
-            new RewardCatalogItem("ACC_JADE_RING", "옥가락지", "족보 공격력\n소폭 증가"),
-            new RewardCatalogItem("ACC_GAT", "갓", "첫 턴 방어적\n보정 획득")
-        };
-
         [Header("=== 시스템 참조 ===")]
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private BattleUIComponent _battleUI;
@@ -116,18 +86,28 @@ namespace FFF.Battle.FSM
                     Description = "랜덤 조커 카드\n3장 중 1장 선택"
                 });
             }
-
-            if (player == null || HasAvailableAccessoryReward(player))
+            
+            rewards.Add(new BattleUIComponent.RewardOption
             {
-                rewards.Add(new BattleUIComponent.RewardOption
-                {
-                    Id = "RewardCategory_Accessory",
-                    Kind = BattleUIComponent.RewardKind.Accessory,
-                    DisplayName = "장신구 보상",
-                    Category = "장신구",
-                    Description = "랜덤 장신구\n3개 중 1개 선택"
-                });
-            }
+                Id = "RewardCategory_Accessory",
+                Kind = BattleUIComponent.RewardKind.Accessory,
+                DisplayName = "장신구 보상",
+                Category = "장신구",
+                Description = "랜덤 장신구\n3개 중 1개 선택"
+            });
+
+            // 이거 도데체 왜 존재하는 조건문임?
+            // if (player == null || HasAvailableAccessoryReward(player))
+            // {
+            //     rewards.Add(new BattleUIComponent.RewardOption
+            //     {
+            //         Id = "RewardCategory_Accessory",
+            //         Kind = BattleUIComponent.RewardKind.Accessory,
+            //         DisplayName = "장신구 보상",
+            //         Category = "장신구",
+            //         Description = "랜덤 장신구\n3개 중 1개 선택"
+            //     });
+            // }
 
             Shuffle(rewards);
             return rewards;
@@ -204,65 +184,63 @@ namespace FFF.Battle.FSM
 
         private List<BattleUIComponent.RewardOption> CreateRandomJokerRewards(int count)
         {
-            return CreateCatalogRewards(
-                JokerRewardPool,
-                count,
-                BattleUIComponent.RewardKind.Joker,
-                "조커 카드",
-                item => $"Reward_Joker_{item.Id}");
+            var rewards = new List<BattleUIComponent.RewardOption>();
+            // 1. TableSystemManager로부터 셔플된 조커 ID 추출
+            List<string> itemIds = GameManager.Instance.TableSystem.PopItemIds(ItemType.Joker, count);
+            
+            foreach (string id in itemIds)
+            {
+                // 2. 객체 생성
+                ItemBase item = ItemFactory.CreateItem(id);
+                if (item == null) continue;
+                
+                // 3. 객체 데이터(이미지, 텍스트)를 RewardOption에 맵핑
+                rewards.Add(new BattleUIComponent.RewardOption
+                {
+                    Id = $"Reward_Joker_{item.Id}",
+                    Kind = BattleUIComponent.RewardKind.Joker,
+                    PayloadId = item.Id,
+                    DisplayName = item.DisplayName,
+                    Category = "조커 카드",
+                    Description = item.Description,
+                    Artwork = item.Icon
+                });
+            }
+            return rewards;
         }
 
         private List<BattleUIComponent.RewardOption> CreateRandomAccessoryRewards(int count)
         {
+            Debug.LogError("악세서리 보상 UI 렌더링 시작");
             PlayerDataBattle player = GetCurrentPlayerData();
             HashSet<string> ownedAccessoryIds = player != null && player.EquippedAccessoryIds != null
                 ? new HashSet<string>(player.EquippedAccessoryIds)
-                : null;
-
-            return CreateCatalogRewards(
-                AccessoryRewardPool,
-                count,
-                BattleUIComponent.RewardKind.Accessory,
-                "장신구",
-                item => $"Reward_Accessory_{item.Id}",
-                ownedAccessoryIds);
-        }
-
-        private List<BattleUIComponent.RewardOption> CreateCatalogRewards(
-            IReadOnlyList<RewardCatalogItem> pool,
-            int count,
-            BattleUIComponent.RewardKind kind,
-            string category,
-            System.Func<RewardCatalogItem, string> idSelector,
-            ISet<string> excludedPayloadIds = null)
-        {
-            var candidates = new List<RewardCatalogItem>(pool ?? new List<RewardCatalogItem>());
-            Shuffle(candidates);
+                : new HashSet<string>();
 
             var rewards = new List<BattleUIComponent.RewardOption>();
-            var usedPayloadIds = new HashSet<string>();
-            foreach (RewardCatalogItem item in candidates)
+            // 중복 소유 필터링을 위해 요구량보다 넉넉하게 ID 추출
+            List<string> itemIds = GameManager.Instance.TableSystem.PopItemIds(ItemType.Accessory, count * 3);
+            
+            foreach (string id in itemIds)
             {
-                if (string.IsNullOrEmpty(item.Id) || !usedPayloadIds.Add(item.Id))
-                    continue;
-
-                if (excludedPayloadIds != null && excludedPayloadIds.Contains(item.Id))
-                    continue;
-
+                if (ownedAccessoryIds.Contains(id)) continue;
+                
+                ItemBase item = ItemFactory.CreateItem(id);
+                if (item == null) continue;
+                
                 rewards.Add(new BattleUIComponent.RewardOption
                 {
-                    Id = idSelector != null ? idSelector(item) : $"Reward_{item.Id}",
-                    Kind = kind,
+                    Id = $"Reward_Accessory_{item.Id}",
+                    Kind = BattleUIComponent.RewardKind.Accessory,
                     PayloadId = item.Id,
                     DisplayName = item.DisplayName,
-                    Category = category,
-                    Description = item.Description
+                    Category = "장신구",
+                    Description = item.Description,
+                    Artwork = item.Icon
                 });
-
-                if (rewards.Count >= count)
-                    break;
+                
+                if (rewards.Count >= count) break;
             }
-
             return rewards;
         }
 
@@ -302,7 +280,15 @@ namespace FFF.Battle.FSM
 
             _rewardClaimed = true;
             _battleUI.SetDeckCards(player.DeckCardIds);
-            _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
+
+            // 수정됨: UI 렌더링 요구사항에 맞추기 위해 임시 ItemBase 객체 리스트 생성
+            List<ItemBase> tempAccessories = new List<ItemBase>();
+            foreach (var id in player.EquippedAccessoryIds) tempAccessories.Add(ItemFactory.CreateItem(id));
+            
+            List<ItemBase> tempJokers = new List<ItemBase>();
+            foreach (var id in player.HeldJokerIds) tempJokers.Add(ItemFactory.CreateItem(id));
+
+            _battleUI.SetupItemIcons(tempAccessories, tempJokers);
             Debug.Log($"[BattleEnd] 보상 획득: {reward.Category} / {reward.DisplayName} ({reward.PayloadId})");
         }
 
@@ -321,16 +307,6 @@ namespace FFF.Battle.FSM
             HashSet<string> ownedAccessoryIds = player.EquippedAccessoryIds != null
                 ? new HashSet<string>(player.EquippedAccessoryIds)
                 : new HashSet<string>();
-
-            var uniqueRewardIds = new HashSet<string>();
-            foreach (RewardCatalogItem item in AccessoryRewardPool)
-            {
-                if (string.IsNullOrEmpty(item.Id) || !uniqueRewardIds.Add(item.Id))
-                    continue;
-
-                if (!ownedAccessoryIds.Contains(item.Id))
-                    return true;
-            }
 
             return false;
         }

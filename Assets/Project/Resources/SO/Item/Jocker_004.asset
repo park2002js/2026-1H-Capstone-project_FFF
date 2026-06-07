@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c052ec099ac93ea4faa81faac3336931, type: 3}
-  m_Name: Jocker_001
+  m_Name: Jocker_004
   m_EditorClassIdentifier: 
-  Id: Jocker_001
+  Id: Jocker_004
   Type: 1
-  DisplayName: "\uAC01\uC2DC\uD0C8"
-  Description: "\uC0AC\uC6A9\uC2DC 1\uD68C\uC5D0 \uD55C\uD574 \uADF8 \uD134\uC5D0
-    \uD50C\uB808\uC774\uC5B4 \uACF5\uACA9\uB825 50 \uC99D\uAC00 \uC870\uCEE4"
-  Icon: {fileID: 21300000, guid: d8a01c2f535317446bcdd121041f74c3, type: 3}
+  DisplayName: "\uC591\uBC18"
+  Description: "\uC0AC\uC6A9\uC2DC 3\uD134 \uB3D9\uC548 \uACF5\uACA9\uB825\uC774
+    +10 \uB418\uC5B4 \uACC4\uC0B0 \uB428"
+  Icon: {fileID: 21300000, guid: 6eb005558e80ebc4ebee88cfe1a798e4, type: 3}
   Price: 1

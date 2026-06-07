@@ -29,16 +29,16 @@ namespace FFF.Data
                     return new Accessory_005();
 
                 // === 조커 (Joker) 매핑 ===
-                case RerollBurstJokerItem.JokerId:
-                    return new RerollBurstJokerItem();
-                case HighCardJokerItem.JokerId:
-                    return new HighCardJokerItem();
-                case DoublePipJokerItem.JokerId:
-                    return new DoublePipJokerItem();
-                case LuckyCharmJokerItem.JokerId:
-                    return new LuckyCharmJokerItem();
                 case "JOCKER_001":
                     return new Jocker_001();
+                case "JOCKER_002":
+                    return new Jocker_002();
+                case "JOCKER_003":
+                    return new Jocker_003();
+                case "JOCKER_004":
+                    return new Jocker_004();
+                case "JOCKER_005":
+                    return new Jocker_005();
 
                 default:
                     Debug.LogWarning($"[ItemFactory] 등록되지 않은 아이템 ID 생성 시도: {id}");

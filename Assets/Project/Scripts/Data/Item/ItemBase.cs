@@ -21,14 +21,35 @@ namespace FFF.Data
 
         private Sprite _cachedIcon;
 
-        /// <summary> 
-        /// 외부(UI 등)에서 아이템 이미지를 요청할 때 반환되는 프로퍼티.
-        /// 지연 로딩(Lazy Loading) 및 캐싱 적용.
-        /// </summary>
+
+        // SO 데이터 캐싱
+        private ItemDataSO _cachedItemData;
+        
+        /// <summary> Resources/SO/Item/ 경로에서 Id와 일치하는 SO 에셋 로드 </summary>
+        protected virtual ItemDataSO LoadedItemData
+        {
+            get
+            {
+                if (_cachedItemData == null)
+                {
+                    _cachedItemData = Resources.Load<ItemDataSO>($"SO/Item/{Id}");
+                    if (_cachedItemData == null)
+                    {
+                        Debug.LogWarning($"[ItemBase] SO 에셋 로드 실패. 파일명 확인 요망: Resources/SO/Item/{Id}");
+                    }
+                }
+                return _cachedItemData;
+            }
+        }
+
+        /// <summary> SO의 Icon 최우선 반환. 없을 경우 기존 캐싱 로직 사용 </summary>
         public Sprite Icon
         {
             get
             {
+                if (LoadedItemData != null && LoadedItemData.Icon != null)
+                    return LoadedItemData.Icon;
+
                 if (_cachedIcon == null)
                 {
                     _cachedIcon = LoadSpriteAsset(BaseFolderPath, SpriteFileName);
@@ -36,6 +57,14 @@ namespace FFF.Data
                 return _cachedIcon;
             }
         }
+
+        // SO 데이터의 텍스트 최우선 반환, 없으면 하드코딩 텍스트를 사용
+        /// <summary> UI에 표시될 아이템의 이름 </summary>
+        public virtual string DisplayName => LoadedItemData != null ? LoadedItemData.DisplayName : Id;
+        
+        /// <summary> UI에 표시될 아이템의 설명 텍스트 </summary>
+        public virtual string Description => LoadedItemData != null ? LoadedItemData.Description : "설명 누락";
+        
 
         /// <summary>
         /// 지정된 경로에서 Sprite 에셋을 로드함.
