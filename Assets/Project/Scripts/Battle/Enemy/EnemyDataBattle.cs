@@ -22,6 +22,7 @@ namespace FFF.Battle.Enemy
     {
         public string EnemyId { get; private set; }
         public string EnemyName { get; private set; }
+        public string AIPatternDescription { get; private set; }
         public int MaxHealth { get; private set; }
         public int CurrentHealth { get; private set; }
 
@@ -43,6 +44,7 @@ namespace FFF.Battle.Enemy
                 Debug.LogWarning("[EnemyDataBattle] EnemyDataSO가 null입니다! 임시 데이터로 세팅합니다.");
                 EnemyId = "Mock_01";
                 EnemyName = "시연용 허수아비";
+                AIPatternDescription = string.Empty;
                 MaxHealth = 181;
                 CurrentHealth = 181;
                 RegisterTestGimmick(); // 임시 테스트용 기믹 등록
@@ -52,6 +54,7 @@ namespace FFF.Battle.Enemy
             EnemyAILogic = enemyData.AILogic;
             EnemyId = enemyData.EnemyId;
             EnemyName = enemyData.EnemyName;
+            AIPatternDescription = enemyData.AIPatternDescription;
 
             MaxHealth = enemyData.MaxHealth + bonusHealth;      // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
             CurrentHealth = enemyData.MaxHealth + bonusHealth;  // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함

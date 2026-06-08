@@ -25,7 +25,19 @@ namespace FFF.UI.Animation
         [SerializeField] private float _idleBreathScale = 1.025f;
         [SerializeField] private float _idleBreathDuration = 1.1f;
 
+        public void Configure(GameObject idleVisual, GameObject attackVisual)
+        {
+            _idleVisual = idleVisual;
+            _attackVisual = attackVisual;
+            CacheInitialScales();
+        }
+
         private void Awake()
+        {
+            CacheInitialScales();
+        }
+
+        private void CacheInitialScales()
         {
             _initialScale = transform.localScale;
             _idleInitialScale = _idleVisual != null ? _idleVisual.transform.localScale : Vector3.one;

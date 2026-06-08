@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -43,6 +44,7 @@ namespace FFF.UI.Map
 
         [Header("레이아웃")]
         [SerializeField] private RectTransform _mapContainer;
+        [SerializeField] private ScrollRect _scrollRect;
         
         [Header("노드 배경 (단색 네모 대신 띄울 이미지)")]
         [SerializeField] private Sprite _nodeBackgroundSprite;
@@ -73,6 +75,8 @@ namespace FFF.UI.Map
         private MapData _mapData;
         private bool _nodeSelectionEnabled = true;
         private readonly Dictionary<MapNode, MapNodeView> _nodeViews = new Dictionary<MapNode, MapNodeView>();
+        private readonly Dictionary<int, MapNodeView> _nodeViewsById = new Dictionary<int, MapNodeView>();
+        private Coroutine _scrollRestoreCoroutine;
         private GameObject _encounterOverlay;
         private TextMeshProUGUI _encounterTitleText;
         private TextMeshProUGUI _encounterStoryText;
@@ -151,6 +155,17 @@ namespace FFF.UI.Map
             BuildMap();
         }
 
+        public void FocusNode(int nodeId)
+        {
+            if (!isActiveAndEnabled)
+                return;
+
+            if (_scrollRestoreCoroutine != null)
+                StopCoroutine(_scrollRestoreCoroutine);
+
+            _scrollRestoreCoroutine = StartCoroutine(FocusNodeNextFrame(nodeId));
+        }
+
         protected override void OnShow()
         {
             if (_mapData != null) BuildMap();
@@ -171,19 +186,14 @@ namespace FFF.UI.Map
         private void BuildMap()
         {
             ClearMap();
-            if (_mapData == null) return;
-
-            // [추가] 맵 컨테이너(Content)의 기준점을 하단 중앙(Bottom Center)으로 강제 설정
-            _mapContainer.anchorMin = new Vector2(0.5f, 0f);
-            _mapContainer.anchorMax = new Vector2(0.5f, 0f);
-            _mapContainer.pivot = new Vector2(0.5f, 0f);
+            if (_mapData == null || _mapContainer == null) return;
 
             // [추가] 보스층까지 포함하여 맵 전체의 높이를 동적으로 계산하여 스크롤 영역 확보
             float totalHeight = (MapData.FLOORS + 2) * _nodeSpacingY;
-            _mapContainer.sizeDelta = new Vector2(_mapContainer.sizeDelta.x, totalHeight);
+            PrepareMapContainerLayout(totalHeight);
             
-            // [추가] 맵에 진입할 때마다 스크롤을 맨 아래(1층)로 초기화
-            _mapContainer.anchoredPosition = Vector2.zero;
+            // 기본 진입 위치는 1층이다. GameManager가 마지막 선택 노드를 넘기면 이후 FocusNode()에서 덮어쓴다.
+            ResetScrollToBottom();
 
             // [수정] 노드보다 '간선'을 먼저 생성합니다. 
             // 이렇게 하면 자연스럽게 배경 -> 선 -> 노드 순으로 위로 덮어씌워지며 렌더링됩니다.
@@ -294,6 +304,7 @@ namespace FFF.UI.Map
             view.SetState(_nodeSelectionEnabled && node.IsReachable, node.IsVisited);
 
             _nodeViews[node] = view;
+            _nodeViewsById[GetNodeId(node)] = view;
         }
 
         private void CreateVisitedRingImage(Transform parent, string name, float size, Sprite sprite)
@@ -402,11 +413,7 @@ namespace FFF.UI.Map
             if (!_nodeSelectionEnabled || node == null)
                 return;
 
-            int nodeId = node.RoomType == RoomType.Boss
-                ? MapData.FLOORS * MapData.COLUMNS
-                : node.Floor * MapData.COLUMNS + node.Column;
-
-            OnNodeSelected?.Invoke(nodeId);
+            OnNodeSelected?.Invoke(GetNodeId(node));
         }
 
         // ====================================================================
@@ -420,6 +427,120 @@ namespace FFF.UI.Map
             // 맨 아래(y=0)에 1층 노드가 딱 붙지 않도록 +1 하여 하단 여백 추가
             float y = (floor + 1) * _nodeSpacingY;
             return new Vector2(x, y);
+        }
+
+        private void PrepareMapContainerLayout(float totalHeight)
+        {
+            float contentWidth = ResolveMapContentWidth();
+
+            // StageScene의 Content는 기존에 pivot x=0, anchored x=-1280 조합이었다.
+            // 여기서는 가로 중앙 기준으로 통일해서 스크롤 복원 시 왼쪽으로 밀리지 않게 한다.
+            _mapContainer.anchorMin = new Vector2(0.5f, 0f);
+            _mapContainer.anchorMax = new Vector2(0.5f, 0f);
+            _mapContainer.pivot = new Vector2(0.5f, 0f);
+            _mapContainer.sizeDelta = new Vector2(contentWidth, totalHeight);
+            _mapContainer.anchoredPosition = new Vector2(0f, _mapContainer.anchoredPosition.y);
+        }
+
+        private float ResolveMapContentWidth()
+        {
+            float contentWidth = Mathf.Max(_mapContainer.rect.width, _mapContainer.sizeDelta.x);
+            ScrollRect scrollRect = ResolveScrollRect();
+            RectTransform viewport = scrollRect != null && scrollRect.viewport != null
+                ? scrollRect.viewport
+                : _mapContainer.parent as RectTransform;
+
+            if (viewport != null)
+                contentWidth = Mathf.Max(contentWidth, viewport.rect.width);
+
+            float nodeLayoutWidth = (MapData.COLUMNS - 1) * _nodeSpacingX + _nodeSize * 2f;
+            return Mathf.Max(contentWidth, nodeLayoutWidth);
+        }
+
+        private IEnumerator FocusNodeNextFrame(int nodeId)
+        {
+            yield return null;
+
+            Canvas.ForceUpdateCanvases();
+            SetScrollToNode(nodeId);
+            _scrollRestoreCoroutine = null;
+        }
+
+        private void SetScrollToNode(int nodeId)
+        {
+            if (!_nodeViewsById.TryGetValue(nodeId, out MapNodeView nodeView) || nodeView == null)
+                return;
+
+            ScrollRect scrollRect = ResolveScrollRect();
+            if (scrollRect == null || _mapContainer == null)
+                return;
+
+            if (scrollRect.content == null)
+                scrollRect.content = _mapContainer;
+
+            RectTransform viewport = scrollRect.viewport != null
+                ? scrollRect.viewport
+                : scrollRect.GetComponent<RectTransform>();
+
+            if (viewport == null)
+                return;
+
+            float viewportHeight = viewport.rect.height;
+            float contentHeight = _mapContainer.rect.height;
+            float scrollableHeight = contentHeight - viewportHeight;
+
+            if (scrollableHeight <= 0f)
+            {
+                ResetScrollToBottom();
+                return;
+            }
+
+            float targetBottom = nodeView.RectTransform.anchoredPosition.y - viewportHeight * 0.5f;
+            float normalizedPosition = Mathf.Clamp01(Mathf.Clamp(targetBottom, 0f, scrollableHeight) / scrollableHeight);
+
+            scrollRect.StopMovement();
+            scrollRect.verticalNormalizedPosition = normalizedPosition;
+        }
+
+        private void ResetScrollToBottom()
+        {
+            ScrollRect scrollRect = ResolveScrollRect();
+            if (scrollRect != null)
+            {
+                if (scrollRect.content == null && _mapContainer != null)
+                    scrollRect.content = _mapContainer;
+
+                scrollRect.StopMovement();
+                scrollRect.verticalNormalizedPosition = 0f;
+                return;
+            }
+
+            if (_mapContainer != null)
+                _mapContainer.anchoredPosition = Vector2.zero;
+        }
+
+        private ScrollRect ResolveScrollRect()
+        {
+            if (_scrollRect != null)
+                return _scrollRect;
+
+            if (_mapContainer != null)
+                _scrollRect = _mapContainer.GetComponentInParent<ScrollRect>(true);
+
+            if (_scrollRect == null)
+                _scrollRect = GetComponentInChildren<ScrollRect>(true);
+
+            if (_scrollRect == null)
+                _scrollRect = GetComponentInParent<ScrollRect>(true);
+
+            return _scrollRect;
+        }
+
+        private static int GetNodeId(MapNode node)
+        {
+            return node.RoomType == RoomType.Boss
+                ? MapData.FLOORS * MapData.COLUMNS
+                : node.Floor * MapData.COLUMNS + node.Column;
         }
 
         private Sprite GetIcon(RoomType type)
@@ -454,6 +575,12 @@ namespace FFF.UI.Map
 
         private void ClearMap()
         {
+            if (_scrollRestoreCoroutine != null)
+            {
+                StopCoroutine(_scrollRestoreCoroutine);
+                _scrollRestoreCoroutine = null;
+            }
+
             // 컨테이너가 할당되지 않았을 때의 NullReferenceException 방지
             if (_mapContainer == null) return;
 
@@ -463,6 +590,7 @@ namespace FFF.UI.Map
                 Destroy(child.gameObject);
             }
             _nodeViews.Clear();
+            _nodeViewsById.Clear();
         }
 
         private void EnsureEncounterUI()

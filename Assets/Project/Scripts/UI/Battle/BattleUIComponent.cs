@@ -32,6 +32,10 @@ namespace FFF.UI.Battle
         private const float CombatRevealPreResultDelaySeconds = 0.95f;
         private const float CombatRevealPostResultDelaySeconds = 1f;
         private const float CombatRevealFadeOutSeconds = 0.26f;
+        private const float EnemyGimmickToastFadeInSeconds = 0.22f;
+        private const float EnemyGimmickToastVisibleSeconds = 3.2f;
+        private const float EnemyGimmickToastFadeOutSeconds = 0.8f;
+        private const float HealthBarLerpSeconds = 0.28f;
 
         private static readonly Vector2 CombatPlayerSideCenter = new Vector2(-360f, 8f);
         private static readonly Vector2 CombatEnemySideCenter = new Vector2(360f, 8f);
@@ -150,6 +154,18 @@ namespace FFF.UI.Battle
         [Tooltip("Resources 기준 족보 이미지 경로. 예: Assets/Project/Resources/UI/Jokbo/seotda_jokbo.png")]
         [SerializeField] private string _jokboGuideResourcePath = "UI/Jokbo/seotda_jokbo";
 
+        [Header("=== 적 기믹 안내 ===")]
+        [Tooltip("체크하면 적 기믹 안내를 화면 하단 중앙에 표시합니다. 기본은 상단 중앙입니다.")]
+        [SerializeField] private bool _showEnemyGimmickDescriptionAtBottom;
+
+        [Header("=== 캐릭터 체력바 위치 ===")]
+        [Tooltip("플레이어 캐릭터 아래 체력바 위치. Canvas 비율 기준입니다.")]
+        [SerializeField] private Vector2 _playerHealthBarAnchor = new Vector2(0.28f, 0.5f);
+        [SerializeField] private Vector2 _playerHealthBarPosition = new Vector2(42f, -257f);
+        [Tooltip("적 캐릭터 아래 체력바 위치. Canvas 비율 기준입니다.")]
+        [SerializeField] private Vector2 _enemyHealthBarAnchor = new Vector2(0.72f, 0.5f);
+        [SerializeField] private Vector2 _enemyHealthBarPosition = new Vector2(0f, -257f);
+
         private GameObject _topHudRoot;
         private TextMeshProUGUI _topHealthText;
         private TextMeshProUGUI _topGoldText;
@@ -162,6 +178,18 @@ namespace FFF.UI.Battle
         private GameObject _jokboOverlay;
         private Image _jokboGuideImage;
         private TextMeshProUGUI _jokboGuideFallbackText;
+        private GameObject _enemyGimmickToast;
+        private TextMeshProUGUI _enemyGimmickToastText;
+        private CanvasGroup _enemyGimmickToastCanvasGroup;
+        private Coroutine _enemyGimmickToastRoutine;
+        private GameObject _playerHealthBarRoot;
+        private TextMeshProUGUI _playerHealthBarText;
+        private Image _playerHealthFillImage;
+        private GameObject _enemyHealthBarRoot;
+        private TextMeshProUGUI _enemyHealthBarText;
+        private Image _enemyHealthFillImage;
+        private Coroutine _playerHealthFillRoutine;
+        private Coroutine _enemyHealthFillRoutine;
         private readonly List<string> _currentDeckCardIds = new List<string>();
         private int _lastPlayerHealth = -1;
         private int _lastEnemyHealth = -1;
@@ -171,6 +199,7 @@ namespace FFF.UI.Battle
         {
             EnsureTopHud();
             EnsureJokboGuideButton();
+            HideLegacyCharacterHealthTexts();
             HideBattleResult();
             HideRewardSelection();
         }
@@ -196,17 +225,20 @@ namespace FFF.UI.Battle
         public void SetPlayerHealth(int current, int max)
         {
             EnsureTopHud();
+            EnsurePlayerHealthBar();
 
-            if (_playerHpText != null) 
-                _playerHpText.text = $"Player HP: {current} / {max}";
             if (_topHealthText != null)
                 _topHealthText.text = $"{current}/{max}";
+            if (_playerHealthBarText != null)
+                _playerHealthBarText.text = $"{current}/{max}";
+            SetHealthBarFill(_playerHealthFillImage, Mathf.Clamp01(max > 0 ? (float)current / max : 0f),
+                ref _playerHealthFillRoutine, _lastPlayerHealth < 0);
 
             if (_lastPlayerHealth >= 0 && _lastPlayerHealth != current)
             {
                 bool tookDamage = current < _lastPlayerHealth;
-                AnimateHealthText(_playerHpText, tookDamage);
                 AnimateHealthText(_topHealthText, tookDamage);
+                AnimateHealthText(_playerHealthBarText, tookDamage);
             }
             _lastPlayerHealth = current;
 
@@ -235,16 +267,38 @@ namespace FFF.UI.Battle
 
         public void SetEnemyHealth(int current, int max)
         {
-            if (_enemyHpText != null) 
-                _enemyHpText.text = $"Enemy HP: {current} / {max}";
+            EnsureEnemyHealthBar();
+
+            if (_enemyHealthBarText != null)
+                _enemyHealthBarText.text = $"{current}/{max}";
+            SetHealthBarFill(_enemyHealthFillImage, Mathf.Clamp01(max > 0 ? (float)current / max : 0f),
+                ref _enemyHealthFillRoutine, _lastEnemyHealth < 0);
 
             if (_lastEnemyHealth >= 0 && _lastEnemyHealth != current)
             {
                 bool tookDamage = current < _lastEnemyHealth;
-                AnimateHealthText(_enemyHpText, tookDamage);
+                AnimateHealthText(_enemyHealthBarText, tookDamage);
             }
             _lastEnemyHealth = current;
             Debug.Log($"[BattleUI] 적 체력 갱신: {current} / {max}");
+        }
+
+        public void ShowEnemyGimmickDescription(string description)
+        {
+            if (string.IsNullOrWhiteSpace(description) || !gameObject.activeInHierarchy)
+                return;
+
+            EnsureEnemyGimmickToast();
+            if (_enemyGimmickToast == null || _enemyGimmickToastText == null || _enemyGimmickToastCanvasGroup == null)
+                return;
+
+            if (_enemyGimmickToastRoutine != null)
+                StopCoroutine(_enemyGimmickToastRoutine);
+
+            _enemyGimmickToastText.text = description.Trim();
+            _enemyGimmickToast.SetActive(true);
+            _enemyGimmickToast.transform.SetAsLastSibling();
+            _enemyGimmickToastRoutine = StartCoroutine(PlayEnemyGimmickToast());
         }
 
         public void SetupItemIcons(IReadOnlyList<ItemBase> accessories, IReadOnlyList<ItemBase> jokers)
@@ -413,6 +467,98 @@ namespace FFF.UI.Battle
             BuildAccessoryRow(parent);
         }
 
+        private void EnsureEnemyGimmickToast()
+        {
+            if (_enemyGimmickToast != null)
+            {
+                PositionEnemyGimmickToast();
+                return;
+            }
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            _enemyGimmickToast = CreateUIObject("EnemyGimmickDescriptionToast", parent);
+            RectTransform rootRect = _enemyGimmickToast.GetComponent<RectTransform>();
+            SetStretch(rootRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(860f, 112f), Vector2.zero);
+            PositionEnemyGimmickToast();
+
+            _enemyGimmickToastCanvasGroup = _enemyGimmickToast.AddComponent<CanvasGroup>();
+            _enemyGimmickToastCanvasGroup.alpha = 0f;
+            _enemyGimmickToastCanvasGroup.blocksRaycasts = false;
+            _enemyGimmickToastCanvasGroup.interactable = false;
+
+            Image background = _enemyGimmickToast.AddComponent<Image>();
+            background.color = new Color(0.07f, 0.08f, 0.1f, 0.86f);
+            background.raycastTarget = false;
+
+            Outline outline = _enemyGimmickToast.AddComponent<Outline>();
+            outline.effectColor = new Color(1f, 0.78f, 0.32f, 0.45f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            TextMeshProUGUI title = CreateRewardText("Text_EnemyGimmickTitle", _enemyGimmickToast.transform,
+                "적 기믹", 20, TextAlignmentOptions.Left, FontStyles.Bold);
+            title.color = new Color(1f, 0.82f, 0.34f, 1f);
+            SetStretch(title.rectTransform, Vector2.zero, Vector2.one, new Vector2(-52f, -68f), new Vector2(0f, 28f));
+
+            _enemyGimmickToastText = CreateRewardText("Text_EnemyGimmickDescription", _enemyGimmickToast.transform,
+                "", 25, TextAlignmentOptions.Left, FontStyles.Normal);
+            _enemyGimmickToastText.color = new Color(0.96f, 0.97f, 0.92f, 1f);
+            _enemyGimmickToastText.overflowMode = TextOverflowModes.Ellipsis;
+            SetStretch(_enemyGimmickToastText.rectTransform, Vector2.zero, Vector2.one, new Vector2(-52f, -46f), new Vector2(0f, -18f));
+
+            _enemyGimmickToast.SetActive(false);
+        }
+
+        private void PositionEnemyGimmickToast()
+        {
+            if (_enemyGimmickToast == null)
+                return;
+
+            RectTransform rect = _enemyGimmickToast.GetComponent<RectTransform>();
+            if (rect == null)
+                return;
+
+            if (_showEnemyGimmickDescriptionAtBottom)
+            {
+                rect.anchorMin = new Vector2(0.5f, 0f);
+                rect.anchorMax = new Vector2(0.5f, 0f);
+                rect.anchoredPosition = new Vector2(0f, 150f);
+            }
+            else
+            {
+                rect.anchorMin = new Vector2(0.5f, 1f);
+                rect.anchorMax = new Vector2(0.5f, 1f);
+                rect.anchoredPosition = new Vector2(0f, -228f);
+            }
+        }
+
+        private IEnumerator PlayEnemyGimmickToast()
+        {
+            _enemyGimmickToastCanvasGroup.alpha = 0f;
+            _enemyGimmickToast.transform.localScale = Vector3.one * 0.96f;
+
+            yield return UITweenHelper.FadeTo(_enemyGimmickToastCanvasGroup, 1f,
+                EnemyGimmickToastFadeInSeconds, UITweenHelper.EaseType.OutQuad);
+            yield return ScaleTransform(_enemyGimmickToast.transform, Vector3.one, 0.12f, UITweenHelper.EaseType.OutCubic);
+            yield return new WaitForSeconds(EnemyGimmickToastVisibleSeconds);
+            yield return UITweenHelper.FadeTo(_enemyGimmickToastCanvasGroup, 0f,
+                EnemyGimmickToastFadeOutSeconds, UITweenHelper.EaseType.Linear);
+
+            if (_enemyGimmickToast != null)
+                _enemyGimmickToast.SetActive(false);
+            _enemyGimmickToastRoutine = null;
+        }
+
+        private void HideLegacyCharacterHealthTexts()
+        {
+            if (_playerHpText != null)
+                _playerHpText.gameObject.SetActive(false);
+
+            if (_enemyHpText != null)
+                _enemyHpText.gameObject.SetActive(false);
+        }
+
         private void BuildHealthBlock(Transform parent)
         {
             TextMeshProUGUI heart = CreateRewardText("Text_HeartIcon", parent, "♥", 38,
@@ -437,6 +583,115 @@ namespace FFF.UI.Battle
                 TextAlignmentOptions.Left, FontStyles.Bold);
             _topGoldText.color = new Color(1f, 0.84f, 0.28f, 1f);
             SetStretch(_topGoldText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(132f, 52f), new Vector2(454f, -1f));
+        }
+
+        private void EnsurePlayerHealthBar()
+        {
+            if (_playerHealthBarRoot != null)
+            {
+                PositionCharacterHealthBar(_playerHealthBarRoot, _playerHealthBarAnchor, _playerHealthBarPosition);
+                return;
+            }
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            _playerHealthBarRoot = CreateUIObject("PlayerCharacterHealthBar", parent);
+            PositionCharacterHealthBar(_playerHealthBarRoot, _playerHealthBarAnchor, _playerHealthBarPosition);
+
+            _playerHealthFillImage = CreateHealthBar("PlayerHealthGauge", _playerHealthBarRoot.transform,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(260f, 22f),
+                Vector2.zero, new Color(0.83f, 0.04f, 0.04f, 1f));
+
+            _playerHealthBarText = CreateRewardText("Text_PlayerHealth", _playerHealthBarRoot.transform,
+                "0/0", 21, TextAlignmentOptions.Center, FontStyles.Bold);
+            _playerHealthBarText.color = Color.white;
+            _playerHealthBarText.outlineWidth = 0.18f;
+            _playerHealthBarText.outlineColor = new Color(0.16f, 0.02f, 0.02f, 1f);
+            SetStretch(_playerHealthBarText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(260f, 26f), Vector2.zero);
+
+            _playerHealthBarRoot.transform.SetAsLastSibling();
+        }
+
+        private void EnsureEnemyHealthBar()
+        {
+            if (_enemyHealthBarRoot != null)
+            {
+                PositionCharacterHealthBar(_enemyHealthBarRoot, _enemyHealthBarAnchor, _enemyHealthBarPosition);
+                return;
+            }
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Transform parent = canvas != null ? canvas.transform : transform;
+
+            _enemyHealthBarRoot = CreateUIObject("EnemyHealthBar", parent);
+            PositionCharacterHealthBar(_enemyHealthBarRoot, _enemyHealthBarAnchor, _enemyHealthBarPosition);
+
+            _enemyHealthFillImage = CreateHealthBar("EnemyHealthGauge", _enemyHealthBarRoot.transform,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(260f, 22f),
+                Vector2.zero, new Color(0.83f, 0.04f, 0.04f, 1f));
+
+            _enemyHealthBarText = CreateRewardText("Text_EnemyHealth", _enemyHealthBarRoot.transform,
+                "0/0", 21, TextAlignmentOptions.Center, FontStyles.Bold);
+            _enemyHealthBarText.color = Color.white;
+            _enemyHealthBarText.outlineWidth = 0.18f;
+            _enemyHealthBarText.outlineColor = new Color(0.16f, 0.02f, 0.02f, 1f);
+            SetStretch(_enemyHealthBarText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(260f, 26f), Vector2.zero);
+
+            _enemyHealthBarRoot.transform.SetAsLastSibling();
+        }
+
+        private void PositionCharacterHealthBar(GameObject healthBarRoot, Vector2 anchor, Vector2 position)
+        {
+            if (healthBarRoot == null)
+                return;
+
+            RectTransform rootRect = healthBarRoot.GetComponent<RectTransform>();
+            if (rootRect == null)
+                return;
+
+            SetStretch(rootRect, anchor, anchor, new Vector2(292f, 58f), position);
+        }
+
+        private Image CreateHealthBar(
+            string name,
+            Transform parent,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 size,
+            Vector2 position,
+            Color fillColor)
+        {
+            GameObject root = CreateUIObject(name, parent);
+            RectTransform rootRect = root.GetComponent<RectTransform>();
+            SetStretch(rootRect, anchorMin, anchorMax, size, position);
+
+            Image background = root.AddComponent<Image>();
+            background.color = new Color(0.12f, 0.03f, 0.03f, 0.96f);
+            background.raycastTarget = false;
+
+            Outline outline = root.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.72f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            GameObject fill = CreateUIObject("Fill", root.transform);
+            RectTransform fillRect = fill.GetComponent<RectTransform>();
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+
+            Image fillImage = fill.AddComponent<Image>();
+            fillImage.color = fillColor;
+            fillImage.raycastTarget = false;
+            fillImage.type = Image.Type.Filled;
+            fillImage.fillMethod = Image.FillMethod.Horizontal;
+            fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+            fillImage.fillAmount = 1f;
+
+            return fillImage;
         }
 
         private void BuildJokerBlock(Transform parent)
@@ -2150,6 +2405,61 @@ namespace FFF.UI.Battle
 
             if (tookDamage)
                 StartCoroutine(UITweenHelper.ShakeRect(text.rectTransform, 0.22f, 5f));
+        }
+
+        private void SetHealthBarFill(Image fillImage, float targetFill, ref Coroutine routine, bool instant)
+        {
+            if (fillImage == null)
+                return;
+
+            targetFill = Mathf.Clamp01(targetFill);
+            if (routine != null)
+                StopCoroutine(routine);
+
+            if (instant || !gameObject.activeInHierarchy)
+            {
+                ApplyHealthBarFill(fillImage, targetFill);
+                routine = null;
+                return;
+            }
+
+            routine = StartCoroutine(AnimateHealthBarFill(fillImage, targetFill));
+        }
+
+        private IEnumerator AnimateHealthBarFill(Image fillImage, float targetFill)
+        {
+            if (fillImage == null)
+                yield break;
+
+            float from = fillImage.fillAmount;
+            float elapsed = 0f;
+            while (elapsed < HealthBarLerpSeconds)
+            {
+                if (fillImage == null)
+                    yield break;
+
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / HealthBarLerpSeconds);
+                ApplyHealthBarFill(fillImage, Mathf.Lerp(from, targetFill, ApplyLocalEase(t, UITweenHelper.EaseType.OutQuad)));
+                yield return null;
+            }
+
+            if (fillImage != null)
+                ApplyHealthBarFill(fillImage, targetFill);
+        }
+
+        private void ApplyHealthBarFill(Image fillImage, float fill)
+        {
+            if (fillImage == null)
+                return;
+
+            fill = Mathf.Clamp01(fill);
+            fillImage.fillAmount = fill;
+
+            RectTransform rect = fillImage.rectTransform;
+            Vector2 anchorMax = rect.anchorMax;
+            anchorMax.x = fill;
+            rect.anchorMax = anchorMax;
         }
 
         private IEnumerator PulseText(TextMeshProUGUI text, Color flashColor, float scale)

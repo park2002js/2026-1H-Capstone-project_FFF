@@ -101,6 +101,7 @@ namespace FFF.Battle.Managers
                 _battleUI.SetDeckCards(player.DeckCardIds);
                 _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
                 _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
+                _battleUI.ShowEnemyGimmickDescription(_enemyDataBattle.AIPatternDescription);
 
                 // Manager가 관리하는 ItemBase 객체 리스트를 UI로 직접 전달
                 _battleUI.SetJokerClickHandler(_jokerManager.HandleJokerClicked);

@@ -11,6 +11,15 @@ namespace FFF.Battle.FSM
 {
     public class BattleEndManager : MonoBehaviour
     {
+        private static readonly string[] AccessoryRewardPoolIds =
+        {
+            "Accessory_001",
+            "Accessory_002",
+            "Accessory_003",
+            "Accessory_004",
+            "Accessory_005"
+        };
+
         [Header("=== 시스템 참조 ===")]
         [SerializeField] private BattleManager _battleManager;
         [SerializeField] private BattleUIComponent _battleUI;
@@ -86,28 +95,17 @@ namespace FFF.Battle.FSM
                     Description = "랜덤 조커 카드\n3장 중 1장 선택"
                 });
             }
-            
-            rewards.Add(new BattleUIComponent.RewardOption
+            if (HasAvailableAccessoryReward(player))
             {
-                Id = "RewardCategory_Accessory",
-                Kind = BattleUIComponent.RewardKind.Accessory,
-                DisplayName = "장신구 보상",
-                Category = "장신구",
-                Description = "랜덤 장신구\n3개 중 1개 선택"
-            });
-
-            // 이거 도데체 왜 존재하는 조건문임?
-            // if (player == null || HasAvailableAccessoryReward(player))
-            // {
-            //     rewards.Add(new BattleUIComponent.RewardOption
-            //     {
-            //         Id = "RewardCategory_Accessory",
-            //         Kind = BattleUIComponent.RewardKind.Accessory,
-            //         DisplayName = "장신구 보상",
-            //         Category = "장신구",
-            //         Description = "랜덤 장신구\n3개 중 1개 선택"
-            //     });
-            // }
+                rewards.Add(new BattleUIComponent.RewardOption
+                {
+                    Id = "RewardCategory_Accessory",
+                    Kind = BattleUIComponent.RewardKind.Accessory,
+                    DisplayName = "장신구 보상",
+                    Category = "장신구",
+                    Description = "랜덤 장신구\n3개 중 1개 선택"
+                });
+            }
 
             Shuffle(rewards);
             return rewards;
@@ -118,8 +116,22 @@ namespace FFF.Battle.FSM
             if (categoryReward == null)
                 return;
 
+            List<BattleUIComponent.RewardOption> candidates = CreateRewardCandidates(categoryReward.Kind);
+            if (candidates.Count == 0)
+            {
+                Debug.LogWarning($"[BattleEnd] 선택 가능한 {categoryReward.Category} 후보가 없어 보상 종류 선택으로 되돌립니다.");
+                _battleUI.ShowRewardSelection(
+                    CreateRewardCategoryOptions(),
+                    ShowRewardCandidates,
+                    OnReturnToMapButtonClicked,
+                    "선택 가능한 후보가 없습니다. 다른 보상 종류를 선택하세요.",
+                    isFinalRewardSelection: false,
+                    hideRewardDetailsUntilSelection: false);
+                return;
+            }
+
             _battleUI.ShowRewardSelection(
-                CreateRewardCandidates(categoryReward.Kind),
+                candidates,
                 ClaimReward,
                 OnReturnToMapButtonClicked,
                 $"{categoryReward.Category} 후보 3개 중 하나를 선택하세요.",
@@ -211,36 +223,36 @@ namespace FFF.Battle.FSM
 
         private List<BattleUIComponent.RewardOption> CreateRandomAccessoryRewards(int count)
         {
-            Debug.LogError("악세서리 보상 UI 렌더링 시작");
+            Debug.Log("[BattleEnd] 장신구 보상 UI 렌더링 시작");
             PlayerDataBattle player = GetCurrentPlayerData();
-            HashSet<string> ownedAccessoryIds = player != null && player.EquippedAccessoryIds != null
-                ? new HashSet<string>(player.EquippedAccessoryIds)
-                : new HashSet<string>();
-
             var rewards = new List<BattleUIComponent.RewardOption>();
-            // 중복 소유 필터링을 위해 요구량보다 넉넉하게 ID 추출
-            List<string> itemIds = GameManager.Instance.TableSystem.PopItemIds(ItemType.Accessory, count * 3);
-            
+            var usedRewardIds = new HashSet<string>();
+
+            List<string> itemIds = PopRewardItemIds(ItemType.Accessory, count);
             foreach (string id in itemIds)
             {
-                if (ownedAccessoryIds.Contains(id)) continue;
-                
-                ItemBase item = ItemFactory.CreateItem(id);
-                if (item == null) continue;
-                
-                rewards.Add(new BattleUIComponent.RewardOption
-                {
-                    Id = $"Reward_Accessory_{item.Id}",
-                    Kind = BattleUIComponent.RewardKind.Accessory,
-                    PayloadId = item.Id,
-                    DisplayName = item.DisplayName,
-                    Category = "장신구",
-                    Description = item.Description,
-                    Artwork = item.Icon
-                });
-                
-                if (rewards.Count >= count) break;
+                TryAddAccessoryReward(rewards, usedRewardIds, player, id);
+
+                if (rewards.Count >= count)
+                    break;
             }
+
+            if (rewards.Count < count)
+            {
+                List<string> fallbackIds = GetAvailableAccessoryRewardIds(player);
+                Shuffle(fallbackIds);
+                foreach (string id in fallbackIds)
+                {
+                    TryAddAccessoryReward(rewards, usedRewardIds, player, id);
+
+                    if (rewards.Count >= count)
+                        break;
+                }
+            }
+
+            if (rewards.Count == 0)
+                Debug.LogWarning("[BattleEnd] 생성 가능한 장신구 보상 후보가 없습니다.");
+
             return rewards;
         }
 
@@ -301,14 +313,64 @@ namespace FFF.Battle.FSM
 
         private bool HasAvailableAccessoryReward(PlayerDataBattle player)
         {
-            if (player == null)
-                return true;
+            return GetAvailableAccessoryRewardIds(player).Count > 0;
+        }
 
-            HashSet<string> ownedAccessoryIds = player.EquippedAccessoryIds != null
-                ? new HashSet<string>(player.EquippedAccessoryIds)
-                : new HashSet<string>();
+        private List<string> GetAvailableAccessoryRewardIds(PlayerDataBattle player)
+        {
+            var availableIds = new List<string>();
+            foreach (string id in AccessoryRewardPoolIds)
+            {
+                if (IsOwnedAccessory(player, id))
+                    continue;
 
-            return false;
+                availableIds.Add(id);
+            }
+
+            return availableIds;
+        }
+
+        private bool TryAddAccessoryReward(
+            List<BattleUIComponent.RewardOption> rewards,
+            HashSet<string> usedRewardIds,
+            PlayerDataBattle player,
+            string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId) || IsOwnedAccessory(player, itemId) || !usedRewardIds.Add(itemId))
+                return false;
+
+            ItemBase item = ItemFactory.CreateItem(itemId);
+            if (item == null)
+                return false;
+
+            rewards.Add(new BattleUIComponent.RewardOption
+            {
+                Id = $"Reward_Accessory_{item.Id}",
+                Kind = BattleUIComponent.RewardKind.Accessory,
+                PayloadId = item.Id,
+                DisplayName = item.DisplayName,
+                Category = "장신구",
+                Description = item.Description,
+                Artwork = item.Icon
+            });
+
+            return true;
+        }
+
+        private bool IsOwnedAccessory(PlayerDataBattle player, string itemId)
+        {
+            return player != null &&
+                   player.EquippedAccessoryIds != null &&
+                   player.EquippedAccessoryIds.Contains(itemId);
+        }
+
+        private List<string> PopRewardItemIds(ItemType itemType, int count)
+        {
+            GameManager gameManager = GameManager.Instance;
+            if (gameManager == null || gameManager.TableSystem == null)
+                return new List<string>();
+
+            return gameManager.TableSystem.PopItemIds(itemType, count);
         }
 
         private static void Shuffle<T>(IList<T> list)

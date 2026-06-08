@@ -58,18 +58,20 @@ namespace FFF.Core
 
         private static readonly RewardCatalogItem[] EventJokerRewardPool =
         {
-            new RewardCatalogItem("JKR_REROLL_BURST", "리롤 폭죽 조커"),
-            new RewardCatalogItem("JKR_HIGH_CARD", "광패 조커"),
-            new RewardCatalogItem("JKR_DOUBLE_PIP", "쌍피 조커"),
-            new RewardCatalogItem("JKR_LUCKY_CHARM", "행운 부적 조커")
+            new RewardCatalogItem("Jocker_001", "각시탈"),
+            new RewardCatalogItem("Jocker_002", "분이"),
+            new RewardCatalogItem("Jocker_003", "목자"),
+            new RewardCatalogItem("Jocker_004", "양반"),
+            new RewardCatalogItem("Jocker_005", "소무")
         };
 
         private static readonly RewardCatalogItem[] EventAccessoryRewardPool =
         {
-            new RewardCatalogItem("ACC_REROLL_BONUS", "노리개"),
-            new RewardCatalogItem("ACC_DAMAGE_BONUS", "은장도"),
-            new RewardCatalogItem("ACC_JADE_RING", "옥가락지"),
-            new RewardCatalogItem("ACC_GAT", "갓")
+            new RewardCatalogItem("Accessory_001", "옥가락지"),
+            new RewardCatalogItem("Accessory_002", "갓"),
+            new RewardCatalogItem("Accessory_003", "은장도"),
+            new RewardCatalogItem("Accessory_004", "마패"),
+            new RewardCatalogItem("Accessory_005", "노리개")
         };
 
         [Header("=== Master Data ===")]
@@ -86,6 +88,7 @@ namespace FFF.Core
         public MapData CurrentMapData => _currentMapData;
         private MapUIComponent _activeMapView;
         private TopRunHudComponent _activeRunHud;
+        private int _lastSelectedMapNodeId = -1;
         
         // === <ver 1.2.2 System> 신규 추가 ===
         // ================================================================
@@ -180,6 +183,8 @@ namespace FFF.Core
             UIManager.Instance.RegisterScreen(UIScreenNames.MAP, view);
             UIManager.Instance.ShowScreen(UIScreenNames.MAP);
             HydrateRunHud(view);
+            if (_lastSelectedMapNodeId >= 0)
+                view.FocusNode(_lastSelectedMapNodeId);
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.MAP);
         }
 
@@ -249,6 +254,7 @@ namespace FFF.Core
         private void ResetRunMap()
         {
             _currentMapData = null;
+            _lastSelectedMapNodeId = -1;
         }
 
         private void ResetPlayerData()
@@ -281,6 +287,7 @@ namespace FFF.Core
             }
 
             VisitMapNode(selectedNode);
+            _lastSelectedMapNodeId = nodeId;
             SaveRunMapProgress();
 
             if (selectedNode.RoomType == RoomType.Event)
@@ -460,12 +467,27 @@ namespace FFF.Core
                 return null;
 
             RewardCatalogItem reward = item.Value;
+            ItemBase rewardItem = ItemFactory.CreateItem(reward.Id);
+            string displayName = rewardItem != null ? rewardItem.DisplayName : reward.DisplayName;
             return new MapEventRewardCandidate
             {
-                Label = $"{reward.DisplayName} 받기",
-                Feedback = $"{reward.DisplayName} 장신구를 얻었습니다.",
+                Label = $"{displayName} 받기",
+                Feedback = $"{displayName} 장신구를 얻었습니다.",
                 SoundId = SoundIds.SfxItemEquip,
-                Apply = () => _masterPlayerData?.AddAccessory(reward.Id)
+                Apply = () =>
+                {
+                    if (_masterPlayerData == null)
+                        return;
+
+                    _masterPlayerData.EquippedAccessoryIds ??= new List<string>();
+                    if (_masterPlayerData.EquippedAccessoryIds.Contains(reward.Id))
+                    {
+                        Debug.LogWarning($"[GameManager] 이미 보유 중인 장신구 보상을 무시합니다: {reward.Id}");
+                        return;
+                    }
+
+                    _masterPlayerData.AddAccessory(reward.Id);
+                }
             };
         }
 
@@ -572,6 +594,12 @@ namespace FFF.Core
 
         private string ResolveEnemyVisualId(RoomType roomType, IReadOnlyList<string> candidateVisualIds)
         {
+            if (roomType == RoomType.Elite)
+                return HasVisualId(candidateVisualIds, "Elite") ? "Elite" : null;
+
+            if (roomType == RoomType.Boss)
+                return HasVisualId(candidateVisualIds, "Boss") ? "Boss" : null;
+
             if (roomType != RoomType.Monster)
                 return null;
 
@@ -615,10 +643,34 @@ namespace FFF.Core
                 if (string.IsNullOrWhiteSpace(id) || !usedIds.Add(id))
                     continue;
 
+                if (IsSpecialEnemyVisualId(id))
+                    continue;
+
                 candidates.Add(id);
             }
 
             return candidates;
+        }
+
+        private static bool HasVisualId(IReadOnlyList<string> candidateVisualIds, string targetId)
+        {
+            if (candidateVisualIds == null || string.IsNullOrWhiteSpace(targetId))
+                return false;
+
+            for (int i = 0; i < candidateVisualIds.Count; i++)
+            {
+                if (string.Equals(candidateVisualIds[i], targetId, System.StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsSpecialEnemyVisualId(string id)
+        {
+            return string.Equals(id, "Elite", System.StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(id, "Boss", System.StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(id, "TheCat", System.StringComparison.OrdinalIgnoreCase);
         }
 
         private List<string> GetSeenNormalEnemyVisualIds()
