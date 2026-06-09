@@ -15,7 +15,7 @@ MonoBehaviour:
   Id: Jocker_004
   Type: 1
   DisplayName: "\uC591\uBC18"
-  Description: "\uC0AC\uC6A9\uC2DC 3\uD134 \uB3D9\uC548 \uACF5\uACA9\uB825\uC774
-    +10 \uB418\uC5B4 \uACC4\uC0B0 \uB428"
+  Description: "\uC0AC\uC6A9\uC2DC, \uC774\uBC88\uD134\uC5D0\uB9CC \uCD5C\uC885 \uACF5\uACA9\uB825
+    + 20"
   Icon: {fileID: 21300000, guid: 6eb005558e80ebc4ebee88cfe1a798e4, type: 3}
   Price: 1

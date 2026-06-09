@@ -567,7 +567,7 @@ namespace FFF.Core
             SceneLoader.LoadScene(SceneLoader.SceneNames.SHOP);
         }
 
-        private int bonusHealthCount = 0; // 난이도 조절을 위해 임시로 추가한 변수. 실제로는 더 고도화된 난이도 조절 객체가 필요
+        private int enemyBonusCount = 0; // 난이도 조절을 위해 임시로 추가한 변수. 실제로는 더 고도화된 난이도 조절 객체가 필요
         private void EnterRestFromMap()
         {
             SoundManager.PlayUiSound(SoundIds.UiConfirm);
@@ -591,19 +591,20 @@ namespace FFF.Core
             TargetRoomType = roomType;
             TargetEnemyVisualId = null;
 
-            // TODO: [Step 4] 난이도 조절 시스템 매니저
-            // 층이 올라갈 때마다 기본체력에서 40의 체력을 추가로 부여하는 로직 추가 필요.
-            // 현재는 임시로 0 할당.
-            int bonusHealth = 40;
+            // TODO: 난이도 조절 시스템 매니저 객체 자체를 생성
+            // 층이 올라갈 때마다 기본체력에서 10의 체력을 추가로 부여.
+            int bonusHealth = 10;
+            int bonusStr = 2;
 
             // 전투 전달용 데이터 구조체 패키징
             CurrentBattleEntryData = new BattleEntryData
             {
                 TargetEnemyId = targetEnemyId,
-                EnemyBonusHealth = bonusHealth * bonusHealthCount,
+                EnemyBonusHealth = bonusHealth * enemyBonusCount,
+                EnemyBonusStrength = bonusStr * enemyBonusCount,
                 PlayerMasterData = _masterPlayerData
             };
-            bonusHealthCount++;
+            enemyBonusCount++;
 
             SoundManager.PlaySfxSound(roomType == RoomType.Boss ? SoundIds.SfxMapEnterBoss : SoundIds.SfxMapEnterBattle);
             SceneLoader.LoadScene(SceneLoader.SceneNames.BATTLE);

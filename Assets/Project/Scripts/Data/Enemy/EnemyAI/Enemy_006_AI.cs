@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using FFF.Battle.Data;
 using FFF.Battle.Modifier;
-using System.Linq;
-using System;
 
 namespace FFF.Data
 {
@@ -13,74 +13,26 @@ namespace FFF.Data
     {
         public override List<HwaTuCard> DecideCards(EnemyDataBattle self, ModifierContext context)
         {
-            // 1. 전체 카드 풀 생성
-            List<HwaTuCard> allCards = HwaTuCardDatabase.CreateAllCards();
-            List<HwaTuCard> pickedCards = new List<HwaTuCard>();
+            // 전체 카드 풀 무작위 정렬 연산
+            List<HwaTuCard> pool = HwaTuCardDatabase.CreateAllCards().OrderBy(x => UnityEngine.Random.value).ToList();
 
-            // 2. 현재 턴 확인 (1, 2, 3턴 주기로 계산)
-            // BattleManager의 CurrentTurnNumber가 1부터 시작한다고 가정
-            int turnInCycle = (context.CurrentTurnNumber - 1) % 3 + 1;
-
-            Debug.Log($"[{self.EnemyName} AI] 현재 패턴 주기: {turnInCycle}/3 (전체 {context.CurrentTurnNumber}턴)");
-
-            if (turnInCycle == 3)
+            // 끗 또는 망통 족보에 해당하는 조합 탐색
+            for (int i = 0; i < pool.Count - 1; i++)
             {
-                // [3턴: 무조건 땡 나오게 하기]
-                pickedCards = GetRandomDdaeng(allCards);
-            }
-            else
-            {
-                // [1, 2턴: 땡이 아닌 무작위 조합]
-                pickedCards = GetRandomNonDdaeng(allCards);
+                for (int j = i + 1; j < pool.Count; j++)
+                {
+                    SeotdaResult result = SeotdaJudge.Judge(pool[i], pool[j]);
+                    
+                    if ((result.Hand >= SeotdaHand.GuKkeut && result.Hand <= SeotdaHand.IlKkeut) || result.Hand == SeotdaHand.MangTong)
+                    {
+                        // 조건 충족 시 해당 조합 반환
+                        return new List<HwaTuCard> { pool[i], pool[j] };
+                    }
+                }
             }
 
-            return pickedCards;
-        }
-
-        /// <summary>
-        /// 무작위로 '땡' 조합(월이 같은 카드 2장)을 찾아 반환합니다.
-        /// </summary>
-        private List<HwaTuCard> GetRandomDdaeng(List<HwaTuCard> pool)
-        {
-            // 같은 월(Month)을 가진 카드끼리 그룹화
-            var ddaengGroups = pool.GroupBy(c => c.Month)
-                                   .Where(g => g.Count() >= 2)
-                                   .ToList();
-
-            if (ddaengGroups.Count == 0) return pool.Take(2).ToList(); // 예외 처리
-
-            // 랜덤하게 한 그룹(월) 선택
-            var selectedGroup = ddaengGroups[UnityEngine.Random.Range(0, ddaengGroups.Count)].ToList();
-            
-            // 그 그룹에서 카드 2장 선택
-            return selectedGroup.OrderBy(x => UnityEngine.Random.value).Take(2).ToList();
-        }
-
-        /// <summary>
-        /// '땡'이 아닌(월이 다른) 무작위 카드 2장을 반환합니다.
-        /// </summary>
-        private List<HwaTuCard> GetRandomNonDdaeng(List<HwaTuCard> pool)
-        {
-            List<HwaTuCard> result = new List<HwaTuCard>();
-            
-            // 첫 번째 카드 랜덤 선택
-            int firstIdx = UnityEngine.Random.Range(0, pool.Count);
-            result.Add(pool[firstIdx]);
-
-            // 두 번째 카드는 첫 번째 카드와 월이 다른 것 중에서 선택
-            var filteredPool = pool.Where(c => c.Month != result[0].Month).ToList();
-            
-            if (filteredPool.Count > 0)
-            {
-                result.Add(filteredPool[UnityEngine.Random.Range(0, filteredPool.Count)]);
-            }
-            else
-            {
-                // 만약 월이 다른 카드가 없다면(데이터 오류 상황 등) 그냥 아무거나 선택
-                result.Add(pool[(firstIdx + 1) % pool.Count]);
-            }
-
-            return result;
+            // 조건 충족 조합 부재 시 기본 무작위 추출 (안전 장치)
+            return pool.Take(2).ToList();
         }
     }
 }

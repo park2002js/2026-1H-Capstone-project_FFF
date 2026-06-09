@@ -4,25 +4,27 @@ using FFF.Battle.Modifier;
 namespace FFF.Data
 {
     /// <summary>
-    /// 악세서리 004 아이템 클래스.
-    /// 부여 효과: 땡 조합 시 공격력 +50.
-    /// 연관: ModifierValueType.Strength, HandJokboCondition, StrengthConstantEffect
+    /// 부여 효과: 3턴째부터 플레이어가 받는 데미지 -10 감소.
+    /// 연관: ModifierValueType.Damage, MinTurnCondition, IsPlayerAttackingCondition, DamageConstantEffect
     /// </summary>
     public class Accessory_004 : AccessoryItemBase
     {
         public override string Id => "Accessory_004";
-        protected override string SpriteFileName => "mape";
+        protected override string SpriteFileName => "jadering";
 
         private BattleModifier _modifier;
 
         public override void Apply(ModifierContext context, Action onConsume = null)
         {
-            // 땡 족보 조건과 공격력 +50 상수 연산 효과를 결합하여 모디파이어 생성
+            // 최소 턴 조건 및 피격 조건 결합 부품 조립 (영구 지속)
             _modifier = new BattleModifier(
-                id: $"{Id}_DdaengStrengthBonus",
-                targetType: ModifierValueType.Strength,
-                condition: new HandJokboCondition(HandCategory.Ddaeng),
-                effect: new StrengthConstantEffect(50),
+                id: $"{Id}_RecvDmgDown_FromTurn3",
+                targetType: ModifierValueType.Damage,
+                condition: new AndCondition(
+                    new MinTurnCondition(3),
+                    new IsPlayerAttackingCondition(false)
+                ),
+                effect: new DamageConstantEffect(-10),
                 turns: BattleModifier.PERMANENT_TURN
             );
 

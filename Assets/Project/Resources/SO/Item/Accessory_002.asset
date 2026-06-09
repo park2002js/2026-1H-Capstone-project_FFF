@@ -15,6 +15,8 @@ MonoBehaviour:
   Id: Accessory_002
   Type: 0
   DisplayName: "\uAC13"
-  Description: "\uB057 \uC870\uD569\uC2DC \uACF5\uACA9\uB825 +5"
+  Description: "\uD50C\uB808\uC774\uC5B4\uC758 \uCE74\uB4DC \uC870\uD569 \uC22B\uC790
+    \uD569 \uB9CC\uD07C, \uD50C\uB808\uC774\uC5B4 \uCD5C\uC885 \uACF5\uACA9\uB825
+    \uC99D\uAC00"
   Icon: {fileID: 21300000, guid: a0427d7e0be67484ebc6551bc988e12d, type: 3}
   Price: 112

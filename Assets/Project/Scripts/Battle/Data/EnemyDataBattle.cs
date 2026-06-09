@@ -26,6 +26,8 @@ namespace FFF.Battle.Data
         public int MaxHealth { get; private set; }
         public int CurrentHealth { get; private set; }
 
+        private int BonusStrength = 0;
+
         // SO 파일 내에 정의된 AI 함수 호출을 위한 원본 저장
         private EnemyAISO EnemyAILogic;
         
@@ -36,7 +38,7 @@ namespace FFF.Battle.Data
         /// 전투 시작 시 BattleStartManager가 SO 데이터를 넘기며 호출합니다.
         /// 인자로 넘어온 SO 데이터를 바탕으로 현재 전투의 적 정보를 초기화합니다.
         /// </summary>
-        public void Initialize(EnemyDataSO enemyData, int bonusHealth = 0) // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
+        public void Initialize(EnemyDataSO enemyData, int bonusHealth = 0, int bonusStr = 0) // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
         {
             // Enemy Data 누락으로 인해 게임 에러 방지를 위한 임시 데이터 
             if (enemyData == null)
@@ -57,6 +59,8 @@ namespace FFF.Battle.Data
 
             MaxHealth = enemyData.MaxHealth + bonusHealth;      // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
             CurrentHealth = enemyData.MaxHealth + bonusHealth;  // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
+            BonusStrength = bonusStr;
+
 
             // EnemyId 문자열 기반 AI 클래스 타입 동적 탐색 및 인스턴스 생성
             Type aiType = Type.GetType($"FFF.Data.{EnemyId}_AI");
@@ -116,11 +120,11 @@ namespace FFF.Battle.Data
             {
                 Card1 = c1,
                 Card2 = c2,
-                BasePower = result.BasePower,
+                BasePower = result.BasePower + BonusStrength, // 적의 기본 공격력이 반영되도록 함
                 HandName = result.DisplayName
             };
 
-            Debug.Log($"[EnemyDataBattle] 적 의도 결정됨: {result.DisplayName} (공격력: {result.BasePower})");
+            Debug.Log($"[EnemyDataBattle] 적 의도 결정됨: {result.DisplayName} (공격력: {result.BasePower + BonusStrength})");
         }
         
 

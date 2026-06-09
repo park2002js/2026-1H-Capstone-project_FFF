@@ -1,9 +1,8 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using FFF.Battle.Data;
 using FFF.Battle.Modifier;
-using System;
 
 namespace FFF.Data
 {
@@ -13,8 +12,14 @@ namespace FFF.Data
     {
         public override List<BattleModifier> CreateGimmickModifiers(string enemyId) => new List<BattleModifier>
         {
-            new BattleModifier($"{enemyId}_Ddaeng_DmgMul", ModifierValueType.Damage, 
-                new HandJokboCondition(HandCategory.Ddaeng), new DamageMultiplierEffect(2f))
+            // 플레이어의 끗 족보 제출 시 공격력 상수 +5 가산 부품 조립
+            new BattleModifier(
+                id: $"{enemyId}_Kkeut_StrUp", 
+                targetType: ModifierValueType.Strength, 
+                condition: new HandJokboCondition(HandCategory.Kkeut), 
+                effect: new StrengthConstantEffect(5),
+                turns: BattleModifier.PERMANENT_TURN
+            )
         };
     }
 }

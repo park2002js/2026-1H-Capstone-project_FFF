@@ -13,13 +13,11 @@ MonoBehaviour:
   m_Name: Enemy_008
   m_EditorClassIdentifier: 
   EnemyId: Enemy_008
-  EnemyName: 8
-  MaxHealth: 2700
-  AILogic: {fileID: 11400000, guid: d87651320d459b34ba1784857609dbbb, type: 2}
-  GimmickLogic: {fileID: 11400000, guid: 382ae5e3b72d73c449a9af234edc6ce5, type: 2}
-  AIPatternDescription: "\uC9DD\uC218 \uD134\uC5D0\uB294 \uC9DD\uC218\uC778 \uCE74\uB4DC\uB85C\uB9CC
-    \uC870\uD569\uC744, \uD640\uC218 \uD134\uC5D0\uB294 \uD640\uC218\uC778 \uCE74\uB4DC\uB85C\uB9CC
-    \uC870\uD569\uC744 \uD558\uC5EC \uB0B8\uB2E4"
-  IdleSprite: {fileID: -6248741079362886434, guid: a4f49606484bd584fafa58040bc462e1, type: 3}
-  AttackSprite: {fileID: -7100139421218375167, guid: 3728670667abeb8438ebaa3f532cdaf5, type: 3}
-  BackgroundSprite: {fileID: 2887422426852493428, guid: 552f2bf7a62f2ac40bea8c94c273a34b, type: 3}
+  EnemyName: "10\uC774\uC0C1"
+  MaxHealth: 200
+  AIPatternDescription: "\uC871\uBCF4\uC758 \uC6D4 \uC22B\uC790 \uD569\uC774 10\uC774\uC0C1\uC774\uC5EC\uC57C
+    \uB370\uBBF8\uC9C0\uAC00 \uD06C\uAC8C \uB4E4\uC5B4\uAC00\uACE0, 10 \uBBF8\uB9CC\uC774\uBA74
+    \uB370\uBBF8\uC9C0\uAC00 \uC57D\uD558\uAC8C \uB4E4\uC5B4\uAC11\uB2C8\uB2E4."
+  IdleSprite: {fileID: 21300000, guid: 354774b67154f65489eb35eaa962ed37, type: 3}
+  AttackSprite: {fileID: 21300000, guid: f505b412fd47fda4293404e33203e363, type: 3}
+  BackgroundSprite: {fileID: 21300000, guid: 6a956ec8828c2574ba48cf8ad01d34d8, type: 3}

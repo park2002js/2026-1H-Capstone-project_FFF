@@ -27,18 +27,54 @@ namespace FFF.Data
                     return new Accessory_004();
                 case "ACCESSORY_005":
                     return new Accessory_005();
+                case "ACCESSORY_006":
+                    return new Accessory_006();
+                case "ACCESSORY_007":
+                    return new Accessory_007();
+                case "ACCESSORY_008":
+                    return new Accessory_008();
+                case "ACCESSORY_009":
+                    return new Accessory_009();
+                case "ACCESSORY_010":
+                    return new Accessory_010();
+                case "ACCESSORY_011":
+                    return new Accessory_011();
+                case "ACCESSORY_012":
+                    return new Accessory_012();
+                case "ACCESSORY_013":
+                    return new Accessory_013();
+                case "ACCESSORY_014":
+                    return new Accessory_014();
+                case "ACCESSORY_015":
+                    return new Accessory_015();
+                case "ACCESSORY_016":
+                    return new Accessory_016();
+                case "ACCESSORY_017":
+                    return new Accessory_017();
+                case "ACCESSORY_018":
+                    return new Accessory_018();
+                case "ACCESSORY_019":
+                    return new Accessory_019();
+                case "ACCESSORY_020":
+                    return new Accessory_020();
 
                 // === 조커 (Joker) 매핑 ===
-                case "JOCKER_001":
-                    return new Jocker_001();
-                case "JOCKER_002":
-                    return new Jocker_002();
-                case "JOCKER_003":
-                    return new Jocker_003();
-                case "JOCKER_004":
-                    return new Jocker_004();
-                case "JOCKER_005":
-                    return new Jocker_005();
+                case "JOKER_001":
+                    return new Joker_001();
+                case "JOKER_002":
+                    return new Joker_002();
+                case "JOKER_003":
+                    return new Joker_003();
+                case "JOKER_004":
+                    return new Joker_004();
+                case "JOKER_005":
+                    return new Joker_005();
+                case "JOKER_006":
+                    return new Joker_006();
+                case "JOKER_007":
+                    return new Joker_007();
+                case "JOKER_008":
+                    return new Joker_008();
 
                 default:
                     Debug.LogWarning($"[ItemFactory] 등록되지 않은 아이템 ID 생성 시도: {id}");

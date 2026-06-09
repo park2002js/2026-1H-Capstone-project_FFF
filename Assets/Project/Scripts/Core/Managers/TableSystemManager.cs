@@ -26,18 +26,27 @@ namespace FFF.Core
         private List<string> _accessoryIdList = new List<string>();
 
         /// <summary> 악세서리 원본 데이터 (리필 목적) </summary>
-        private readonly string[] _defaultAccessoryIds = { "Accessory_001", "Accessory_002", "Accessory_003", "Accessory_004", "Accessory_005" };
+        private readonly string[] _defaultAccessoryIds = { 
+            "Accessory_001", "Accessory_002", "Accessory_003", "Accessory_004", "Accessory_005",
+            "Accessory_006", "Accessory_007", "Accessory_008", "Accessory_009", "Accessory_010",
+            "Accessory_011", "Accessory_012", "Accessory_013", "Accessory_014", "Accessory_015",
+            "Accessory_016", "Accessory_017", "Accessory_018", "Accessory_019", "Accessory_020"};
 
         /// <summary> 조커 ID 보관 리스트 </summary>
         private List<string> _jokerIdList = new List<string>();
         /// <summary> 조커 원본 데이터 (리필 목적) </summary>
-        private readonly string[] _defaultJokerIds = { "Jocker_001", "Jocker_002", "Jocker_003", "Jocker_004", "Jocker_005"};
+        private readonly string[] _defaultJokerIds = { 
+            "Joker_001", "Joker_002", "Joker_003", "Joker_004", "Joker_005",
+            "Joker_006", "Joker_007", "Joker_008"
+            };
 
         // === 원본 데이터 (리필 목적) ===
         // 후에 Json이나 Text로 저장된 리스트를 불러와서 초기화하도록 로직을 변경할 예정. 코드내에서 전부다 추가하는것이 오히려 불편
-        private readonly string[] _defaultNormalEnemies = { "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005" };
-        private readonly string[] _defaultEliteEnemies = { "Enemy_006", "Enemy_007" };
-        private readonly string[] _defaultBossEnemies = { "Enemy_008" };
+        private readonly string[] _defaultNormalEnemies = { 
+            "Enemy_001", "Enemy_002", "Enemy_003", "Enemy_004", "Enemy_005",
+            "Enemy_006", "Enemy_007", "Enemy_008", "Enemy_009", "Enemy_010", "Enemy_011" };
+        private readonly string[] _defaultEliteEnemies = { "Enemy_012", "Enemy_013", "Enemy_014" };
+        private readonly string[] _defaultBossEnemies = { "Enemy_015" };
 
         /// <summary>
         /// 전달된 시드값으로 난수 생성기 초기화 및 적 리스트 세팅 수행.
