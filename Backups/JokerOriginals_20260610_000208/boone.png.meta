@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ed08172932af6264badba76178fee456
+guid: 555b3cf694c8c4f49ba236579abd7a28
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8152956907167054114
-    second: EliteMonsterAttack_0
+      213: 878377039937143705
+    second: boone_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: EliteMonsterAttack_0
+      name: boone_0
       rect:
         serializedVersion: 2
-        x: 33
-        y: 149
-        width: 926
-        height: 748
+        x: 307
+        y: 349
+        width: 471
+        height: 741
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 22972c06c1f152170800000000000000
-      internalID: 8152956907167054114
+      spriteID: 9930054934f903c00800000000000000
+      internalID: 878377039937143705
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      EliteMonsterAttack_0: 8152956907167054114
+      boone_0: 878377039937143705
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

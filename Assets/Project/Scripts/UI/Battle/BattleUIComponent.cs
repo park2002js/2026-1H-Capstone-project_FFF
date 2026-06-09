@@ -357,6 +357,7 @@ namespace FFF.UI.Battle
             // ItemBase 내부의 Icon 속성을 직접 참조하여 UI 렌더링
             ApplyHudItemVisual(iconObject, item.Icon, isJoker);
             ConfigureHudIcon(iconObject, isJoker);
+            ConfigureItemTooltip(iconObject, item, isJoker);
 
             if (isJoker)
                 ConfigureJokerButton(iconObject, item.Id, jokerIndex);
@@ -908,6 +909,28 @@ namespace FFF.UI.Battle
                 SoundManager.PlayDefaultUiClick();
                 _onJokerIconClicked?.Invoke(capturedIndex, capturedId);
             });
+        }
+
+        private void ConfigureItemTooltip(GameObject icon, ItemBase item, bool isJoker)
+        {
+            if (icon == null || item == null)
+                return;
+
+            Image hitArea = icon.GetComponent<Image>();
+            if (hitArea == null)
+            {
+                hitArea = icon.AddComponent<Image>();
+                hitArea.color = new Color(1f, 1f, 1f, 0f);
+            }
+
+            hitArea.enabled = true;
+            hitArea.raycastTarget = true;
+
+            ItemTooltipTrigger tooltip = icon.GetComponent<ItemTooltipTrigger>();
+            if (tooltip == null)
+                tooltip = icon.AddComponent<ItemTooltipTrigger>();
+
+            tooltip.SetContent(item.DisplayName, item.Description, isJoker ? "조커 카드" : "장신구");
         }
 
         private void CreateJokerSlotPlaceholders(int count)

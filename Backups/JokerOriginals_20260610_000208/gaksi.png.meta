@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ed08172932af6264badba76178fee456
+guid: d8a01c2f535317446bcdd121041f74c3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8152956907167054114
-    second: EliteMonsterAttack_0
+      213: -648072723264381903
+    second: gaksi_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: EliteMonsterAttack_0
+      name: gaksi_0
       rect:
         serializedVersion: 2
-        x: 33
-        y: 149
-        width: 926
-        height: 748
+        x: 293
+        y: 316
+        width: 500
+        height: 810
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 22972c06c1f152170800000000000000
-      internalID: 8152956907167054114
+      spriteID: 13cd435ba459107f0800000000000000
+      internalID: -648072723264381903
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      EliteMonsterAttack_0: 8152956907167054114
+      gaksi_0: -648072723264381903
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

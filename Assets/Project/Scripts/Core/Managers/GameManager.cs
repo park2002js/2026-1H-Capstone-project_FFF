@@ -6,6 +6,7 @@ using FFF.UI.Main;
 using FFF.UI.Map;
 using FFF.UI.Shop;
 using FFF.UI.Rest;
+using FFF.UI.Treasure;
 using FFF.UI.Common;
 using FFF.Map;
 using FFF.UI.Battle;
@@ -223,6 +224,18 @@ namespace FFF.Core
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.REST);
         }
 
+        public void OnTreasureSceneReady(TreasureUIComponent view)
+        {
+            view.OnLeave = HandleTreasureLeave;
+            view.OnRewardClaimed = HandleTreasureRewardClaimed;
+            view.SetReward(CreateTreasureReward());
+
+            UIManager.Instance.RegisterScreen(UIScreenNames.TREASURE, view);
+            UIManager.Instance.ShowScreen(UIScreenNames.TREASURE);
+            HydrateRunHud(view);
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.TREASURE);
+        }
+
         public void UnregisterScreen(string screenName)
         {
             UIManager.Instance?.UnregisterScreen(screenName);
@@ -305,6 +318,12 @@ namespace FFF.Core
             if (selectedNode.RoomType == RoomType.Rest)
             {
                 EnterRestFromMap();
+                return;
+            }
+
+            if (selectedNode.RoomType == RoomType.Treasure)
+            {
+                EnterTreasureFromMap();
                 return;
             }
 
@@ -554,6 +573,13 @@ namespace FFF.Core
             SoundManager.PlayUiSound(SoundIds.UiConfirm);
             SceneLoader.LoadScene(SceneLoader.SceneNames.REST);
         }
+
+        private void EnterTreasureFromMap()
+        {
+            SoundManager.PlaySfxSound(SoundIds.SfxMapNodeSelect);
+            SceneLoader.LoadScene(SceneLoader.SceneNames.TREASURE);
+        }
+
         private void EnterBattleFromMap(RoomType roomType)
         {
             // 시드값을 받아올 수 없는 경우 임의값 1을 전달
@@ -910,6 +936,133 @@ namespace FFF.Core
             if (_masterPlayerData != null && !_masterPlayerData.RemoveDeckCard(cardId))
                 Debug.LogWarning($"[GameManager] 제거할 카드가 덱에 없습니다. CardId={cardId}");
             RefreshActiveRunHud();
+        }
+
+        private TreasureUIComponent.TreasureRewardModel CreateTreasureReward()
+        {
+            ItemDataSO itemData = PickTreasureAccessoryData();
+            if (itemData == null)
+                return null;
+
+            return new TreasureUIComponent.TreasureRewardModel
+            {
+                Id = itemData.Id,
+                DisplayName = string.IsNullOrWhiteSpace(itemData.DisplayName) ? itemData.Id : itemData.DisplayName,
+                Description = itemData.Description,
+                Icon = itemData.Icon
+            };
+        }
+
+        private ItemDataSO PickTreasureAccessoryData()
+        {
+            List<ItemDataSO> candidates = GetUnownedTreasureAccessoryData();
+            if (candidates.Count == 0)
+                return null;
+
+            if (TableSystem != null)
+            {
+                int attempts = Mathf.Max(candidates.Count, EventAccessoryRewardPool.Length);
+                for (int i = 0; i < attempts; i++)
+                {
+                    List<string> itemIds = TableSystem.PopItemIds(ItemType.Accessory, 1);
+                    if (itemIds == null || itemIds.Count == 0)
+                        break;
+
+                    ItemDataSO tableCandidate = FindItemData(candidates, itemIds[0]);
+                    if (tableCandidate != null)
+                        return tableCandidate;
+                }
+            }
+
+            return candidates[Random.Range(0, candidates.Count)];
+        }
+
+        private List<ItemDataSO> GetUnownedTreasureAccessoryData()
+        {
+            var result = new List<ItemDataSO>();
+            var ownedIds = _masterPlayerData != null && _masterPlayerData.EquippedAccessoryIds != null
+                ? new HashSet<string>(_masterPlayerData.EquippedAccessoryIds, System.StringComparer.OrdinalIgnoreCase)
+                : new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+
+            ItemDataSO[] itemData = Resources.LoadAll<ItemDataSO>("SO/Item");
+            for (int i = 0; i < EventAccessoryRewardPool.Length; i++)
+            {
+                string accessoryId = EventAccessoryRewardPool[i].Id;
+                if (ownedIds.Contains(accessoryId))
+                    continue;
+
+                ItemDataSO data = FindItemData(itemData, accessoryId);
+                if (data != null)
+                    result.Add(data);
+            }
+
+            return result;
+        }
+
+        private static ItemDataSO FindItemData(IReadOnlyList<ItemDataSO> itemData, string itemId)
+        {
+            if (itemData == null || string.IsNullOrWhiteSpace(itemId))
+                return null;
+
+            for (int i = 0; i < itemData.Count; i++)
+            {
+                ItemDataSO data = itemData[i];
+                if (data != null && string.Equals(data.Id, itemId, System.StringComparison.OrdinalIgnoreCase))
+                    return data;
+            }
+
+            return null;
+        }
+
+        private void HandleTreasureRewardClaimed(string accessoryId)
+        {
+            if (_masterPlayerData == null)
+            {
+                Debug.LogWarning("[GameManager] 보상을 저장할 PlayerDataSO가 없어 Map으로 돌아갑니다.");
+                SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(accessoryId))
+            {
+                Debug.LogWarning("[GameManager] 비어 있는 보물 보상을 무시합니다.");
+                SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
+                return;
+            }
+
+            _masterPlayerData.EquippedAccessoryIds ??= new List<string>();
+            if (!HasAccessory(accessoryId))
+            {
+                _masterPlayerData.AddAccessory(accessoryId);
+                SoundManager.PlaySfxSound(SoundIds.SfxItemEquip);
+                Debug.Log($"[GameManager] 보물 장신구 획득: {accessoryId}");
+            }
+            else
+            {
+                Debug.LogWarning($"[GameManager] 이미 보유 중인 보물 장신구를 무시합니다: {accessoryId}");
+            }
+
+            RefreshActiveRunHud();
+            SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
+        }
+
+        private bool HasAccessory(string accessoryId)
+        {
+            if (_masterPlayerData == null || _masterPlayerData.EquippedAccessoryIds == null)
+                return false;
+
+            for (int i = 0; i < _masterPlayerData.EquippedAccessoryIds.Count; i++)
+            {
+                if (string.Equals(_masterPlayerData.EquippedAccessoryIds[i], accessoryId, System.StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void HandleTreasureLeave()
+        {
+            SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
         }
 
         private int GetPlayerGold()

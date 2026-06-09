@@ -57,7 +57,7 @@ namespace FFF.UI.Animation
         [SerializeField] private string _characterAssetFolder = "Assets/Project/Art/Characters";
         [SerializeField] private string _battleBackgroundAssetFolder = "Assets/Project/Art/Background/BattleScene";
         [SerializeField] private Vector2 _autoMonsterPositionOffset = new Vector2(-90f, -80f);
-        [SerializeField, Range(0.1f, 2f)] private float _autoMonsterSizeScale = 0.75f;
+        [SerializeField, Range(0.1f, 2f)] private float _autoMonsterSizeScale = 0.7f;
         [SerializeField] private Vector2 _autoMonsterHealthBarAlignmentOffset = new Vector2(-120f, -170f);
 
         private string _currentId;

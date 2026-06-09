@@ -19,6 +19,12 @@ namespace FFF.UI.Battle
         [Tooltip("전투 배경을 출력할 UI Image 컴포넌트")]
         [SerializeField] private Image _backgroundImage;
 
+        [Header("=== 외형 크기 ===")]
+        [Tooltip("적 캐릭터 이미지 크기 배율. 0.7이면 원래 RectTransform 크기의 70%로 표시됩니다.")]
+        [SerializeField, Range(0.1f, 1f)] private float _characterImageScale = 0.7f;
+        [Tooltip("적 캐릭터 이미지 위치 보정. 체력바/공격 기준점은 그대로 두고 그림만 이동합니다.")]
+        [SerializeField] private Vector2 _characterImageOffset = new Vector2(0f, -93f);
+
         [Header("=== 애니메이션 연동 참조 ===")]
         [Tooltip("Idle/Attack 토글을 관리하는 로컬 컴포넌트 (CharacterAttackVisual.cs)")]
         [SerializeField] private CharacterAttackVisual _characterVisual;
@@ -26,6 +32,22 @@ namespace FFF.UI.Battle
         [SerializeField] private RectTransform _characterRect;
         [Tooltip("연출을 총괄하는 배틀 애니메이션 컨트롤러")]
         [SerializeField] private BattleAnimationController _animController;
+
+        private Vector2 _idleBaseSize;
+        private Vector2 _attackBaseSize;
+        private Vector2 _idleBasePosition;
+        private Vector2 _attackBasePosition;
+        private bool _hasCachedBaseSize;
+
+        private void Awake()
+        {
+            CacheBaseImageSizes();
+        }
+
+        private void Start()
+        {
+            ApplyCharacterImageScale();
+        }
 
         /// <summary>
         /// 전달받은 적 SO 데이터를 통해 이미지를 할당하고 컨트롤러에 연동함.
@@ -43,6 +65,7 @@ namespace FFF.UI.Battle
             if (_idleImage != null) _idleImage.sprite = enemyData.IdleSprite;
             if (_attackImage != null) _attackImage.sprite = enemyData.AttackSprite;
             if (_backgroundImage != null) _backgroundImage.sprite = enemyData.BackgroundSprite;
+            ApplyCharacterImageScale();
 
             // 2. BattleAnimationController에 애니메이션 연출용 객체 주입
             if (_animController != null)
@@ -55,6 +78,61 @@ namespace FFF.UI.Battle
             {
                 Debug.LogWarning("[EnemyVisualize] BattleAnimationController 참조가 누락되어 연출 주입 불가함.");
             }
+        }
+
+        private void ApplyCharacterImageScale()
+        {
+            CacheBaseImageSizes();
+
+            float scale = Mathf.Clamp(_characterImageScale, 0.1f, 1f);
+            ApplyImageSize(_idleImage, _idleBaseSize * scale);
+            ApplyImageSize(_attackImage, _attackBaseSize * scale);
+            ApplyImagePosition(_idleImage, _idleBasePosition + _characterImageOffset);
+            ApplyImagePosition(_attackImage, _attackBasePosition + _characterImageOffset);
+        }
+
+        private void CacheBaseImageSizes()
+        {
+            if (_hasCachedBaseSize)
+                return;
+
+            _idleBaseSize = GetImageSize(_idleImage);
+            _attackBaseSize = GetImageSize(_attackImage);
+            _idleBasePosition = GetImagePosition(_idleImage);
+            _attackBasePosition = GetImagePosition(_attackImage);
+            _hasCachedBaseSize = true;
+        }
+
+        private static Vector2 GetImageSize(Image image)
+        {
+            if (image != null && image.rectTransform != null)
+                return image.rectTransform.sizeDelta;
+
+            return Vector2.zero;
+        }
+
+        private static void ApplyImageSize(Image image, Vector2 size)
+        {
+            if (image == null || image.rectTransform == null || size == Vector2.zero)
+                return;
+
+            image.rectTransform.sizeDelta = size;
+        }
+
+        private static Vector2 GetImagePosition(Image image)
+        {
+            if (image != null && image.rectTransform != null)
+                return image.rectTransform.anchoredPosition;
+
+            return Vector2.zero;
+        }
+
+        private static void ApplyImagePosition(Image image, Vector2 position)
+        {
+            if (image == null || image.rectTransform == null)
+                return;
+
+            image.rectTransform.anchoredPosition = position;
         }
     }
 }

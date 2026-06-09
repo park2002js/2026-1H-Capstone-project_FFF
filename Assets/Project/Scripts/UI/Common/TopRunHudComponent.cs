@@ -322,7 +322,8 @@ namespace FFF.UI.Common
 
             Image background = slot.AddComponent<Image>();
             background.color = Color.clear;
-            background.raycastTarget = false;
+            background.raycastTarget = true;
+            ConfigureItemTooltip(slot, itemId, isJoker);
 
             Sprite sprite = ResolveBuiltInItemSprite(itemId);
             if (sprite != null)
@@ -383,10 +384,7 @@ namespace FFF.UI.Common
             if (string.IsNullOrWhiteSpace(itemId))
                 return null;
 
-            ItemDataSO[] allItemData = Resources.LoadAll<ItemDataSO>("SO/Item");
-            ItemDataSO itemData = allItemData.FirstOrDefault(data => 
-                data != null && 
-                string.Equals(data.Id, itemId, System.StringComparison.OrdinalIgnoreCase));
+            ItemDataSO itemData = ResolveItemData(itemId);
 
             if (itemData != null && itemData.Icon != null)
                 return itemData.Icon;
@@ -412,6 +410,36 @@ namespace FFF.UI.Common
 #endif
 
             return null;
+        }
+
+        private static void ConfigureItemTooltip(GameObject slot, string itemId, bool isJoker)
+        {
+            if (slot == null || string.IsNullOrWhiteSpace(itemId))
+                return;
+
+            ItemDataSO itemData = ResolveItemData(itemId);
+            string title = itemData != null && !string.IsNullOrWhiteSpace(itemData.DisplayName)
+                ? itemData.DisplayName
+                : itemId;
+            string description = itemData != null ? itemData.Description : string.Empty;
+            string category = isJoker ? "조커 카드" : "장신구";
+
+            ItemTooltipTrigger tooltip = slot.GetComponent<ItemTooltipTrigger>();
+            if (tooltip == null)
+                tooltip = slot.AddComponent<ItemTooltipTrigger>();
+
+            tooltip.SetContent(title, description, category);
+        }
+
+        private static ItemDataSO ResolveItemData(string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(itemId))
+                return null;
+
+            ItemDataSO[] allItemData = Resources.LoadAll<ItemDataSO>("SO/Item");
+            return allItemData.FirstOrDefault(data =>
+                data != null &&
+                string.Equals(data.Id, itemId, System.StringComparison.OrdinalIgnoreCase));
         }
 
         private static string GetFallbackLabel(string itemId)
