@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using FFF.Data;
 using FFF.Battle.Data;
 using FFF.Battle.Modifier;
@@ -51,27 +52,40 @@ namespace FFF.Battle.Enemy
                 return;
             }
 
-            EnemyAILogic = enemyData.AILogic;
             EnemyId = enemyData.EnemyId;
             EnemyName = enemyData.EnemyName;
             AIPatternDescription = enemyData.AIPatternDescription;
 
             MaxHealth = enemyData.MaxHealth + bonusHealth;      // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
             CurrentHealth = enemyData.MaxHealth + bonusHealth;  // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
-            
-            if (enemyData.GimmickLogic != null)
+
+            // EnemyId 문자열 기반 AI 클래스 타입 동적 탐색 및 인스턴스 생성
+            Type aiType = Type.GetType($"FFF.Data.{EnemyId}_AI");
+            if (aiType != null)
             {
-                var modifiers = enemyData.GimmickLogic.CreateGimmickModifiers(EnemyId);
+                EnemyAILogic = (EnemyAISO)Activator.CreateInstance(aiType);
+            }
+            else
+            {
+                Debug.LogWarning($"[EnemyDataBattle] AI 로직 탐색 실패. 기본 AI 할당 처리: {EnemyId}_AI");
+                EnemyAILogic = new Enemy_001_AI(); 
+            }
+
+            // EnemyId 문자열 기반 기믹 클래스 타입 동적 탐색 및 인스턴스 생성
+            Type gimmickType = Type.GetType($"FFF.Data.{EnemyId}_Gimmick");
+            if (gimmickType != null)
+            {
+                EnemyGimmickSO gimmickLogic = (EnemyGimmickSO)Activator.CreateInstance(gimmickType);
+                var modifiers = gimmickLogic.CreateGimmickModifiers(EnemyId);
                 foreach (var mod in modifiers)
                 {
                     ModifierManager.Instance.AddModifier(mod);
                 }
-                Debug.Log($"[EnemyDataBattle] {EnemyName} 기믹 등록 완료.");
+                Debug.Log($"[EnemyDataBattle] {EnemyName} 기믹 로직 동적 등록 완료.");
             }
             else
             {
-                RegisterTestGimmick();
-                Debug.Log($"[EnemyDataBattle] {EnemyName} 기믹 파일이 누락되어 임시 기믹으로 대체.");
+                Debug.Log($"[EnemyDataBattle] {EnemyId}_Gimmick 파일 부재. 기믹 등록 패스 처리.");
             }
 
             Debug.Log($"[EnemyDataBattle] 적 세팅 완료: {EnemyName} (HP: {CurrentHealth}/{MaxHealth})");

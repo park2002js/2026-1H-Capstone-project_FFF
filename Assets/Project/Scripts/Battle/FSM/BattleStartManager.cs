@@ -29,7 +29,7 @@ namespace FFF.Battle.Managers
         [SerializeField] private JokerManager _jokerManager;
         [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
-        [SerializeField] private EnemyVisualSelector _enemyVisualSelector;
+        [SerializeField] private EnemyVisualize _enemyVisualize;
 
         [Header("=== 수신할 이벤트 ===")]
         [Tooltip("BattleManager가 방송하는 BattleStart 이벤트")]
@@ -59,7 +59,6 @@ namespace FFF.Battle.Managers
                 // 1. 플레이어 데이터 로드
                 // BattleManager의 Context에 있는 로컬 데이터를 가져옴
                 PlayerDataBattle player = BattleManager.Instance.Context.PlayerData;
-                ApplyEnemyVisual();
 
                 // 2. 플레이어가 보유한 덱 ID 목록을 카드 SO 원본에서 복사해 전투용 덱으로 만든다.
                 // 같은 CardId가 여러 번 들어있으면 같은 카드가 여러 장 생성된다.
@@ -83,6 +82,14 @@ namespace FFF.Battle.Managers
                 // 해당 SO로 배틀 전용 객체를 초기화
                 _enemyDataBattle.Initialize(enemySO, GameManager.Instance.CurrentBattleEntryData.EnemyBonusHealth); // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
 
+                if (_enemyVisualize != null)
+                {
+                    _enemyVisualize.SetupVisual(enemySO);
+                }
+                else
+                {
+                    Debug.LogWarning("[BattleStartManager] EnemyVisualize 참조가 없어 적 외형 설정을 건너뜀.");
+                }
                 
 
 
@@ -114,29 +121,6 @@ namespace FFF.Battle.Managers
             {
                 Debug.LogError($"[BattleStartManager] 초기화 중 치명적 에러 발생 (여기서 중단됨!): {ex.Message}\n{ex.StackTrace}");
             }
-        }
-
-        private void ApplyEnemyVisual()
-        {
-            if (_enemyVisualSelector == null)
-                _enemyVisualSelector = FindFirstObjectByType<EnemyVisualSelector>();
-
-            if (_enemyVisualSelector == null)
-            {
-                Debug.LogWarning("[BattleStartManager] EnemyVisualSelector를 찾을 수 없어 기본 적 외형을 유지합니다.");
-                return;
-            }
-
-            GameManager gameManager = GameManager.Instance;
-            if (gameManager == null)
-                return;
-
-            string visualId = gameManager.SelectEnemyVisualId(_enemyVisualSelector.GetRegisteredIds());
-            if (string.IsNullOrEmpty(visualId))
-                return;
-
-            if (!_enemyVisualSelector.TrySelect(visualId))
-                Debug.LogWarning($"[BattleStartManager] 적 외형 적용 실패: {visualId}");
         }
     }
 }
