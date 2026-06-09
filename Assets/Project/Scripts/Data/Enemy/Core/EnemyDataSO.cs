@@ -18,13 +18,18 @@ namespace FFF.Data
         public string EnemyName;
         public int MaxHealth;
 
-        public EnemyAISO AILogic;
-
-        [Header("=== 적 기믹 설정 ===")]
-        public EnemyGimmickSO GimmickLogic;
-
-        [Header("=== AI 로직 설정 ===")]
-        [Tooltip("인스펙터에서 이 적의 AI 패턴을 메모해두는 용도")]
+        [Header("=== 적의 AI 및 Gimmick 설명 ===")]
+        [Tooltip("인스펙터에서 이 적의 AI 패턴 및 기믹을 표기해야 전투시 해당 설명이 뜹니다")]
         public string AIPatternDescription = "체력 50% 이하 시 분기형 AI";
+
+        [Header("=== 적 외형 및 배경 이미지 ===")]
+        [Tooltip("평상시 외형(Idle) 이미지")]
+        public Sprite IdleSprite;
+        
+        [Tooltip("공격 시 외형(Attack) 이미지")]
+        public Sprite AttackSprite;
+        
+        [Tooltip("스테이지 전투 배경 이미지")]
+        public Sprite BackgroundSprite;
     }
 }

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 085c7ce8be13d5f42b5b36d44387fbca
+guid: eceb5f4f1016f2b43b719d6a2faa6c54
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7126118319145759383
-    second: TigerBackground_0
+      213: -6832592418921174147
+    second: TigerBG_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TigerBackground_0
+      name: TigerBG_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 96dc9eff421fa1d90800000000000000
-      internalID: -7126118319145759383
+      spriteID: d7b2d274561cd21a0800000000000000
+      internalID: -6832592418921174147
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TigerBackground_0: -7126118319145759383
+      TigerBG_0: -6832592418921174147
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

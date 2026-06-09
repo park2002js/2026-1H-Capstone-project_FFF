@@ -20,3 +20,6 @@ MonoBehaviour:
   AIPatternDescription: "\uC801\uC740 90%\uD655\uB960\uB85C \uD558\uB098\uB77C\uB3C4
     1\uC774 \uD3EC\uD568\uB41C \uB79C\uB364\uD55C \uCE74\uB4DC 2\uC7A5\uC744 \uB0C4,
     11\uC774 \uB098\uC62C \uC218 \uC788\uC74C"
+  IdleSprite: {fileID: 21300000, guid: 46735ee0a9d393549b498e3f1a1ab67d, type: 3}
+  AttackSprite: {fileID: 21300000, guid: ea0350b2f8c6b594c9f34d60e8bb2f4e, type: 3}
+  BackgroundSprite: {fileID: 21300000, guid: ab4ccad3a75970647ab64f6aa7861117, type: 3}

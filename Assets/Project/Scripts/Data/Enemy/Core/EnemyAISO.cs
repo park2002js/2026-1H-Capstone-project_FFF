@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using FFF.Battle.Enemy;
@@ -7,7 +8,9 @@ using FFF.Battle.Modifier;
 // SO.asset 파일에는 저 함수를 구체화한 .cs 파일에 연결될 것임
 namespace FFF.Data
 {
-    public abstract class EnemyAISO : ScriptableObject 
+    [Serializable]
+    [UnityEngine.Scripting.Preserve]
+    public abstract class EnemyAISO
     {
         /// <summary>
         /// AI 두뇌 역할: 상황(Context)과 Enemy 상태(self)를 보고 2장의 카드를 선정 후 반환

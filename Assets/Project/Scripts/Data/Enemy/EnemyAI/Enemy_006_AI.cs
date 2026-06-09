@@ -4,10 +4,12 @@ using FFF.Battle.Enemy;
 using FFF.Battle.Data;
 using FFF.Battle.Modifier;
 using System.Linq;
+using System;
 
 namespace FFF.Data
 {
-    [CreateAssetMenu(fileName = "Enemy_006_AI", menuName = "FFF/AI/Enemy_006")]
+    [Serializable]
+    [UnityEngine.Scripting.Preserve]
     public class Enemy_006_AI : EnemyAISO
     {
         public override List<HwaTuCard> DecideCards(EnemyDataBattle self, ModifierContext context)
@@ -49,10 +51,10 @@ namespace FFF.Data
             if (ddaengGroups.Count == 0) return pool.Take(2).ToList(); // 예외 처리
 
             // 랜덤하게 한 그룹(월) 선택
-            var selectedGroup = ddaengGroups[Random.Range(0, ddaengGroups.Count)].ToList();
+            var selectedGroup = ddaengGroups[UnityEngine.Random.Range(0, ddaengGroups.Count)].ToList();
             
             // 그 그룹에서 카드 2장 선택
-            return selectedGroup.OrderBy(x => Random.value).Take(2).ToList();
+            return selectedGroup.OrderBy(x => UnityEngine.Random.value).Take(2).ToList();
         }
 
         /// <summary>
@@ -63,7 +65,7 @@ namespace FFF.Data
             List<HwaTuCard> result = new List<HwaTuCard>();
             
             // 첫 번째 카드 랜덤 선택
-            int firstIdx = Random.Range(0, pool.Count);
+            int firstIdx = UnityEngine.Random.Range(0, pool.Count);
             result.Add(pool[firstIdx]);
 
             // 두 번째 카드는 첫 번째 카드와 월이 다른 것 중에서 선택
@@ -71,7 +73,7 @@ namespace FFF.Data
             
             if (filteredPool.Count > 0)
             {
-                result.Add(filteredPool[Random.Range(0, filteredPool.Count)]);
+                result.Add(filteredPool[UnityEngine.Random.Range(0, filteredPool.Count)]);
             }
             else
             {

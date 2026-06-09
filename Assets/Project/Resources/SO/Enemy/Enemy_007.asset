@@ -18,3 +18,6 @@ MonoBehaviour:
   AILogic: {fileID: 11400000, guid: 4ae5a6ddcee7db1488f791084072fe41, type: 2}
   GimmickLogic: {fileID: 11400000, guid: a31ef4f55463d194e9367f6252481bd4, type: 2}
   AIPatternDescription: "\uADF8\uB0E5 \uBB34\uC791\uC704 \uCE74\uB4DC 2\uC7A5 \uC870\uD569"
+  IdleSprite: {fileID: 21300000, guid: 41ba6bae72edde843b571301d7f35cf1, type: 3}
+  AttackSprite: {fileID: 21300000, guid: ed08172932af6264badba76178fee456, type: 3}
+  BackgroundSprite: {fileID: 21300000, guid: 2c14637a50ca3d54387444bb76e86a0b, type: 3}
