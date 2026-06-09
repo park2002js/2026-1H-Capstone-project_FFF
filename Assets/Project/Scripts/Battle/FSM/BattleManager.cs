@@ -178,7 +178,7 @@ namespace FFF.Battle.FSM
 
             // 2. 씬 내의 적 객체(EnemyDataBattle)를 찾아서 99999 데미지 가하기
             // BattleManager에 직접적인 참조가 없을 수 있으므로 FindFirstObjectByType을 사용해 안전하게 탐색합니다.
-            var enemy = UnityEngine.Object.FindFirstObjectByType<FFF.Battle.Enemy.EnemyDataBattle>();
+            var enemy = UnityEngine.Object.FindFirstObjectByType<EnemyDataBattle>();
             if (enemy != null)
             {
                 enemy.TakeDamage(99999);

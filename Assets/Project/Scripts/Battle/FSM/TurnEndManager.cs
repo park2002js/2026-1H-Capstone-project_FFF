@@ -3,7 +3,6 @@ using UnityEngine;
 using FFF.Battle.Data;
 using FFF.Battle.FSM;
 using FFF.Battle.Card;
-using FFF.Battle.Enemy;
 using FFF.Battle.Modifier;
 using FFF.Battle.Damage;
 using FFF.Core.Events;

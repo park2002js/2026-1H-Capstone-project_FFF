@@ -1,6 +1,5 @@
 using FFF.Data;
 using FFF.Battle.Data;
-using FFF.Battle.Enemy;
 
 // TO-DO List : ModifierValueType과 역할을 명확히 구분할 필요가 존재함
 

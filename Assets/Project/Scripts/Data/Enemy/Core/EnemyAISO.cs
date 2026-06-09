@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using FFF.Battle.Enemy;
+using FFF.Battle.Data;
 using FFF.Battle.Modifier;
 
 // 모든 Enemy AI 들이 아래의 함수를 구체화해야함

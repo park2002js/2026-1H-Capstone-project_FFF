@@ -15,10 +15,8 @@ MonoBehaviour:
   EnemyId: Enemy_003
   EnemyName: 3
   MaxHealth: 30
-  AILogic: {fileID: 11400000, guid: 9a9c2a20d94dbdc47a5a13481e8e1266, type: 2}
-  GimmickLogic: {fileID: 11400000, guid: 89e5f6047239e494ea24e6bccb3f4849, type: 2}
   AIPatternDescription: "\uC801\uC740 \uC9DD\uC218 \uCE74\uB4DC\uB85C\uB9CC \uC870\uD569\uC744
     \uD568"
   IdleSprite: {fileID: 21300000, guid: 28bee25d0893e6d4290ba343a66e03b5, type: 3}
   AttackSprite: {fileID: 21300000, guid: b1ad4a03456bc464fba86ab798e3fff8, type: 3}
-  BackgroundSprite: {fileID: 21300000, guid: 18c9f9e179f46ca46973504742779755, type: 3}
+  BackgroundSprite: {fileID: 21300000, guid: 1417be23307d6084d9feee0c2f21c70c, type: 3}

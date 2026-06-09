@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using FFF.Battle.Enemy;
 using FFF.Battle.Data;
 using FFF.Battle.Modifier;
 using System.Linq;

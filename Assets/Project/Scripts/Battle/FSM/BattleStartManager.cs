@@ -3,13 +3,12 @@ using UnityEngine;
 using FFF.Battle.Data;
 using FFF.Battle.FSM;
 using FFF.Battle.Card;
-using FFF.Battle.Enemy;
+using FFF.Battle.Damage;
 using FFF.UI.Battle;
 using FFF.UI.Animation;
 using FFF.Core.Events;
 using FFF.Data;
 using FFF.Audio;
-using FFF.Battle.Damage;
 using FFF.Core;
 
 namespace FFF.Battle.Managers

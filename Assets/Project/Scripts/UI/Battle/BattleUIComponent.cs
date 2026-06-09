@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 using FFF.Data;
 using FFF.UI.Core;
 using FFF.UI.Animation;
-using FFF.Battle.Enemy;
+using FFF.Battle.Data;
 using FFF.Audio;
 using FFF.Core;
 using FFF.Map;

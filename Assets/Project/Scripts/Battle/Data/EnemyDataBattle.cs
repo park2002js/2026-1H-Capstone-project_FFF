@@ -1,11 +1,10 @@
 using UnityEngine;
 using System;
 using FFF.Data;
-using FFF.Battle.Data;
 using FFF.Battle.Modifier;
 using System.Collections.Generic;
 
-namespace FFF.Battle.Enemy
+namespace FFF.Battle.Data
 {
     public struct EnemyIntent
     {
