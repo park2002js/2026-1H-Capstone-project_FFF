@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 18c9f9e179f46ca46973504742779755
+guid: 1417be23307d6084d9feee0c2f21c70c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4280450462782240121
-    second: NinetailfoxBackGround_0
+      213: 4398723225128245230
+    second: NineTailFoxBackground 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: NinetailfoxBackGround_0
+      name: NineTailFoxBackground 1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1536
-        height: 1024
+        width: 1456
+        height: 1080
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 975bac06407376b30800000000000000
-      internalID: 4280450462782240121
+      spriteID: ee79703c7776b0d30800000000000000
+      internalID: 4398723225128245230
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      NinetailfoxBackGround_0: 4280450462782240121
+      NineTailFoxBackground 1_0: 4398723225128245230
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
