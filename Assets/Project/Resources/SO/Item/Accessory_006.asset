@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c052ec099ac93ea4faa81faac3336931, type: 3}
   m_Name: Accessory_006
   m_EditorClassIdentifier: 
-  Id: 
+  Id: Accessory_006
   Type: 0
-  DisplayName: 
-  Description: 
+  DisplayName: 6
+  Description: "3\uD134\uC9F8\uBD80\uD130 \uD50C\uB808\uC774\uC5B4 \uCD5C\uC885 \uACF5\uACA9\uB825
+    +10"
   Icon: {fileID: 0}
   Price: 0

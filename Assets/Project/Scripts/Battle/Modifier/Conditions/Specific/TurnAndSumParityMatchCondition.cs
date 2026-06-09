@@ -2,7 +2,7 @@ namespace FFF.Battle.Modifier
 {
     /// <summary>
     /// 현재 턴의 홀짝 여부와 낸 카드 월(Month) 합의 홀짝 여부가 일치하는지 판별합니다.
-    /// (현재로써는 Enemy_008 기믹을 위한 전용 조건)
+    /// (현재로써는 Enemy_013 기믹을 위한 전용 조건)
     /// </summary>
     public class TurnAndSumParityMatchCondition : IModifierCondition
     {

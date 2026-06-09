@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using FFF.Battle.Data;
 using FFF.Battle.Modifier;
-using System.Linq;
-using System;
 
 namespace FFF.Data
 {
@@ -11,14 +11,26 @@ namespace FFF.Data
     [UnityEngine.Scripting.Preserve]
     public class Enemy_005_AI : EnemyAISO
     {
+        // 5월이 포함된 카드 조합을 냄
+        private readonly int _targetMonth = 5;
+
         public override List<HwaTuCard> DecideCards(EnemyDataBattle self, ModifierContext context)
         {
-            // 끗을 확정적으로 만들기 위해 서로 다른 월의 일반 카드 2장 반환 (특수조합 배제)
-            var pool = HwaTuCardDatabase.CreateAllCards().Where(c => !c.IsSpecial).ToList();
-            var card1 = pool[UnityEngine.Random.Range(0, pool.Count)];
-            // 광땡이나 알리, 독사 등의 특수 조합을 회피하는 복잡한 로직 대신, 임시로 무작위 카드 반환 후 땡 회피
-            var card2 = pool.FirstOrDefault(c => c.GetMonthValue() != card1.GetMonthValue());
-            return new List<HwaTuCard> { card1, card2 ?? pool[0] };
+            List<HwaTuCard> pool = HwaTuCardDatabase.CreateAllCards();
+
+            // 타겟 월을 가진 카드 중 1장 무작위 추출.
+            var targetCards = pool.Where(c => c.GetMonthValue() == _targetMonth).ToList();
+            HwaTuCard card1 = targetCards.Count > 0 
+                ? targetCards[UnityEngine.Random.Range(0, targetCards.Count)] 
+                : pool[UnityEngine.Random.Range(0, pool.Count)];
+
+            // "한 장만 포함" 조건을 만족하기 위해, 타겟 월이 아닌 카드 중 1장 무작위 추출.
+            var otherCards = pool.Where(c => c.GetMonthValue() != _targetMonth).ToList();
+            HwaTuCard card2 = otherCards.Count > 0 
+                ? otherCards[UnityEngine.Random.Range(0, otherCards.Count)] 
+                : pool[UnityEngine.Random.Range(0, pool.Count)];
+
+            return new List<HwaTuCard> { card1, card2 };
         }
     }
 }

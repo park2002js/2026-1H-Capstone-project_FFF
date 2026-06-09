@@ -13,13 +13,10 @@ MonoBehaviour:
   m_Name: Enemy_002
   m_EditorClassIdentifier: 
   EnemyId: Enemy_002
-  EnemyName: 2
-  MaxHealth: 20
-  AILogic: {fileID: 11400000, guid: 64c0b586288f76f4a9b6f5b7d783b46c, type: 2}
-  GimmickLogic: {fileID: 11400000, guid: 838084903146bf943806e27fdb477d95, type: 2}
-  AIPatternDescription: "\uC801\uC740 90%\uD655\uB960\uB85C \uD558\uB098\uB77C\uB3C4
-    7\uC774 \uD3EC\uD568\uB41C \uB79C\uB364\uD55C \uCE74\uB4DC 2\uC7A5\uC744 \uB0C4,
-    77\uC774 \uB098\uC62C \uC218 \uC788\uC74C"
+  EnemyName: "8\uC7C1\uC774"
+  MaxHealth: 10
+  AIPatternDescription: "8\uB97C \uD3EC\uD568\uD55C \uC871\uBCF4\uC758 \uACF5\uACA9\uB825\uC774
+    +5\uAC00 \uB429\uB2C8\uB2E4."
   IdleSprite: {fileID: 21300000, guid: 354774b67154f65489eb35eaa962ed37, type: 3}
   AttackSprite: {fileID: 21300000, guid: f505b412fd47fda4293404e33203e363, type: 3}
   BackgroundSprite: {fileID: 21300000, guid: 6a956ec8828c2574ba48cf8ad01d34d8, type: 3}

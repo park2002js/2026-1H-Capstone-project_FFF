@@ -1,9 +1,8 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using FFF.Battle.Data;
 using FFF.Battle.Modifier;
-using System;
 
 namespace FFF.Data
 {
@@ -13,8 +12,14 @@ namespace FFF.Data
     {
         public override List<BattleModifier> CreateGimmickModifiers(string enemyId) => new List<BattleModifier>
         {
-            new BattleModifier($"{enemyId}_Turn_StrDown", ModifierValueType.Strength, 
-                new AlwaysTrueCondition(), new DynamicTurnStrengthEffect(-1))
+            // 플레이어 공격력에 턴 수 비례 감소(-2) 적용 부품 조립
+            new BattleModifier(
+                id: $"{enemyId}_Turn_StrDown", 
+                targetType: ModifierValueType.Strength, 
+                condition: new AlwaysTrueCondition(), 
+                effect: new DynamicTurnStrengthEffect(-2),
+                turns: BattleModifier.PERMANENT_TURN
+            )
         };
     }
 }

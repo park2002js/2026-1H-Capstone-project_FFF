@@ -13,10 +13,24 @@ namespace FFF.Data
     {
         public override List<HwaTuCard> DecideCards(EnemyDataBattle self, ModifierContext context)
         {
-            bool isEvenTurn = context.CurrentTurnNumber % 2 == 0;
-            var pool = HwaTuCardDatabase.CreateAllCards()
-                .Where(c => c.GetMonthValue() != 0 && (c.GetMonthValue() % 2 == 0) == isEvenTurn).ToList();
-            return pool.OrderBy(x => UnityEngine.Random.value).Take(2).ToList();
+            // 전체 카드 풀 무작위 정렬
+            var pool = HwaTuCardDatabase.CreateAllCards().OrderBy(x => UnityEngine.Random.value).ToList();
+
+            // 두 카드의 월 숫자 합이 10 이상인 조합 탐색
+            for (int i = 0; i < pool.Count - 1; i++)
+            {
+                for (int j = i + 1; j < pool.Count; j++)
+                {
+                    if (pool[i].GetMonthValue() + pool[j].GetMonthValue() >= 10)
+                    {
+                        // 조건 충족 조합 발견 시 반환
+                        return new List<HwaTuCard> { pool[i], pool[j] };
+                    }
+                }
+            }
+
+            // 조건 충족 조합 부재 시 기본 무작위 반환 (안전 장치)
+            return pool.Take(2).ToList();
         }
     }
 }

@@ -15,6 +15,9 @@ namespace FFF.Battle.Data
         /// <summary> 난이도(층수)에 비례하여 적에게 부여될 추가 체력 수치 </summary>
         public int EnemyBonusHealth;
 
+        /// <summary> 난이도(층수)에 비례하여 적에게 부여될 추가 공격력 수치 </summary>
+        public int EnemyBonusStrength { get; set; }
+
         // === 플레이어 정보 ===
         /// <summary> 전투 씬에서 로컬 복제용으로 사용할 플레이어 마스터 데이터 원본 </summary>
         public PlayerDataSO PlayerMasterData;

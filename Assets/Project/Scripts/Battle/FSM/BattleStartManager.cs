@@ -79,7 +79,11 @@ namespace FFF.Battle.Managers
                 // 데이터베이스에서 해당 ID를 가진 SO 파일을 로드
                 EnemyDataSO enemySO = EnemyDatabase.FindById(targetEnemyId);
                 // 해당 SO로 배틀 전용 객체를 초기화
-                _enemyDataBattle.Initialize(enemySO, GameManager.Instance.CurrentBattleEntryData.EnemyBonusHealth); // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
+                
+                 // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
+                _enemyDataBattle.Initialize(enemySO, 
+                    GameManager.Instance.CurrentBattleEntryData.EnemyBonusHealth, 
+                    GameManager.Instance.CurrentBattleEntryData.EnemyBonusStrength);
 
                 if (_enemyVisualize != null)
                 {

@@ -13,9 +13,13 @@ namespace FFF.Data
     {
         public override List<BattleModifier> CreateGimmickModifiers(string enemyId) => new List<BattleModifier>
         {
-            // 턴 홀짝과 카드 합 홀짝이 다를 경우 데미지 배율 0
-            new BattleModifier($"{enemyId}_ParityMismatch_DmgZero", ModifierValueType.Damage, 
-                new NotCondition(new TurnAndSumParityMatchCondition()), new DamageMultiplierEffect(0f))
+            // 합계 10 이상 시 데미지 2배 증폭
+            new BattleModifier($"{enemyId}_SumOver10_DmgDouble", ModifierValueType.Damage, 
+                new CardSumCondition(true, 10), new DamageMultiplierEffect(2f)),
+                
+            // 합계 9 이하(10 미만) 시 데미지 절반 감소
+            new BattleModifier($"{enemyId}_SumUnder10_DmgHalf", ModifierValueType.Damage, 
+                new CardSumCondition(false, 9), new DamageMultiplierEffect(0.5f))
         };
     }
 }

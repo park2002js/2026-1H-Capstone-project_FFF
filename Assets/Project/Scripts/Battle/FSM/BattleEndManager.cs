@@ -13,11 +13,10 @@ namespace FFF.Battle.FSM
     {
         private static readonly string[] AccessoryRewardPoolIds =
         {
-            "Accessory_001",
-            "Accessory_002",
-            "Accessory_003",
-            "Accessory_004",
-            "Accessory_005"
+            "Accessory_001", "Accessory_002", "Accessory_003", "Accessory_004", "Accessory_005",
+            "Accessory_006", "Accessory_007", "Accessory_008", "Accessory_009", "Accessory_010",
+            "Accessory_011", "Accessory_012", "Accessory_013", "Accessory_014", "Accessory_015",
+            "Accessory_016", "Accessory_017", "Accessory_018", "Accessory_019", "Accessory_020"
         };
 
         [Header("=== 시스템 참조 ===")]
@@ -95,6 +94,7 @@ namespace FFF.Battle.FSM
                     Description = "랜덤 조커 카드\n3장 중 1장 선택"
                 });
             }
+
             if (HasAvailableAccessoryReward(player))
             {
                 rewards.Add(new BattleUIComponent.RewardOption
@@ -311,6 +311,7 @@ namespace FFF.Battle.FSM
                 : null;
         }
 
+        // 만약 플레이어가 대부분의 장신구 아이템 보상을 가지고 있어서, 더이상 줄 수 있는 Accessory가 없는 경우, 아예 Accessory 보상 UI 자체를 제거함
         private bool HasAvailableAccessoryReward(PlayerDataBattle player)
         {
             return GetAvailableAccessoryRewardIds(player).Count > 0;
