@@ -1,0 +1,1495 @@
+fileFormatVersion: 2
+guid: 9746f7a3f4617804b86c70ad67703e85
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3672479099021401550
+    second: GrimReaperAttack_0
+  - first:
+      213: -8469828303564640745
+    second: GrimReaperAttack_1
+  - first:
+      213: 3303879552639398085
+    second: GrimReaperAttack_2
+  - first:
+      213: -3155872632467466100
+    second: GrimReaperAttack_3
+  - first:
+      213: -5862561789997304497
+    second: GrimReaperAttack_4
+  - first:
+      213: -7684123893448394479
+    second: GrimReaperAttack_5
+  - first:
+      213: 6756225594498105633
+    second: GrimReaperAttack_6
+  - first:
+      213: -7781683367644360348
+    second: GrimReaperAttack_7
+  - first:
+      213: 5246248169431375061
+    second: GrimReaperAttack_8
+  - first:
+      213: 4432216410178573533
+    second: GrimReaperAttack_9
+  - first:
+      213: -817161145913933712
+    second: GrimReaperAttack_10
+  - first:
+      213: 5612084889467413938
+    second: GrimReaperAttack_11
+  - first:
+      213: 6233769449515290780
+    second: GrimReaperAttack_12
+  - first:
+      213: -3545209039935520747
+    second: GrimReaperAttack_13
+  - first:
+      213: 3346285633775098675
+    second: GrimReaperAttack_14
+  - first:
+      213: 2915741452217923852
+    second: GrimReaperAttack_15
+  - first:
+      213: -3544514270632240652
+    second: GrimReaperAttack_16
+  - first:
+      213: -5065344685215278166
+    second: GrimReaperAttack_17
+  - first:
+      213: 8647185063230708217
+    second: GrimReaperAttack_18
+  - first:
+      213: -84644914923073082
+    second: GrimReaperAttack_19
+  - first:
+      213: 8951486641740655405
+    second: GrimReaperAttack_20
+  - first:
+      213: 3420524563682299350
+    second: GrimReaperAttack_21
+  - first:
+      213: 2313762543865158438
+    second: GrimReaperAttack_22
+  - first:
+      213: 1124179232304610377
+    second: GrimReaperAttack_23
+  - first:
+      213: 472434888797292537
+    second: GrimReaperAttack_24
+  - first:
+      213: 8426525552075031440
+    second: GrimReaperAttack_25
+  - first:
+      213: -6597288997077856781
+    second: GrimReaperAttack_26
+  - first:
+      213: -2205531483899759849
+    second: GrimReaperAttack_27
+  - first:
+      213: -7137595708135502380
+    second: GrimReaperAttack_28
+  - first:
+      213: -6183132212798755260
+    second: GrimReaperAttack_29
+  - first:
+      213: -8649171478617246726
+    second: GrimReaperAttack_30
+  - first:
+      213: 1374085769558706141
+    second: GrimReaperAttack_31
+  - first:
+      213: 3987860330612938208
+    second: GrimReaperAttack_32
+  - first:
+      213: 7696754935654950066
+    second: GrimReaperAttack_33
+  - first:
+      213: -272614624328580976
+    second: GrimReaperAttack_34
+  - first:
+      213: 4952257843959772518
+    second: GrimReaperAttack_35
+  - first:
+      213: 1829966598677459792
+    second: GrimReaperAttack_36
+  - first:
+      213: 2424799370261818479
+    second: GrimReaperAttack_37
+  - first:
+      213: -1959741004150583339
+    second: GrimReaperAttack_38
+  - first:
+      213: -7587911016175668910
+    second: GrimReaperAttack_39
+  - first:
+      213: -6154211156348294724
+    second: GrimReaperAttack_40
+  - first:
+      213: 3545230936264117135
+    second: GrimReaperAttack_41
+  - first:
+      213: 8826102946876223405
+    second: GrimReaperAttack_42
+  - first:
+      213: 4857619569752566775
+    second: GrimReaperAttack_43
+  - first:
+      213: 4846373908313616327
+    second: GrimReaperAttack_44
+  - first:
+      213: -5464100640715744693
+    second: GrimReaperAttack_45
+  - first:
+      213: 3402970824239125661
+    second: GrimReaperAttack_46
+  - first:
+      213: 5661688238778735284
+    second: GrimReaperAttack_47
+  - first:
+      213: 6779505813801850522
+    second: GrimReaperAttack_48
+  - first:
+      213: -7617327283162799659
+    second: GrimReaperAttack_49
+  - first:
+      213: -4456918286649191857
+    second: GrimReaperAttack_50
+  - first:
+      213: 4989890378832757300
+    second: GrimReaperAttack_51
+  - first:
+      213: 3841825923801832838
+    second: GrimReaperAttack_52
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: GrimReaperAttack_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 24
+        width: 89
+        height: 999
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23268c197bbb80dc0800000000000000
+      internalID: -3672479099021401550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_1
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 0
+        width: 1469
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71eea717800257a80800000000000000
+      internalID: -8469828303564640745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_2
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 541
+        width: 19
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c07fbbc2fcb9dd20800000000000000
+      internalID: 3303879552639398085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_3
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 815
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c885661bf861434d0800000000000000
+      internalID: -3155872632467466100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_4
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 807
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f45be69fc1ff3aea0800000000000000
+      internalID: -5862561789997304497
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_5
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 733
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 119bae8f7028c5590800000000000000
+      internalID: -7684123893448394479
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_6
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 727
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1214676d16fe2cd50800000000000000
+      internalID: 6756225594498105633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_7
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 710
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4611efcc438e10490800000000000000
+      internalID: -7781683367644360348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_8
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 701
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5dc108e0aea6ec840800000000000000
+      internalID: 5246248169431375061
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_9
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 694
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd4d9589755628d30800000000000000
+      internalID: 4432216410178573533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_10
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 668
+        width: 10
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0708c8d644cd8a4f0800000000000000
+      internalID: -817161145913933712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_11
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 646
+        width: 10
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b5ea0e097122ed40800000000000000
+      internalID: 5612084889467413938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_12
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 630
+        width: 10
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c909a02594cc28650800000000000000
+      internalID: 6233769449515290780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_13
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 614
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 510c3285923eccec0800000000000000
+      internalID: -3545209039935520747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_14
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 579
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33b5826fd05607e20800000000000000
+      internalID: 3346285633775098675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_15
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 557
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c09b45c076bc67820800000000000000
+      internalID: 2915741452217923852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_16
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 551
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f999adec0b5fcec0800000000000000
+      internalID: -3544514270632240652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_17
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 355
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aab94dc98d744b9b0800000000000000
+      internalID: -5065344685215278166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_18
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 323
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f91ee01009f00870800000000000000
+      internalID: 8647185063230708217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_19
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 783
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c197f9f5e743def0800000000000000
+      internalID: -84644914923073082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_20
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 621
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2b2b947ca11a3c70800000000000000
+      internalID: 8951486641740655405
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_21
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 528
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6dd08cbc7f4287f20800000000000000
+      internalID: 3420524563682299350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_22
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 800
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62bdfa956c22c1020800000000000000
+      internalID: 2313762543865158438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_23
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 788
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94c336d3e03e99f00800000000000000
+      internalID: 1124179232304610377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_24
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 767
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f7834e370d6e8600800000000000000
+      internalID: 472434888797292537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_25
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 748
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0934f2e085801f470800000000000000
+      internalID: 8426525552075031440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_26
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 742
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3fdc4907c98b174a0800000000000000
+      internalID: -6597288997077856781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_27
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 719
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 713f6310dc06461e0800000000000000
+      internalID: -2205531483899759849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_28
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 686
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4dd0b32258a22fc90800000000000000
+      internalID: -7137595708135502380
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_29
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 607
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44eead8130a113aa0800000000000000
+      internalID: -6183132212798755260
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_30
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 774
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af3349f8d58f7f780800000000000000
+      internalID: -8649171478617246726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_31
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 520
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd747792abbb11310800000000000000
+      internalID: 1374085769558706141
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_32
+      rect:
+        serializedVersion: 2
+        x: 650
+        y: 39
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e55e0497d9b75730800000000000000
+      internalID: 3987860330612938208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_33
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 35
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b4a2f6b5dd50da60800000000000000
+      internalID: 7696754935654950066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_34
+      rect:
+        serializedVersion: 2
+        x: 746
+        y: 39
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 090815c817a773cf0800000000000000
+      internalID: -272614624328580976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_35
+      rect:
+        serializedVersion: 2
+        x: 778
+        y: 31
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6653d595544f9b440800000000000000
+      internalID: 4952257843959772518
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_36
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 32
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 053fff80de8556910800000000000000
+      internalID: 1829966598677459792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_37
+      rect:
+        serializedVersion: 2
+        x: 800
+        y: 41
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6ceb0c1e2e96a120800000000000000
+      internalID: 2424799370261818479
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_38
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 41
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5df46db90f99dc4e0800000000000000
+      internalID: -1959741004150583339
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_39
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 29
+        width: 13
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 251739d122352b690800000000000000
+      internalID: -7587911016175668910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_40
+      rect:
+        serializedVersion: 2
+        x: 846
+        y: 38
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb92d194f89d79aa0800000000000000
+      internalID: -6154211156348294724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_41
+      rect:
+        serializedVersion: 2
+        x: 848
+        y: 43
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8b8fbac0c0333130800000000000000
+      internalID: 3545230936264117135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_42
+      rect:
+        serializedVersion: 2
+        x: 922
+        y: 32
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dafe5931edd9c7a70800000000000000
+      internalID: 8826102946876223405
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_43
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 35
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fb661d034bb96340800000000000000
+      internalID: 4857619569752566775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_44
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 23
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cf21c57467c14340800000000000000
+      internalID: 4846373908313616327
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_45
+      rect:
+        serializedVersion: 2
+        x: 995
+        y: 18
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4a5725da6d9b24b0800000000000000
+      internalID: -5464100640715744693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_46
+      rect:
+        serializedVersion: 2
+        x: 1041
+        y: 39
+        width: 6
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d949ac75fe7c93f20800000000000000
+      internalID: 3402970824239125661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_47
+      rect:
+        serializedVersion: 2
+        x: 1509
+        y: 495
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4bad96dc47b529e40800000000000000
+      internalID: 5661688238778735284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_48
+      rect:
+        serializedVersion: 2
+        x: 1510
+        y: 459
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a96da584e94a51e50800000000000000
+      internalID: 6779505813801850522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_49
+      rect:
+        serializedVersion: 2
+        x: 1519
+        y: 511
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d1a03db131d94690800000000000000
+      internalID: -7617327283162799659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_50
+      rect:
+        serializedVersion: 2
+        x: 1519
+        y: 448
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f42155b9e68d522c0800000000000000
+      internalID: -4456918286649191857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_51
+      rect:
+        serializedVersion: 2
+        x: 1520
+        y: 544
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 432477aacd6af3540800000000000000
+      internalID: 4989890378832757300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrimReaperAttack_52
+      rect:
+        serializedVersion: 2
+        x: 1528
+        y: 519
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68d5815a258e05530800000000000000
+      internalID: 3841825923801832838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      GrimReaperAttack_0: -3672479099021401550
+      GrimReaperAttack_1: -8469828303564640745
+      GrimReaperAttack_10: -817161145913933712
+      GrimReaperAttack_11: 5612084889467413938
+      GrimReaperAttack_12: 6233769449515290780
+      GrimReaperAttack_13: -3545209039935520747
+      GrimReaperAttack_14: 3346285633775098675
+      GrimReaperAttack_15: 2915741452217923852
+      GrimReaperAttack_16: -3544514270632240652
+      GrimReaperAttack_17: -5065344685215278166
+      GrimReaperAttack_18: 8647185063230708217
+      GrimReaperAttack_19: -84644914923073082
+      GrimReaperAttack_2: 3303879552639398085
+      GrimReaperAttack_20: 8951486641740655405
+      GrimReaperAttack_21: 3420524563682299350
+      GrimReaperAttack_22: 2313762543865158438
+      GrimReaperAttack_23: 1124179232304610377
+      GrimReaperAttack_24: 472434888797292537
+      GrimReaperAttack_25: 8426525552075031440
+      GrimReaperAttack_26: -6597288997077856781
+      GrimReaperAttack_27: -2205531483899759849
+      GrimReaperAttack_28: -7137595708135502380
+      GrimReaperAttack_29: -6183132212798755260
+      GrimReaperAttack_3: -3155872632467466100
+      GrimReaperAttack_30: -8649171478617246726
+      GrimReaperAttack_31: 1374085769558706141
+      GrimReaperAttack_32: 3987860330612938208
+      GrimReaperAttack_33: 7696754935654950066
+      GrimReaperAttack_34: -272614624328580976
+      GrimReaperAttack_35: 4952257843959772518
+      GrimReaperAttack_36: 1829966598677459792
+      GrimReaperAttack_37: 2424799370261818479
+      GrimReaperAttack_38: -1959741004150583339
+      GrimReaperAttack_39: -7587911016175668910
+      GrimReaperAttack_4: -5862561789997304497
+      GrimReaperAttack_40: -6154211156348294724
+      GrimReaperAttack_41: 3545230936264117135
+      GrimReaperAttack_42: 8826102946876223405
+      GrimReaperAttack_43: 4857619569752566775
+      GrimReaperAttack_44: 4846373908313616327
+      GrimReaperAttack_45: -5464100640715744693
+      GrimReaperAttack_46: 3402970824239125661
+      GrimReaperAttack_47: 5661688238778735284
+      GrimReaperAttack_48: 6779505813801850522
+      GrimReaperAttack_49: -7617327283162799659
+      GrimReaperAttack_5: -7684123893448394479
+      GrimReaperAttack_50: -4456918286649191857
+      GrimReaperAttack_51: 4989890378832757300
+      GrimReaperAttack_52: 3841825923801832838
+      GrimReaperAttack_6: 6756225594498105633
+      GrimReaperAttack_7: -7781683367644360348
+      GrimReaperAttack_8: 5246248169431375061
+      GrimReaperAttack_9: 4432216410178573533
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
