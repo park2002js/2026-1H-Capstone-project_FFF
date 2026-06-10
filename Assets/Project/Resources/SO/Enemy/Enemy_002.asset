@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnemyId: Enemy_002
   EnemyName: "8\uC7C1\uC774"
-  MaxHealth: 10
+  MaxHealth: 100
   AIPatternDescription: "8\uB97C \uD3EC\uD568\uD55C \uC871\uBCF4\uC758 \uACF5\uACA9\uB825\uC774
     +5\uAC00 \uB429\uB2C8\uB2E4."
   IdleSprite: {fileID: 21300000, guid: 354774b67154f65489eb35eaa962ed37, type: 3}
