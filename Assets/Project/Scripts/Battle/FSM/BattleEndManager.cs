@@ -59,6 +59,14 @@ namespace FFF.Battle.FSM
             {
                 GrantFixedVictoryGold();
                 SoundManager.PlaySfxSound(SoundIds.SfxBattleVictory);
+
+                GameManager gameManager = GameManager.Instance;
+                if (gameManager != null && gameManager.CurrentBattleEntryData.RoomType == RoomType.Boss)
+                {
+                    gameManager.HandleGameCompleted(_battleManager.Context.PlayerData);
+                    return;
+                }
+
                 _rewardClaimed = false;
                 _battleUI.ShowRewardSelection(
                     CreateRewardCategoryOptions(),

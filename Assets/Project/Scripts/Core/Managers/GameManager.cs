@@ -1167,6 +1167,16 @@ namespace FFF.Core
             SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
         }
 
+        public void HandleGameCompleted(PlayerDataBattle finalBattleData)
+        {
+            Debug.Log("[GameManager] Final boss defeated. Syncing battle data and loading EndingScene.");
+
+            PlayerDataUpdater updater = new PlayerDataUpdater();
+            updater.SyncBattleDataToMaster(finalBattleData, _masterPlayerData);
+
+            SceneLoader.LoadSceneImmediate(SceneLoader.SceneNames.ENDING);
+        }
+
 
         /// <summary>
         /// Fisher-Yates 알고리즘을 이용해 리스트 요소를 무작위로 섞습니다.

@@ -19,6 +19,7 @@ namespace FFF.Core
             public const string SHOP = "ShopScene";
             public const string REST = "RestScene";
             public const string TREASURE = "TreasureScene";
+            public const string ENDING = "EndingScene";
         }
 
         public static event Action<string> OnSceneLoaded;
