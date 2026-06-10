@@ -15,8 +15,9 @@ namespace FFF.UI.Common
     public class TopRunHudComponent : MonoBehaviour
     {
         private static readonly Vector2 HudReferenceResolution = new Vector2(2560f, 1440f);
-        private static readonly Vector2 JokerSlotSize = new Vector2(120f, 160f);
-        private static readonly Vector2 JokerVisualSize = new Vector2(120f, 160f);
+        private const float TopRunHudHeight = 150f;
+        private static readonly Vector2 JokerSlotSize = new Vector2(105f, 140f);
+        private static readonly Vector2 JokerVisualSize = new Vector2(105f, 140f);
         private static readonly Vector2 AccessorySlotSize = new Vector2(100f, 100f);
         private static readonly Vector2 AccessoryVisualSize = new Vector2(160f, 160f);
         private GameObject _hudCanvasRoot;
@@ -147,6 +148,8 @@ namespace FFF.UI.Common
                 return;
             }
 
+            GameDisplaySettings.ApplySaved();
+
             Transform parent = EnsureHudCanvasRoot();
 
             _root = CreateUIObject("TopRunHud", parent);
@@ -154,7 +157,7 @@ namespace FFF.UI.Common
             rootRect.anchorMin = new Vector2(0f, 1f);
             rootRect.anchorMax = new Vector2(1f, 1f);
             rootRect.pivot = new Vector2(0.5f, 1f);
-            rootRect.sizeDelta = new Vector2(0f, 174f);
+            rootRect.sizeDelta = new Vector2(0f, TopRunHudHeight);
             rootRect.anchoredPosition = Vector2.zero;
             _root.transform.SetAsLastSibling();
 
@@ -227,7 +230,7 @@ namespace FFF.UI.Common
         {
             GameObject block = CreateUIObject("JokerHudBlock", parent);
             SetRect(block.GetComponent<RectTransform>(), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                new Vector2(424f, 170f), new Vector2(756f, 0f));
+                new Vector2(424f, TopRunHudHeight), new Vector2(756f, 0f));
 
             Image bg = block.AddComponent<Image>();
             bg.color = Color.clear;
@@ -260,7 +263,8 @@ namespace FFF.UI.Common
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
             rect.sizeDelta = new Vector2(0f, 118f);
-            rect.anchoredPosition = new Vector2(0f, -150f);
+            // 상단 HUD(높이 150)와 겹치지 않도록 살짝 아래로 내린다.
+            rect.anchoredPosition = new Vector2(0f, -182f);
 
             Image bg = _accessoryRow.AddComponent<Image>();
             bg.color = Color.clear;
@@ -276,7 +280,7 @@ namespace FFF.UI.Common
 
             HorizontalLayoutGroup layout = layoutGo.AddComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleLeft;
-            layout.spacing = 12f;
+            layout.spacing = 18f;
             layout.childControlWidth = false;
             layout.childControlHeight = false;
             layout.childForceExpandWidth = false;
@@ -561,7 +565,7 @@ namespace FFF.UI.Common
             RectTransform rect = tile.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(110f, 178f);
 
-            Sprite artwork = HwaTuCardDatabase.GetArtwork(cardId);
+            Sprite artwork = HwaTuCardDatabase.ResolveArtwork(cardId);
             if (artwork != null)
             {
                 GameObject artObject = CreateUIObject("Image_Card", tile.transform);
@@ -591,16 +595,58 @@ namespace FFF.UI.Common
         private void BuildSettingsOverlay()
         {
             _settingsOverlay = CreateOverlayRoot("RunSettingsOverlay");
-            GameObject panel = CreatePanel(_settingsOverlay.transform, "환경 설정", new Vector2(660f, 460f));
+            GameObject panel = CreatePanel(_settingsOverlay.transform, "환경 설정", new Vector2(740f, 650f));
 
-            CreateSoundSlider(panel.transform, "전체 소리", SoundBus.Master, 118f);
-            CreateSoundSlider(panel.transform, "배경음", SoundBus.Bgm, 56f);
-            CreateSoundSlider(panel.transform, "효과음", SoundBus.Sfx, -6f);
-            CreateSoundSlider(panel.transform, "UI 효과음", SoundBus.Ui, -68f);
+            CreateSettingsHeader(panel.transform, "그래픽", 218f);
+            CreateDisplayDropdown("Text_RunResolutionLabel", panel.transform, "해상도",
+                GameDisplaySettings.BuildResolutionLabels(), GameDisplaySettings.GetCurrentResolutionIndex(),
+                GameDisplaySettings.ApplyResolutionIndex, 164f);
+            CreateDisplayDropdown("Text_RunScreenModeLabel", panel.transform, "화면 모드",
+                GameDisplaySettings.BuildScreenModeLabels(), GameDisplaySettings.GetCurrentScreenModeIndex(),
+                GameDisplaySettings.ApplyScreenModeIndex, 104f);
 
-            Button close = CreateOverlayButton("Button_CloseSettings", panel.transform, "닫기", new Vector2(0f, -178f), () => _settingsOverlay.SetActive(false));
+            CreateSettingsHeader(panel.transform, "사운드", 36f);
+            CreateSoundSlider(panel.transform, "전체 소리", SoundBus.Master, -22f);
+            CreateSoundSlider(panel.transform, "배경음", SoundBus.Bgm, -82f);
+            CreateSoundSlider(panel.transform, "효과음", SoundBus.Sfx, -142f);
+            CreateSoundSlider(panel.transform, "UI 효과음", SoundBus.Ui, -202f);
+
+            Button close = CreateOverlayButton("Button_CloseSettings", panel.transform, "닫기", new Vector2(0f, -278f), () => _settingsOverlay.SetActive(false));
             close.transform.SetAsLastSibling();
             _settingsOverlay.SetActive(false);
+        }
+
+        private void CreateSettingsHeader(Transform parent, string text, float y)
+        {
+            TextMeshProUGUI header = CreateText($"Text_{text}Header", parent, text, 22,
+                TextAlignmentOptions.Left, FontStyles.Bold);
+            header.color = new Color(1f, 0.86f, 0.3f, 1f);
+            SetRect(header.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(520f, 34f), new Vector2(0f, y));
+        }
+
+        private void CreateDisplayDropdown(
+            string labelName,
+            Transform parent,
+            string label,
+            IReadOnlyList<string> options,
+            int selectedIndex,
+            UnityEngine.Events.UnityAction<int> onChanged,
+            float y)
+        {
+            TextMeshProUGUI name = CreateText(labelName, parent, label, 20,
+                TextAlignmentOptions.Left, FontStyles.Bold);
+            SetRect(name.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(150f, 34f), new Vector2(-220f, y));
+
+            TMP_Dropdown dropdown = SettingsDropdownFactory.CreateTMPDropdown(
+                $"Dropdown_{labelName}",
+                parent,
+                options,
+                selectedIndex,
+                new Vector2(330f, 42f),
+                new Vector2(66f, y));
+            dropdown.onValueChanged.AddListener(onChanged);
         }
 
         private void CreateSoundSlider(Transform parent, string label, SoundBus bus, float y)

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using FFF.Data;
 using FFF.UI.Animation;
@@ -7,16 +8,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace FFF.UI.Battle
 {
     /// <summary>
     /// 개별 카드 UI를 담당. 클릭 시 시각적 피드백(애니메이션 연출)을 줍니다.
     /// </summary>
-    public class CardUIComponent : MonoBehaviour
+    public class CardUIComponent : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [Serializable]
         private class CardArtworkDefinition
@@ -32,10 +29,15 @@ namespace FFF.UI.Battle
         [SerializeField] private Image _cardImage;
         [SerializeField] private TextMeshProUGUI _cardNameText;
         [SerializeField] private Button _cardButton;
+        [SerializeField] private float _extendedHoverHeight = 170f;
+        [SerializeField] private float _extendedHoverHorizontalInset = 10f;
 
         public HwaTuCard CardData { get; private set; }
         private Action<CardUIComponent> _onClickCallback;
         private Coroutine _rejectRoutine;
+        private GameObject _extendedHoverCatchArea;
+        private bool _isSelected;
+        private bool _isPointerInside;
 
         public void Setup(HwaTuCard cardData, Action<CardUIComponent> onClickCallback, Sprite artworkOverride = null)
         {
@@ -61,6 +63,7 @@ namespace FFF.UI.Battle
 
             if (_cardButton != null)
             {
+                _cardButton.transition = Selectable.Transition.None;
                 _cardButton.onClick.RemoveAllListeners();
                 _cardButton.onClick.AddListener(HandleClick);
             }
@@ -73,43 +76,73 @@ namespace FFF.UI.Battle
             if (string.IsNullOrEmpty(cardId))
                 return null;
 
+            // 프리팹에 직접 지정한 아트워크가 있으면 우선 사용하고,
+            // 그 외에는 모든 화면이 공유하는 HwaTuCardDatabase 해석 경로로 통일한다.
             Sprite artwork = FindLocalArtwork(cardId);
             if (artwork != null)
                 return artwork;
 
-            artwork = HwaTuCardDatabase.GetArtwork(cardId);
-            if (artwork != null)
-                return artwork;
-
-#if UNITY_EDITOR
-            artwork = LoadFlowerCardSpriteInEditor(cardId);
-            if (artwork != null)
-                return artwork;
-
-            HwaTuCard cardData = HwaTuCardDatabase.FindById(cardId);
-            if (cardData != null)
-            {
-                artwork = LoadFlowerCardAtlasSpriteInEditor(cardData);
-                if (artwork != null)
-                    return artwork;
-            }
-#endif
-
-            return null;
+            return HwaTuCardDatabase.ResolveArtwork(cardId);
         }
 
         public void SetSelected(bool isSelected)
         {
-            // 기존 즉시 스케일 (CardAnimator가 없을 경우의 폴백)
-            transform.localScale = isSelected ? new Vector3(1.1f, 1.1f, 1.1f) : Vector3.one;
+            _isSelected = isSelected;
 
             // CardAnimator가 프리팹에 붙어있으면 부드러운 연출로 위임
             var animator = GetComponent<CardAnimator>();
             if (animator != null)
             {
-                if (isSelected) animator.PlaySelect();
-                else animator.PlayDeselect();
+                if (isSelected)
+                {
+                    transform.SetAsLastSibling();
+                    animator.PlaySelect();
+                }
+                else
+                {
+                    animator.PlayDeselect();
+
+                    if (_isPointerInside)
+                        animator.PlayHoverEnter();
+                }
+
+                return;
             }
+
+            // CardAnimator가 없을 경우의 폴백.
+            transform.localScale = isSelected ? new Vector3(1.1f, 1.1f, 1.1f) : Vector3.one;
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _isPointerInside = true;
+
+            var animator = GetComponent<CardAnimator>();
+            if (animator == null || _isSelected)
+                return;
+
+            transform.SetAsLastSibling();
+            animator.PlayHoverEnter();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _isPointerInside = false;
+
+            var animator = GetComponent<CardAnimator>();
+            if (animator == null || _isSelected)
+                return;
+
+            animator.PlayHoverExit();
+        }
+
+        public void SetExtendedHoverCatchArea(bool isEnabled)
+        {
+            if (isEnabled)
+                EnsureExtendedHoverCatchArea();
+
+            if (_extendedHoverCatchArea != null)
+                _extendedHoverCatchArea.SetActive(isEnabled);
         }
 
         public void PlayRejectFeedback()
@@ -123,6 +156,40 @@ namespace FFF.UI.Battle
         private void HandleClick()
         {
             _onClickCallback?.Invoke(this);
+        }
+
+        private void EnsureExtendedHoverCatchArea()
+        {
+            if (_extendedHoverCatchArea == null)
+            {
+                Transform existing = transform.Find("HoverCatchArea");
+                if (existing != null)
+                    _extendedHoverCatchArea = existing.gameObject;
+            }
+
+            if (_extendedHoverCatchArea == null)
+            {
+                _extendedHoverCatchArea = new GameObject("HoverCatchArea", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                _extendedHoverCatchArea.transform.SetParent(transform, false);
+                _extendedHoverCatchArea.transform.SetAsFirstSibling();
+            }
+
+            RectTransform areaRect = _extendedHoverCatchArea.GetComponent<RectTransform>();
+            RectTransform cardRect = transform as RectTransform;
+            float cardWidth = cardRect != null ? cardRect.rect.width : 0f;
+            if (cardWidth <= 0f && cardRect != null)
+                cardWidth = cardRect.sizeDelta.x;
+
+            float areaWidth = Mathf.Max(1f, cardWidth - (_extendedHoverHorizontalInset * 2f));
+            areaRect.anchorMin = new Vector2(0.5f, 0f);
+            areaRect.anchorMax = new Vector2(0.5f, 0f);
+            areaRect.pivot = new Vector2(0.5f, 1f);
+            areaRect.anchoredPosition = Vector2.zero;
+            areaRect.sizeDelta = new Vector2(areaWidth, _extendedHoverHeight);
+
+            Image catchImage = _extendedHoverCatchArea.GetComponent<Image>();
+            catchImage.color = new Color(1f, 1f, 1f, 0f);
+            catchImage.raycastTarget = true;
         }
 
         private IEnumerator RejectFeedbackRoutine()
@@ -160,12 +227,6 @@ namespace FFF.UI.Battle
             if (artwork != null)
                 return artwork;
 
-#if UNITY_EDITOR
-            artwork = LoadFlowerCardAtlasSpriteInEditor(cardData);
-            if (artwork != null)
-                return artwork;
-#endif
-
             Debug.LogWarning($"[CardUIComponent] 카드 이미지가 없어 텍스트로 표시합니다. CardId: {cardData.CardId}, Month: {cardData.Month}, Type: {cardData.Type}");
             return null;
         }
@@ -192,140 +253,5 @@ namespace FFF.UI.Battle
 
             return null;
         }
-
-#if UNITY_EDITOR
-        private Sprite LoadFlowerCardSpriteInEditor(string cardId)
-        {
-            string prefabName = GetFlowerCardPrefabName(cardId);
-            if (string.IsNullOrEmpty(prefabName))
-                return null;
-
-            string path = $"Assets/Project/Prefabs/FlowerCards/Prefabs/{prefabName}.prefab";
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            if (prefab == null)
-                return null;
-
-            SpriteRenderer[] renderers = prefab.GetComponentsInChildren<SpriteRenderer>(true);
-            foreach (SpriteRenderer renderer in renderers)
-            {
-                if (renderer != null && renderer.gameObject.name == "Front")
-                    return renderer.sprite;
-            }
-
-            return null;
-        }
-
-        private string GetFlowerCardPrefabName(string cardId)
-        {
-            switch (cardId)
-            {
-                case "M1_Gwang": return "01_Jan1";
-                case "M1_Pi": return "01_Jan3";
-                case "M2_Yeolkkeut": return "02_Feb1";
-                case "M2_Pi": return "02_Feb3";
-                case "M3_Gwang": return "03_Mar1";
-                case "M3_Pi": return "03_Mar3";
-                case "M4_Yeolkkeut": return "04_Apr1";
-                case "M4_Pi": return "04_Apr3";
-                case "M5_Yeolkkeut": return "05_May1";
-                case "M5_Pi": return "05_May3";
-                case "M6_Yeolkkeut": return "06_Jun1";
-                case "M6_Pi": return "06_Jun3";
-                case "M7_Yeolkkeut": return "07_Jul1";
-                case "M7_Pi": return "07_Jul3";
-                case "M8_Gwang": return "08_Aug1";
-                case "M8_Pi": return "08_Aug3";
-                case "M9_Yeolkkeut": return "09_Sep1";
-                case "M9_Pi": return "09_Sep3";
-                case "M10_Yeolkkeut": return "10_Oct1";
-                case "M10_Pi": return "10_Oct3";
-                default: return null;
-            }
-        }
-
-        private Sprite LoadFlowerCardAtlasSpriteInEditor(HwaTuCard cardData)
-        {
-            string spriteName = GetFlowerCardAtlasSpriteName(cardData);
-            if (string.IsNullOrEmpty(spriteName))
-                return null;
-
-            const string path = "Assets/Project/Prefabs/FlowerCards/Textures/cards_list.png";
-            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetRepresentationsAtPath(path);
-            foreach (UnityEngine.Object asset in assets)
-            {
-                if (asset is Sprite sprite && sprite.name == spriteName)
-                    return sprite;
-            }
-
-            return null;
-        }
-
-        private string GetFlowerCardAtlasSpriteName(HwaTuCard cardData)
-        {
-            if (cardData == null) return null;
-
-            switch (cardData.CardId)
-            {
-                case "M1_Gwang": return "cards_list_0";
-                case "M1_Pi": return "cards_list_2";
-                case "M2_Yeolkkeut": return "cards_list_4";
-                case "M2_Pi": return "cards_list_7";
-                case "M3_Gwang": return "cards_list_9";
-                case "M3_Pi": return "cards_list_11";
-                case "M4_Yeolkkeut": return "cards_list_13";
-                case "M4_Pi": return "cards_list_16";
-                case "M5_Yeolkkeut": return "cards_list_18";
-                case "M5_Pi": return "cards_list_20";
-                case "M6_Yeolkkeut": return "cards_list_22";
-                case "M6_Pi": return "cards_list_24";
-                case "M7_Yeolkkeut": return "cards_list_27";
-                case "M7_Pi": return "cards_list_29";
-                case "M8_Gwang": return "cards_list_31";
-                case "M8_Pi": return "cards_list_33";
-                case "M9_Yeolkkeut": return "cards_list_36";
-                case "M9_Pi": return "cards_list_38";
-                case "M10_Yeolkkeut": return "cards_list_40";
-                case "M10_Pi": return "cards_list_42";
-            }
-
-            return GetFlowerCardAtlasSpriteNameByMonthAndType(cardData);
-        }
-
-        private string GetFlowerCardAtlasSpriteNameByMonthAndType(HwaTuCard cardData)
-        {
-            int month = (int)cardData.Month;
-            switch (cardData.Type)
-            {
-                case CardType.Gwang:
-                    if (month == 1) return "cards_list_0";
-                    if (month == 3) return "cards_list_9";
-                    if (month == 8) return "cards_list_31";
-                    break;
-                case CardType.Yeolkkeut:
-                    if (month == 2) return "cards_list_4";
-                    if (month == 4) return "cards_list_13";
-                    if (month == 5) return "cards_list_18";
-                    if (month == 6) return "cards_list_22";
-                    if (month == 7) return "cards_list_27";
-                    if (month == 9) return "cards_list_36";
-                    if (month == 10) return "cards_list_40";
-                    break;
-                case CardType.Pi:
-                    if (month == 1) return "cards_list_2";
-                    if (month == 2) return "cards_list_7";
-                    if (month == 3) return "cards_list_11";
-                    if (month == 4) return "cards_list_16";
-                    if (month == 5) return "cards_list_20";
-                    if (month == 6) return "cards_list_24";
-                    if (month == 7) return "cards_list_29";
-                    if (month == 8) return "cards_list_33";
-                    if (month == 9) return "cards_list_38";
-                    if (month == 10) return "cards_list_42";
-                    break;
-            }
-
-            return null;
-        }
-#endif
     }
 }

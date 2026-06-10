@@ -53,6 +53,8 @@ namespace FFF.UI.Map
         [SerializeField] private float _nodeSpacingY = 80f;
         [SerializeField] private float _nodeSize = 60f;
         [SerializeField] private float _edgeThickness = 4f;
+        [Tooltip("맵 상단 여백(px). 최상단(보스) 노드가 상단 HUD·장신구 레이어에 가려지지 않도록 위로 스크롤 여유 공간을 더한다.")]
+        [SerializeField] private float _topClearance = 300f;
         [Header("아이콘 크기 비율")]
         [SerializeField, Range(0.1f, 1f)] private float _iconScaleRatio = 0.65f;
 
@@ -189,7 +191,9 @@ namespace FFF.UI.Map
             if (_mapData == null || _mapContainer == null) return;
 
             // [추가] 보스층까지 포함하여 맵 전체의 높이를 동적으로 계산하여 스크롤 영역 확보
-            float totalHeight = (MapData.FLOORS + 2) * _nodeSpacingY;
+            // 노드는 하단 기준으로 배치되므로, _topClearance만큼 위쪽에 빈 여백이 생겨
+            // 최상단 노드를 상단 HUD·장신구 레이어 아래까지 스크롤할 수 있게 된다.
+            float totalHeight = (MapData.FLOORS + 2) * _nodeSpacingY + _topClearance;
             PrepareMapContainerLayout(totalHeight);
             
             // 기본 진입 위치는 1층이다. GameManager가 마지막 선택 노드를 넘기면 이후 FocusNode()에서 덮어쓴다.

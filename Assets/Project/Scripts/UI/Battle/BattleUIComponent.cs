@@ -33,7 +33,7 @@ namespace FFF.UI.Battle
         private const float CombatRevealPostResultDelaySeconds = 1f;
         private const float CombatRevealFadeOutSeconds = 0.26f;
         private const float EnemyGimmickToastFadeInSeconds = 0.22f;
-        private const float EnemyGimmickToastVisibleSeconds = 3.2f;
+        private const float EnemyGimmickToastVisibleSeconds = 8.2f;
         private const float EnemyGimmickToastFadeOutSeconds = 0.8f;
         private const float HealthBarLerpSeconds = 0.28f;
 
@@ -43,12 +43,14 @@ namespace FFF.UI.Battle
         private static readonly Vector2 CombatCardSize = new Vector2(136f, 204f);
         private static readonly Vector2 CombatFirstCardPosition = new Vector2(-86f, 48f);
         private static readonly Vector2 CombatSecondCardPosition = new Vector2(86f, 48f);
-        private static readonly Vector2 HudJokerSlotSize = new Vector2(120f, 160f);
-        private static readonly Vector2 HudJokerVisualSize = new Vector2(120f, 160f);
+        private const float TopRunHudHeight = 150f;
+        private static readonly Vector2 HudJokerSlotSize = new Vector2(105f, 140f);
+        private static readonly Vector2 HudJokerVisualSize = new Vector2(105f, 140f);
         private static readonly Vector2 HudAccessorySlotSize = new Vector2(100f, 100f);
         private static readonly Vector2 HudAccessoryVisualSize = new Vector2(160f, 160f);
         private const float RewardBoxWidth = 280f;
         private const float RewardBoxHeight = 320f;
+        private const string DefaultJokerRewardArtworkPath = "Assets/Project/Art/Joker/HaetaeJoker.png";
 
         [Serializable]
         private class ItemIconDefinition
@@ -110,6 +112,13 @@ namespace FFF.UI.Battle
         [SerializeField] private GameObject _cardPrefab;     // CardUIComponent가 붙은 프리팹
         [SerializeField] private List<CardArtworkDefinition> _cardArtworkDefinitions = new();
         [SerializeField] private TextMeshProUGUI _enemyIntentText; // 적 행동 텍스트
+        [SerializeField] private GameObject _enemyIntentPreviewRoot;
+        [SerializeField] private Image _enemyIntentCard1Image;
+        [SerializeField] private Image _enemyIntentCard2Image;
+        [SerializeField] private TextMeshProUGUI _enemyIntentCard1NameText;
+        [SerializeField] private TextMeshProUGUI _enemyIntentCard2NameText;
+        [SerializeField] private TextMeshProUGUI _enemyIntentSummaryText;
+        [SerializeField] private TextMeshProUGUI _enemyIntentPowerText;
         [SerializeField] private Button _rerollButton;       // 리롤 버튼
         [SerializeField] private TextMeshProUGUI _rerollCountText; // 남은 리롤 횟수 표시
         [SerializeField] private GameObject _rerollComponetsContainer;     // 리롤 관련 컴포넌트들을 하위 자식으로 갖는 부모 EmptyObject
@@ -147,6 +156,9 @@ namespace FFF.UI.Battle
 
         [Tooltip("양끝 카드의 최대 기울기 (도)")]
         [SerializeField] private float _maxTiltAngle = 4f;
+
+        [Tooltip("손패가 평소 화면 아래에 살짝 묻히도록 내리는 거리 (px)")]
+        [SerializeField] private float _handRestingYOffset = -120f;
 
         [Header("=== 족보 가이드 ===")]
         [Tooltip("전투 중 확인할 화투 족보 이미지")]
@@ -194,11 +206,16 @@ namespace FFF.UI.Battle
         private int _lastPlayerHealth = -1;
         private int _lastEnemyHealth = -1;
         private Action<int, string> _onJokerIconClicked;
+        private bool _enemyIntentPreviewDetached;
 
         protected override void OnInitialize()
         {
+            GameDisplaySettings.ApplySaved();
             EnsureTopHud();
             EnsureJokboGuideButton();
+            EnsureEnemyIntentPreview();
+            ClearEnemyIntentPreview();
+            HideLegacyEnemyIntentText();
             HideLegacyCharacterHealthTexts();
             HideBattleResult();
             HideRewardSelection();
@@ -354,6 +371,15 @@ namespace FFF.UI.Battle
             iconObject.name = item.Id;
             iconObject.transform.SetAsLastSibling();
 
+            // 아이콘 프리팹 루트에 박혀 있는 플레이스홀더 스프라이트(노리개)가 실제 아이콘 뒤로
+            // 비쳐 보이지 않도록 비운다. (루트 Image는 이후 툴팁/조커 클릭 히트 영역으로 재사용)
+            Image baseImage = iconObject.GetComponent<Image>();
+            if (baseImage != null)
+            {
+                baseImage.sprite = null;
+                baseImage.color = new Color(1f, 1f, 1f, 0f);
+            }
+
             // ItemBase 내부의 Icon 속성을 직접 참조하여 UI 렌더링
             ApplyHudItemVisual(iconObject, item.Icon, isJoker);
             ConfigureHudIcon(iconObject, isJoker);
@@ -437,7 +463,11 @@ namespace FFF.UI.Battle
 
         private Sprite ResolveJokerArtwork(string itemId)
         {
-            return ResolveItemArtwork(itemId, _jokerIconDefinitions, _jokerIconPrefab);
+            Sprite artwork = ResolveItemArtwork(itemId, _jokerIconDefinitions, _jokerIconPrefab);
+            if (IsJokerPlaceholderArtwork(artwork))
+                return ResolveDefaultJokerArtwork();
+
+            return artwork != null ? artwork : ResolveDefaultJokerArtwork();
         }
 
         private void EnsureTopHud()
@@ -453,7 +483,7 @@ namespace FFF.UI.Battle
             rootRect.anchorMin = new Vector2(0f, 1f);
             rootRect.anchorMax = new Vector2(1f, 1f);
             rootRect.pivot = new Vector2(0.5f, 1f);
-            rootRect.sizeDelta = new Vector2(0f, 174f);
+            rootRect.sizeDelta = new Vector2(0f, TopRunHudHeight);
             rootRect.anchoredPosition = Vector2.zero;
             _topHudRoot.transform.SetAsLastSibling();
 
@@ -699,7 +729,7 @@ namespace FFF.UI.Battle
         {
             GameObject block = CreateUIObject("JokerHudBlock", parent);
             RectTransform rect = block.GetComponent<RectTransform>();
-            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(424f, 170f), new Vector2(756f, 0f));
+            SetStretch(rect, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(424f, TopRunHudHeight), new Vector2(756f, 0f));
 
             Image bg = block.AddComponent<Image>();
             bg.color = Color.clear;
@@ -749,7 +779,8 @@ namespace FFF.UI.Battle
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
             rect.sizeDelta = new Vector2(0f, 118f);
-            rect.anchoredPosition = new Vector2(0f, -150f);
+            // 상단 HUD(높이 150)와 겹치지 않도록 살짝 아래로 내린다.
+            rect.anchoredPosition = new Vector2(0f, -182f);
 
             Image bg = block.AddComponent<Image>();
             bg.color = Color.clear;
@@ -780,7 +811,7 @@ namespace FFF.UI.Battle
             if (layout == null)
                 layout = _accessoryLayoutGroup.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleLeft;
-            layout.spacing = 12f;
+            layout.spacing = 18f;
             layout.childControlWidth = false;
             layout.childControlHeight = false;
             layout.childForceExpandWidth = false;
@@ -964,11 +995,381 @@ namespace FFF.UI.Battle
         // 1. 적 의도 표시
         public void ShowEnemyIntent(EnemyIntent intent)
         {
-            if (_enemyIntentText != null)
+            EnsureEnemyIntentPreview();
+            HideLegacyEnemyIntentText();
+
+            if (_enemyIntentPreviewRoot == null)
+                return;
+
+            _enemyIntentPreviewRoot.SetActive(true);
+            SetEnemyIntentCard(_enemyIntentCard1Image, _enemyIntentCard1NameText, intent.Card1);
+            SetEnemyIntentCard(_enemyIntentCard2Image, _enemyIntentCard2NameText, intent.Card2);
+
+            if (_enemyIntentSummaryText != null)
             {
-                _enemyIntentText.text = $"적 의도: {intent.Card1.DisplayName} + {intent.Card2.DisplayName}\n(예상 공격력: {intent.BasePower})";
-                StartCoroutine(PulseText(_enemyIntentText, new Color(1f, 0.78f, 0.28f, 1f), 1.08f));
+                string handName = string.IsNullOrWhiteSpace(intent.HandName) ? "-" : intent.HandName;
+                _enemyIntentSummaryText.text = handName;
+                _enemyIntentSummaryText.gameObject.SetActive(true);
             }
+
+            if (_enemyIntentPowerText != null)
+            {
+                _enemyIntentPowerText.text = intent.BasePower.ToString();
+                _enemyIntentPowerText.gameObject.SetActive(true);
+                StartCoroutine(PulseText(_enemyIntentPowerText, new Color(1f, 0.78f, 0.28f, 1f), 1.12f));
+            }
+
+            if (_enemyIntentPreviewRoot.activeInHierarchy)
+                StartCoroutine(PulseTransform(_enemyIntentPreviewRoot.transform, 1.04f, 0.18f));
+        }
+
+        private void EnsureEnemyIntentPreview()
+        {
+            ResolveEnemyIntentPreviewReferences();
+
+            if (_enemyIntentPreviewRoot == null)
+            {
+                Transform parent = _enemyIntentText != null && _enemyIntentText.transform.parent != null
+                    ? _enemyIntentText.transform.parent
+                    : transform;
+
+                _enemyIntentPreviewRoot = CreateUIObject("EnemyCardPreviewPanel", parent);
+                RectTransform rootRect = _enemyIntentPreviewRoot.GetComponent<RectTransform>();
+                SetStretch(rootRect, new Vector2(1f, 1f), new Vector2(1f, 1f),
+                    new Vector2(360f, 260f), new Vector2(-248f, -176f));
+
+                Image background = _enemyIntentPreviewRoot.AddComponent<Image>();
+                background.color = new Color(0.04f, 0.04f, 0.05f, 0.25f);
+                background.raycastTarget = false;
+            }
+
+            Image previewBackground = _enemyIntentPreviewRoot.GetComponent<Image>();
+            if (previewBackground != null)
+                previewBackground.raycastTarget = false;
+
+            _enemyIntentCard1Image ??= GetOrCreateEnemyIntentCardImage("EnemyCard1", new Vector2(-78f, 18f));
+            _enemyIntentCard2Image ??= GetOrCreateEnemyIntentCardImage("EnemyCard2", new Vector2(78f, 18f));
+            _enemyIntentCard1NameText ??= GetOrCreateEnemyIntentCardNameText(_enemyIntentCard1Image, "CardNameText");
+            _enemyIntentCard2NameText ??= GetOrCreateEnemyIntentCardNameText(_enemyIntentCard2Image, "CardNameText");
+            _enemyIntentSummaryText ??= GetOrCreateEnemyIntentSummaryText();
+            _enemyIntentPowerText ??= GetOrCreateEnemyIntentPowerText();
+
+            ConfigureEnemyIntentCardImage(_enemyIntentCard1Image);
+            ConfigureEnemyIntentCardImage(_enemyIntentCard2Image);
+            ConfigureEnemyIntentLabel(_enemyIntentCard1NameText, 22, 14, 28);
+            ConfigureEnemyIntentLabel(_enemyIntentCard2NameText, 22, 14, 28);
+            ConfigureEnemyIntentLabel(_enemyIntentSummaryText, 22, 16, 28, FontStyles.Normal);
+            ConfigureEnemyIntentLabel(_enemyIntentPowerText, 46, 34, 58, FontStyles.Bold);
+
+            // 적 공격 돌진 애니메이션을 따라 패널이 같이 움직이지 않도록,
+            // 움직이는 적 컨테이너 밖(정적 상위)으로 한 번 분리한다.
+            DetachEnemyIntentPreviewFromMovingParent();
+        }
+
+        /// <summary>
+        /// 적 인텐트 프리뷰 패널이 적(Enemy) 컨테이너의 자식이라 공격 돌진 시 함께 움직인다.
+        /// 화면상 위치/크기를 그대로 유지한 채, 돌진해도 움직이지 않는 상위로 1회 분리한다.
+        /// </summary>
+        private void DetachEnemyIntentPreviewFromMovingParent()
+        {
+            if (_enemyIntentPreviewDetached || _enemyIntentPreviewRoot == null)
+                return;
+
+            if (_enemyIntentPreviewRoot.transform is not RectTransform rect || rect.parent == null)
+                return;
+
+            // 현재 부모(=돌진하는 적 컨테이너)의 부모. 돌진 애니메이션의 영향을 받지 않는 정적 루트.
+            Transform fixedParent = rect.parent.parent;
+            if (fixedParent == null)
+                return;
+
+            // 분리 전 화면상 크기/위치와 형제 순서를 기억한다.
+            Vector2 size = rect.rect.size;
+            Vector3 worldPosition = rect.position;
+            int siblingIndex = rect.parent.GetSiblingIndex() + 1;
+
+            // 고정 앵커로 바꿔 부모 크기에 영향받지 않게 한 뒤, 위치/크기를 복원한다.
+            rect.SetParent(fixedParent, worldPositionStays: false);
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = size;
+            rect.position = worldPosition;
+            rect.SetSiblingIndex(siblingIndex);
+
+            _enemyIntentPreviewDetached = true;
+        }
+
+        private void ResolveEnemyIntentPreviewReferences()
+        {
+            if (_enemyIntentPreviewRoot == null)
+            {
+                Transform previewRoot = FindChildRecursive(transform, "EnemyCardPreviewPanel");
+                if (previewRoot != null)
+                    _enemyIntentPreviewRoot = previewRoot.gameObject;
+            }
+
+            if (_enemyIntentPreviewRoot == null)
+                return;
+
+            Transform root = _enemyIntentPreviewRoot.transform;
+            _enemyIntentCard1Image ??= ResolveEnemyIntentCardImage(root, "EnemyCard1");
+            _enemyIntentCard2Image ??= ResolveEnemyIntentCardImage(root, "EnemyCard2");
+            _enemyIntentCard1NameText ??= ResolveEnemyIntentCardNameText(root, "EnemyCard1");
+            _enemyIntentCard2NameText ??= ResolveEnemyIntentCardNameText(root, "EnemyCard2");
+
+            Transform summary = FindChildRecursive(root, "Text_EnemyIntentSummary");
+            if (_enemyIntentSummaryText == null && summary != null)
+                _enemyIntentSummaryText = summary.GetComponent<TextMeshProUGUI>();
+
+            Transform power = FindChildRecursive(root, "Text_EnemyIntentPower");
+            if (_enemyIntentPowerText == null && power != null)
+                _enemyIntentPowerText = power.GetComponent<TextMeshProUGUI>();
+        }
+
+        private Image GetOrCreateEnemyIntentCardImage(string slotName, Vector2 anchoredPosition)
+        {
+            if (_enemyIntentPreviewRoot == null)
+                return null;
+
+            Transform slot = FindChildRecursive(_enemyIntentPreviewRoot.transform, slotName);
+            bool created = false;
+
+            if (slot == null)
+            {
+                GameObject slotObject = CreateUIObject(slotName, _enemyIntentPreviewRoot.transform);
+                slot = slotObject.transform;
+                created = true;
+            }
+
+            RectTransform rect = slot.GetComponent<RectTransform>();
+            if (rect == null)
+                rect = slot.gameObject.AddComponent<RectTransform>();
+
+            if (created)
+            {
+                SetStretch(rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                    new Vector2(130f, 170f), anchoredPosition);
+            }
+
+            Image image = slot.GetComponent<Image>();
+            if (image == null)
+                image = slot.gameObject.AddComponent<Image>();
+
+            return image;
+        }
+
+        private TextMeshProUGUI GetOrCreateEnemyIntentCardNameText(Image cardImage, string labelName)
+        {
+            if (cardImage == null)
+                return null;
+
+            Transform labelTransform = FindChildRecursive(cardImage.transform, labelName);
+            if (labelTransform != null && labelTransform.TryGetComponent(out TextMeshProUGUI existingLabel))
+                return existingLabel;
+
+            TextMeshProUGUI label = CreateRewardText(labelName, cardImage.transform, string.Empty, 22,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            SetStretch(label.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(200f, 46f), new Vector2(0f, -139f));
+            return label;
+        }
+
+        private TextMeshProUGUI GetOrCreateEnemyIntentSummaryText()
+        {
+            if (_enemyIntentPreviewRoot == null)
+                return null;
+
+            Transform summary = FindChildRecursive(_enemyIntentPreviewRoot.transform, "Text_EnemyIntentSummary");
+            if (summary != null && summary.TryGetComponent(out TextMeshProUGUI existingSummary))
+                return existingSummary;
+
+            TextMeshProUGUI text = CreateRewardText("Text_EnemyIntentSummary", _enemyIntentPreviewRoot.transform,
+                string.Empty, 24, TextAlignmentOptions.Center, FontStyles.Bold);
+
+            float centerX = GetPreviewCardsCenterX();
+            SetStretch(text.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(360f, 34f), new Vector2(centerX, -185f));
+            return text;
+        }
+
+        private TextMeshProUGUI GetOrCreateEnemyIntentPowerText()
+        {
+            if (_enemyIntentPreviewRoot == null)
+                return null;
+
+            Transform power = FindChildRecursive(_enemyIntentPreviewRoot.transform, "Text_EnemyIntentPower");
+            if (power != null && power.TryGetComponent(out TextMeshProUGUI existingPower))
+                return existingPower;
+
+            TextMeshProUGUI text = CreateRewardText("Text_EnemyIntentPower", _enemyIntentPreviewRoot.transform,
+                string.Empty, 46, TextAlignmentOptions.Center, FontStyles.Bold);
+
+            float centerX = GetPreviewCardsCenterX();
+            SetStretch(text.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(220f, 66f), new Vector2(centerX, -242f));
+            return text;
+        }
+
+        private Image ResolveEnemyIntentCardImage(Transform root, string slotName)
+        {
+            Transform slot = FindChildRecursive(root, slotName);
+            return slot != null ? slot.GetComponent<Image>() : null;
+        }
+
+        private TextMeshProUGUI ResolveEnemyIntentCardNameText(Transform root, string slotName)
+        {
+            Transform slot = FindChildRecursive(root, slotName);
+            if (slot == null)
+                return null;
+
+            Transform label = FindChildRecursive(slot, "CardNameText");
+            if (label != null && label.TryGetComponent(out TextMeshProUGUI text))
+                return text;
+
+            return slot.GetComponentInChildren<TextMeshProUGUI>(true);
+        }
+
+        private void SetEnemyIntentCard(Image image, TextMeshProUGUI label, HwaTuCard card)
+        {
+            Sprite artwork = card != null ? FindCardArtwork(card.CardId) : null;
+
+            if (image != null)
+            {
+                image.sprite = artwork;
+                image.color = artwork != null ? Color.white : new Color(1f, 1f, 1f, 0.32f);
+                image.type = Image.Type.Simple;
+                image.preserveAspect = true;
+                image.raycastTarget = false;
+            }
+
+            if (label != null)
+            {
+                label.text = GetCompactCardName(card);
+                label.gameObject.SetActive(true);
+            }
+        }
+
+        private void ConfigureEnemyIntentCardImage(Image image)
+        {
+            if (image == null)
+                return;
+
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+        }
+
+        private void ConfigureEnemyIntentLabel(TextMeshProUGUI text, int fontSize, int minSize, int maxSize)
+        {
+            ConfigureEnemyIntentLabel(text, fontSize, minSize, maxSize, FontStyles.Bold);
+        }
+
+        private void ConfigureEnemyIntentLabel(TextMeshProUGUI text, int fontSize, int minSize, int maxSize, FontStyles fontStyle)
+        {
+            if (text == null)
+                return;
+
+            text.fontSize = fontSize;
+            text.fontSizeMin = minSize;
+            text.fontSizeMax = maxSize;
+            text.enableAutoSizing = true;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = Color.white;
+            text.fontStyle = fontStyle;
+            text.textWrappingMode = TextWrappingModes.Normal;
+            text.overflowMode = TextOverflowModes.Ellipsis;
+            text.raycastTarget = false;
+        }
+
+        private void HideLegacyEnemyIntentText()
+        {
+            if (_enemyIntentText == null)
+                return;
+
+            _enemyIntentText.text = string.Empty;
+            _enemyIntentText.gameObject.SetActive(false);
+        }
+
+        private void ClearEnemyIntentPreview()
+        {
+            ClearEnemyIntentCard(_enemyIntentCard1Image, _enemyIntentCard1NameText);
+            ClearEnemyIntentCard(_enemyIntentCard2Image, _enemyIntentCard2NameText);
+
+            if (_enemyIntentSummaryText != null)
+                _enemyIntentSummaryText.text = string.Empty;
+
+            if (_enemyIntentPowerText != null)
+                _enemyIntentPowerText.text = string.Empty;
+        }
+
+        private void ClearEnemyIntentCard(Image image, TextMeshProUGUI label)
+        {
+            if (image != null)
+            {
+                image.sprite = null;
+                image.color = new Color(1f, 1f, 1f, 0.32f);
+            }
+
+            if (label != null)
+                label.text = string.Empty;
+        }
+
+        private float GetPreviewCardsCenterX()
+        {
+            RectTransform first = _enemyIntentCard1Image != null ? _enemyIntentCard1Image.rectTransform : null;
+            RectTransform second = _enemyIntentCard2Image != null ? _enemyIntentCard2Image.rectTransform : null;
+
+            if (first != null && second != null)
+                return (first.anchoredPosition.x + second.anchoredPosition.x) * 0.5f;
+
+            if (first != null)
+                return first.anchoredPosition.x;
+
+            if (second != null)
+                return second.anchoredPosition.x;
+
+            return 0f;
+        }
+
+        private static string GetCompactCardName(HwaTuCard card)
+        {
+            if (card == null)
+                return "-";
+
+            int month = (int)card.Month;
+            if (month <= 0)
+                return string.IsNullOrWhiteSpace(card.DisplayName) ? card.CardId : card.DisplayName;
+
+            string typeName = card.Type switch
+            {
+                CardType.Gwang => "광",
+                CardType.Tti => "띠",
+                CardType.Yeolkkeut => "열끗",
+                CardType.Pi => "피",
+                _ => card.Type.ToString()
+            };
+
+            return $"{month}월 {typeName}";
+        }
+
+        private static Transform FindChildRecursive(Transform parent, string childName)
+        {
+            if (parent == null || string.IsNullOrEmpty(childName))
+                return null;
+
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name == childName)
+                    return child;
+
+                Transform match = FindChildRecursive(child, childName);
+                if (match != null)
+                    return match;
+            }
+
+            return null;
         }
 
         // 2. 내 손패 카드들을 화면에 생성 + 드로우 연출
@@ -1067,13 +1468,26 @@ namespace FFF.UI.Battle
             if (_handLayoutGroup is RectTransform handRect)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(handRect);
 
+            // 손패가 카드 수와 무관하게 항상 가운데를 기준으로 좌우 대칭으로 펼쳐지도록
+            // X 위치를 직접 계산한다. HorizontalLayoutGroup이 자식 앵커를 좌상단(0,1)으로
+            // 고정하므로, anchoredPosition.x = 0 은 컨테이너의 '왼쪽 끝'이다.
+            // 따라서 가로 중앙(handHalfWidth)을 기준으로 좌우 대칭 배치해야 화면 중앙에 모인다.
+            float handCardPitch = ResolveHandCardPitch(cardObjects);
+            float handHalfWidth = ResolveHandHalfWidth();
+
             // 6단계: 각 카드의 새 목표 위치 캡처 → 기존 카드는 옛 위치로 되돌리고, ignoreLayout 다시 켜서 트윈
             int newCardOrderIdx = 0;
             for (int i = 0; i < cardObjects.Count; i++)
             {
                 GameObject cardObj = cardObjects[i];
+                CardUIComponent handCardUI = cardObj.GetComponent<CardUIComponent>();
+                if (handCardUI != null)
+                    handCardUI.SetExtendedHoverCatchArea(true);
+
                 RectTransform cardRect = cardObj.GetComponent<RectTransform>();
                 Vector2 targetPos = cardRect.anchoredPosition;
+                targetPos.x = handHalfWidth + (i - (totalCards - 1) / 2f) * handCardPitch;
+                targetPos.y += _handRestingYOffset;
                 float targetRot = CalculateCardRotation(i, totalCards);
 
                 bool isNew = newCards.Contains(cardObj);
@@ -1444,7 +1858,7 @@ namespace FFF.UI.Battle
             accentImage.color = accent;
             accentImage.raycastTarget = false;
 
-            Sprite artwork = card != null ? HwaTuCardDatabase.GetArtwork(card.CardId) : null;
+            Sprite artwork = card != null ? HwaTuCardDatabase.ResolveArtwork(card.CardId) : null;
             if (artwork != null)
             {
                 GameObject artObject = CreateUIObject("Artwork", cardObject.transform);
@@ -1721,7 +2135,7 @@ namespace FFF.UI.Battle
             contentRect.sizeDelta = new Vector2(0f, 390f);
 
             GridLayoutGroup grid = content.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(98f, 208f);
+            grid.cellSize = new Vector2(110f, 178f);
             grid.spacing = new Vector2(14f, 24f);
             grid.padding = new RectOffset(10, 10, 10, 10);
             grid.childAlignment = TextAnchor.UpperLeft;
@@ -1756,32 +2170,39 @@ namespace FFF.UI.Battle
             }
 
             foreach (string cardId in _currentDeckCardIds)
-            {
-                HwaTuCard card = HwaTuCardDatabase.FindById(cardId);
-                if (_cardPrefab != null && card != null)
-                {
-                    GameObject cardObject = Instantiate(_cardPrefab, content, false);
-                    RectTransform rect = cardObject.GetComponent<RectTransform>();
-                    if (rect != null)
-                        rect.sizeDelta = new Vector2(98f, 146f);
-
-                    CardUIComponent cardView = cardObject.GetComponent<CardUIComponent>();
-                    if (cardView != null)
-                        cardView.Setup(card, _ => { }, FindCardArtwork(cardId));
-                }
-                else
-                {
-                    GameObject fallback = CreateUIObject($"DeckCard_{cardId}", content);
-                    Image image = fallback.AddComponent<Image>();
-                    image.color = new Color(0.18f, 0.2f, 0.24f, 1f);
-                    TextMeshProUGUI text = CreateRewardText("Text_CardName", fallback.transform, card != null ? card.DisplayName : cardId,
-                        15, TextAlignmentOptions.Center, FontStyles.Bold);
-                    SetStretch(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                }
-            }
+                CreateDeckCardTile(content, cardId);
 
             if (content is RectTransform contentRect)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+        }
+
+        // 스테이지씬(TopRunHudComponent)의 덱 보기와 동일한 양식의 카드 타일을 만든다.
+        private void CreateDeckCardTile(Transform parent, string cardId)
+        {
+            HwaTuCard card = HwaTuCardDatabase.FindById(cardId);
+            GameObject tile = CreateUIObject($"DeckCard_{cardId}", parent);
+            Image background = tile.AddComponent<Image>();
+            background.color = new Color(0.16f, 0.18f, 0.22f, 1f);
+
+            RectTransform rect = tile.GetComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(110f, 178f);
+
+            Sprite artwork = FindCardArtwork(cardId);
+            if (artwork != null)
+            {
+                GameObject artObject = CreateUIObject("Image_Card", tile.transform);
+                RectTransform artRect = artObject.GetComponent<RectTransform>();
+                SetStretch(artRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(90f, 124f), new Vector2(0f, -70f));
+                Image art = artObject.AddComponent<Image>();
+                art.sprite = artwork;
+                art.preserveAspect = true;
+                art.raycastTarget = false;
+            }
+
+            TextMeshProUGUI name = CreateRewardText("Text_CardName", tile.transform, card != null ? card.DisplayName : cardId, 14,
+                TextAlignmentOptions.Center, FontStyles.Bold);
+            name.textWrappingMode = TextWrappingModes.Normal;
+            SetStretch(name.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(100f, 42f), new Vector2(0f, 25f));
         }
 
         private void EnsureDeckCardsForOverlay()
@@ -1915,17 +2336,59 @@ namespace FFF.UI.Battle
         private void BuildSettingsOverlay()
         {
             _settingsOverlay = CreateOverlayRoot("BattleSettingsOverlay");
-            GameObject panel = CreatePanel(_settingsOverlay.transform, "환경 설정", new Vector2(660f, 460f));
+            GameObject panel = CreatePanel(_settingsOverlay.transform, "환경 설정", new Vector2(740f, 650f));
 
-            CreateSoundSlider(panel.transform, "전체 음량", SoundBus.Master, 118f);
-            CreateSoundSlider(panel.transform, "배경음", SoundBus.Bgm, 56f);
-            CreateSoundSlider(panel.transform, "효과음", SoundBus.Sfx, -6f);
-            CreateSoundSlider(panel.transform, "UI 효과음", SoundBus.Ui, -68f);
+            CreateSettingsHeader(panel.transform, "그래픽", 218f);
+            CreateDisplayDropdown("Text_BattleResolutionLabel", panel.transform, "해상도",
+                GameDisplaySettings.BuildResolutionLabels(), GameDisplaySettings.GetCurrentResolutionIndex(),
+                GameDisplaySettings.ApplyResolutionIndex, 164f);
+            CreateDisplayDropdown("Text_BattleScreenModeLabel", panel.transform, "화면 모드",
+                GameDisplaySettings.BuildScreenModeLabels(), GameDisplaySettings.GetCurrentScreenModeIndex(),
+                GameDisplaySettings.ApplyScreenModeIndex, 104f);
 
-            Button close = CreateOverlayButton("Button_CloseSettings", panel.transform, "닫기", new Vector2(0f, -178f), () => _settingsOverlay.SetActive(false));
+            CreateSettingsHeader(panel.transform, "사운드", 36f);
+            CreateSoundSlider(panel.transform, "전체 음량", SoundBus.Master, -22f);
+            CreateSoundSlider(panel.transform, "배경음", SoundBus.Bgm, -82f);
+            CreateSoundSlider(panel.transform, "효과음", SoundBus.Sfx, -142f);
+            CreateSoundSlider(panel.transform, "UI 효과음", SoundBus.Ui, -202f);
+
+            Button close = CreateOverlayButton("Button_CloseSettings", panel.transform, "닫기", new Vector2(0f, -278f), () => _settingsOverlay.SetActive(false));
             close.gameObject.transform.SetAsLastSibling();
 
             _settingsOverlay.SetActive(false);
+        }
+
+        private void CreateSettingsHeader(Transform parent, string text, float y)
+        {
+            TextMeshProUGUI header = CreateRewardText($"Text_{text}Header", parent, text, 22,
+                TextAlignmentOptions.Left, FontStyles.Bold);
+            header.color = new Color(1f, 0.86f, 0.3f, 1f);
+            SetStretch(header.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(520f, 34f), new Vector2(0f, y));
+        }
+
+        private void CreateDisplayDropdown(
+            string labelName,
+            Transform parent,
+            string label,
+            IReadOnlyList<string> options,
+            int selectedIndex,
+            Action<int> onChanged,
+            float y)
+        {
+            TextMeshProUGUI name = CreateRewardText(labelName, parent, label, 20,
+                TextAlignmentOptions.Left, FontStyles.Bold);
+            SetStretch(name.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(150f, 34f), new Vector2(-220f, y));
+
+            TMP_Dropdown dropdown = SettingsDropdownFactory.CreateTMPDropdown(
+                $"Dropdown_{labelName}",
+                parent,
+                options,
+                selectedIndex,
+                new Vector2(330f, 42f),
+                new Vector2(66f, y));
+            dropdown.onValueChanged.AddListener(index => onChanged?.Invoke(index));
         }
 
         private void CreateSoundSlider(Transform parent, string label, SoundBus bus, float y)
@@ -2251,7 +2714,12 @@ namespace FFF.UI.Battle
                 return null;
 
             if (option.Artwork != null)
+            {
+                if (option.Kind == RewardKind.Joker && IsJokerPlaceholderArtwork(option.Artwork))
+                    return ResolveDefaultJokerArtwork();
+
                 return option.Artwork;
+            }
 
             return option.Kind switch
             {
@@ -2261,6 +2729,48 @@ namespace FFF.UI.Battle
                 RewardKind.Accessory => ResolveAccessoryArtwork(option.PayloadId),
                 _ => null
             };
+        }
+
+        private Sprite ResolveDefaultJokerArtwork()
+        {
+            Sprite defaultRewardSprite = LoadEditorSprite(DefaultJokerRewardArtworkPath);
+            if (defaultRewardSprite != null)
+                return defaultRewardSprite;
+
+            ItemIconDefinition definition = FindItemIconDefinition("JKR_LUCKY_CHARM", _jokerIconDefinitions);
+            if (definition != null && definition.Icon != null)
+                return definition.Icon;
+
+            Sprite prefabSprite = ResolvePrefabImageSprite(_jokerIconPrefab);
+            if (prefabSprite != null)
+                return prefabSprite;
+
+            Sprite builtInSprite = ResolveBuiltInItemSprite("JKR_LUCKY_CHARM");
+            if (builtInSprite != null)
+                return builtInSprite;
+
+            return LoadEditorSprite("Assets/Project/Art/Joker/gaksi.png");
+        }
+
+        private static bool IsJokerPlaceholderArtwork(Sprite artwork)
+        {
+            if (artwork == null)
+                return false;
+
+            if (string.Equals(artwork.name, "Joker_0", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return artwork.texture != null
+                && string.Equals(artwork.texture.name, "Joker", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static Sprite LoadEditorSprite(string path)
+        {
+#if UNITY_EDITOR
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+#else
+            return null;
+#endif
         }
 
         private static Sprite ResolveBuiltInItemSprite(string itemId)
@@ -2580,6 +3090,51 @@ namespace FFF.UI.Battle
             return ((center - index) / center) * _maxTiltAngle;
         }
 
+        /// <summary>
+        /// 손패 카드 한 장이 차지하는 가로 간격(카드 폭 + 레이아웃 spacing)을 구한다.
+        /// 가운데 정렬 배치를 직접 계산할 때 카드 사이 피치로 사용한다.
+        /// </summary>
+        private float ResolveHandCardPitch(List<GameObject> cardObjects)
+        {
+            float spacing = 40f;
+            if (_handLayoutGroup != null)
+            {
+                HorizontalLayoutGroup handLayout = _handLayoutGroup.GetComponent<HorizontalLayoutGroup>();
+                if (handLayout != null)
+                    spacing = handLayout.spacing;
+            }
+
+            float cardWidth = 0f;
+            if (cardObjects != null && cardObjects.Count > 0 && cardObjects[0] != null)
+            {
+                RectTransform firstRect = cardObjects[0].GetComponent<RectTransform>();
+                if (firstRect != null)
+                    cardWidth = firstRect.rect.width > 1f ? firstRect.rect.width : firstRect.sizeDelta.x;
+            }
+
+            if (cardWidth <= 1f)
+                cardWidth = 160f;
+
+            return cardWidth + spacing;
+        }
+
+        /// <summary>
+        /// 손패 컨테이너의 가로 중심(anchoredPosition 기준) 값을 구한다.
+        /// LayoutGroup이 자식 앵커를 좌상단(0,1)으로 고정하므로, 이 값이 곧 컨테이너 가로 중앙이다.
+        /// </summary>
+        private float ResolveHandHalfWidth()
+        {
+            if (_handLayoutGroup is RectTransform handLayoutRect)
+            {
+                float width = handLayoutRect.rect.width;
+                if (width <= 1f)
+                    width = handLayoutRect.sizeDelta.x;
+                return width * 0.5f;
+            }
+
+            return 0f;
+        }
+
         private Sprite FindCardArtwork(string cardId)
         {
             if (string.IsNullOrEmpty(cardId))
@@ -2598,7 +3153,7 @@ namespace FFF.UI.Battle
             if (artwork != null)
                 return artwork;
 
-            return HwaTuCardDatabase.GetArtwork(cardId);
+            return HwaTuCardDatabase.ResolveArtwork(cardId);
         }
 
         private Sprite ResolveCardPrefabArtwork(string cardId)

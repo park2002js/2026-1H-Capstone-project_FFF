@@ -254,22 +254,22 @@ namespace FFF.UI.Shop
             RectTransform panelRect = panel.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(1110f, 554f);
-            panelRect.anchoredPosition = new Vector2(0f, -67f);
+            panelRect.sizeDelta = new Vector2(1110f, 634f);
+            panelRect.anchoredPosition = new Vector2(0f, -27f);
             panel.AddComponent<Shadow>().effectDistance = new Vector2(8f, -8f);
 
             TextMeshProUGUI title = CreateText("Text_ShopTitle", panel.transform, "상점보따리",
-                34, TextAlignmentOptions.Left, Ink, new Vector2(360f, 48f), new Vector2(-334f, 242f));
+                34, TextAlignmentOptions.Left, Ink, new Vector2(360f, 48f), new Vector2(-334f, 282f));
             title.fontStyle = FontStyles.Bold;
 
             closeButton = CreateTextButton("Button_CloseShop", panel.transform, "보따리 닫기",
-                new Vector2(138f, 42f), new Vector2(454f, 242f), new Vector2(0.5f, 0.5f),
+                new Vector2(138f, 42f), new Vector2(454f, 282f), new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f), new Color(0.24f, 0.28f, 0.25f, 0.92f), Color.white);
 
             GameObject gridGo = CreateUIObject("ShopItemGrid", panel.transform);
             RectTransform gridRect = gridGo.GetComponent<RectTransform>();
             gridRect.sizeDelta = new Vector2(920f, 446f);
-            gridRect.anchoredPosition = new Vector2(18f, -12f);
+            gridRect.anchoredPosition = new Vector2(18f, 24f);
 
             GridLayoutGroup grid = gridGo.AddComponent<GridLayoutGroup>();
             grid.cellSize = new Vector2(166f, 206f);
@@ -285,13 +285,13 @@ namespace FFF.UI.Shop
             }
 
             leaveButton = CreateTextButton("Button_LeaveShop", panel.transform, "지나가기",
-                new Vector2(188f, 54f), new Vector2(-462f, -242f), new Vector2(0.5f, 0.5f),
+                new Vector2(188f, 54f), new Vector2(-462f, -282f), new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f), new Color(0.55f, 0.14f, 0.13f, 1f), Color.white);
 
             GameObject goldBox = CreateImage("GoldStatusBox", panel.transform, new Color(0.18f, 0.16f, 0.11f, 0.76f));
             RectTransform goldBoxRect = goldBox.GetComponent<RectTransform>();
             goldBoxRect.sizeDelta = new Vector2(270f, 54f);
-            goldBoxRect.anchoredPosition = new Vector2(386f, -242f);
+            goldBoxRect.anchoredPosition = new Vector2(386f, -282f);
             Image goldBoxImage = goldBox.GetComponent<Image>();
             if (goldBoxImage != null)
                 goldBoxImage.raycastTarget = false;
@@ -544,7 +544,7 @@ namespace FFF.UI.Shop
                     "화투",
                     string.Empty,
                     GetCardPrice(card),
-                    HwaTuCardDatabase.GetArtwork(card.CardId),
+                    HwaTuCardDatabase.ResolveArtwork(card.CardId),
                     ShopUIComponent.ShopItemKind.Card,
                     card.CardId,
                     card));

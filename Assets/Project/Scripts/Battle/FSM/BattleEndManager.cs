@@ -6,11 +6,15 @@ using FFF.Core.Events;
 using FFF.Battle.Data;
 using FFF.Audio;
 using FFF.Data;
+using FFF.Map;
 
 namespace FFF.Battle.FSM
 {
     public class BattleEndManager : MonoBehaviour
     {
+        private const int NormalBattleGoldReward = 50;
+        private const int EliteBattleGoldReward = 100;
+
         private static readonly string[] AccessoryRewardPoolIds =
         {
             "Accessory_001", "Accessory_002", "Accessory_003", "Accessory_004", "Accessory_005",
@@ -27,6 +31,7 @@ namespace FFF.Battle.FSM
         [SerializeField] private GameEvent _onBattleEndEvent;
 
         private bool _rewardClaimed;
+        private bool _fixedGoldRewardGranted;
 
         private void OnEnable()
         {
@@ -52,6 +57,7 @@ namespace FFF.Battle.FSM
 
             if (isPlayerWin)
             {
+                GrantFixedVictoryGold();
                 SoundManager.PlaySfxSound(SoundIds.SfxBattleVictory);
                 _rewardClaimed = false;
                 _battleUI.ShowRewardSelection(
@@ -66,6 +72,33 @@ namespace FFF.Battle.FSM
 
             SoundManager.PlaySfxSound(SoundIds.SfxBattleDefeat);
             _battleUI.ShowBattleResult("Game Over\n<size=50>플레이어 패배</size>");
+        }
+
+        private int GrantFixedVictoryGold()
+        {
+            if (_fixedGoldRewardGranted)
+                return GetVictoryGoldRewardAmount();
+
+            PlayerDataBattle player = GetCurrentPlayerData();
+            if (player == null)
+                return 0;
+
+            int amount = GetVictoryGoldRewardAmount();
+            player.AddGold(amount);
+            _fixedGoldRewardGranted = true;
+
+            _battleUI.SetPlayerGold(player.CurrentGold);
+            Debug.Log($"[BattleEnd] 전투 승리 고정 골드 지급: +{amount} (현재 골드: {player.CurrentGold})");
+            return amount;
+        }
+
+        private int GetVictoryGoldRewardAmount()
+        {
+            RoomType roomType = GameManager.Instance != null
+                ? GameManager.Instance.CurrentBattleEntryData.RoomType
+                : RoomType.Monster;
+
+            return roomType == RoomType.Elite ? EliteBattleGoldReward : NormalBattleGoldReward;
         }
 
         private List<BattleUIComponent.RewardOption> CreateRewardCategoryOptions()
@@ -170,7 +203,7 @@ namespace FFF.Battle.FSM
                     DisplayName = card.DisplayName,
                     Category = "화투 카드",
                     Description = "덱에 추가됩니다.",
-                    Artwork = HwaTuCardDatabase.GetArtwork(card.CardId)
+                    Artwork = HwaTuCardDatabase.ResolveArtwork(card.CardId)
                 });
 
                 if (rewards.Count >= count)
@@ -187,7 +220,7 @@ namespace FFF.Battle.FSM
                     DisplayName = "화투 카드",
                     Category = "화투 카드",
                     Description = "덱에 추가됩니다.",
-                    Artwork = HwaTuCardDatabase.GetArtwork("M1_Pi")
+                    Artwork = HwaTuCardDatabase.ResolveArtwork("M1_Pi")
                 });
             }
 
@@ -400,6 +433,17 @@ namespace FFF.Battle.FSM
             Debug.Log("[BattleEnd] 타이틀로 돌아갑니다.");
             // 씬 이름은 실제 프로젝트의 Title 씬 이름("TitleScene" 등)으로 맞춰주세요.
             FFF.Core.SceneLoader.LoadScene(FFF.Core.SceneLoader.SceneNames.TITLE);
+        }
+
+        /// <summary>
+        /// 게임 오버 화면의 "메인으로" 버튼에 연결할 콜백입니다. 메인 화면으로 이동합니다.
+        /// </summary>
+        public void OnGoMainButtonClicked()
+        {
+            SoundManager.PlayDefaultUiClick();
+
+            Debug.Log("[BattleEnd] 메인 화면으로 돌아갑니다.");
+            FFF.Core.SceneLoader.LoadScene(FFF.Core.SceneLoader.SceneNames.MAIN);
         }
 
         /// <summary>

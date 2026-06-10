@@ -49,6 +49,8 @@ namespace FFF.Battle.Data
                 AIPatternDescription = string.Empty;
                 MaxHealth = 181;
                 CurrentHealth = 181;
+                BonusStrength = bonusStr;
+                EnemyAILogic = new Enemy_001_AI();
                 RegisterTestGimmick(); // 임시 테스트용 기믹 등록
                 return;
             }
@@ -101,14 +103,30 @@ namespace FFF.Battle.Data
 
             // 현재 Enemy의 상태(this)와 Battle 상황(BattleContext)을 인자로 전달
             // SO에서는 내부 로직에 의해 결정된 2장의 카드를 반환
+            if (EnemyAILogic == null)
+            {
+                Debug.LogWarning($"[EnemyDataBattle] {EnemyId}의 AI가 없어 기본 AI를 사용합니다.");
+                EnemyAILogic = new Enemy_001_AI();
+            }
+
             List<HwaTuCard> pickedCards = EnemyAILogic.DecideCards(this, context);
 
             if (pickedCards == null || pickedCards.Count < 2)
             {
                 List<HwaTuCard> allCards = HwaTuCardDatabase.CreateAllCards();
-                pickedCards[0] = allCards[UnityEngine.Random.Range(0, 1)];
-                pickedCards[1] = allCards[UnityEngine.Random.Range(0, 1)];
+                pickedCards = new List<HwaTuCard>();
+                if (allCards.Count > 0)
+                {
+                    pickedCards.Add(allCards[UnityEngine.Random.Range(0, allCards.Count)]);
+                    pickedCards.Add(allCards[UnityEngine.Random.Range(0, allCards.Count)]);
+                }
                 Debug.Log("[EnemyDataBattle] 내부 Enemy AI 쪽 반환 문제 발생");
+            }
+
+            if (pickedCards.Count < 2)
+            {
+                Debug.LogError("[EnemyDataBattle] 적 의도를 만들 카드 데이터가 부족합니다.");
+                return;
             }
 
             HwaTuCard c1 = pickedCards[0];

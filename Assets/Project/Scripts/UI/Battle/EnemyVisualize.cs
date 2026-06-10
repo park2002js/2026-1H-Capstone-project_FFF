@@ -11,6 +11,22 @@ namespace FFF.UI.Battle
     /// </summary>
     public class EnemyVisualize : MonoBehaviour
     {
+        // 몬스터별 Idle/Attack 이미지 위치·크기 보정값.
+        // (X, Y) = RectTransform.anchoredPosition, (Width, Height) = RectTransform.sizeDelta.
+        // 스프라이트 이름(IdleSprite/AttackSprite) 또는 EnemyId/EnemyName에 키워드가 포함되면 적용된다.
+        private static readonly EnemyImageOverride[] EnemyImageOverrides =
+        {
+            new EnemyImageOverride("MaidenGhost", new Vector2(736f, 260f), new Vector2(584f, 709f)),
+            new EnemyImageOverride("Wolf",        new Vector2(725f, 187f), new Vector2(1033f, 735f)),
+            new EnemyImageOverride("Warrior",     new Vector2(690f, 248f), new Vector2(716f, 792f)),
+            new EnemyImageOverride("Jangseung",   new Vector2(696f, 299f), new Vector2(863f, 918f)),
+            new EnemyImageOverride("WellGhost",   new Vector2(714f, 109f), new Vector2(530f, 543f)),
+            new EnemyImageOverride("Haetae",      new Vector2(739f, 200f), new Vector2(877f, 646f)),
+            new EnemyImageOverride("GrimReaper",  new Vector2(697f, 279f), new Vector2(959f, 844f)),
+            new EnemyImageOverride("Wisp",        new Vector2(718f, 172f), new Vector2(850f, 767f)),
+            new EnemyImageOverride("Crow",        new Vector2(775f, 272f), new Vector2(1067f, 850f)),
+        };
+
         [Header("=== UI 컴포넌트 참조 ===")]
         [Tooltip("평상시 외형을 출력할 UI Image 컴포넌트")]
         [SerializeField] private Image _idleImage;
@@ -38,6 +54,7 @@ namespace FFF.UI.Battle
         private Vector2 _idleBasePosition;
         private Vector2 _attackBasePosition;
         private bool _hasCachedBaseSize;
+        private EnemyDataSO _currentEnemyData;
 
         private void Awake()
         {
@@ -60,6 +77,8 @@ namespace FFF.UI.Battle
                 Debug.LogWarning("[EnemyVisualize] 전달된 EnemyDataSO가 없음.");
                 return;
             }
+
+            _currentEnemyData = enemyData;
 
             // 1. 데이터에 기반하여 UI 이미지 스프라이트 갱신
             if (_idleImage != null) _idleImage.sprite = enemyData.IdleSprite;
@@ -89,6 +108,66 @@ namespace FFF.UI.Battle
             ApplyImageSize(_attackImage, _attackBaseSize * scale);
             ApplyImagePosition(_idleImage, _idleBasePosition + _characterImageOffset);
             ApplyImagePosition(_attackImage, _attackBasePosition + _characterImageOffset);
+
+            // 몬스터별 보정값이 있으면 Idle/Attack 두 이미지 모두 해당 위치·크기로 덮어쓴다.
+            if (TryGetEnemyImageOverride(_currentEnemyData, out Vector2 overridePosition, out Vector2 overrideSize))
+            {
+                ApplyImageSize(_idleImage, overrideSize);
+                ApplyImageSize(_attackImage, overrideSize);
+                ApplyImagePosition(_idleImage, overridePosition);
+                ApplyImagePosition(_attackImage, overridePosition);
+            }
+        }
+
+        private static bool TryGetEnemyImageOverride(EnemyDataSO enemyData, out Vector2 position, out Vector2 size)
+        {
+            position = Vector2.zero;
+            size = Vector2.zero;
+
+            if (enemyData == null)
+                return false;
+
+            foreach (EnemyImageOverride entry in EnemyImageOverrides)
+            {
+                if (MatchesEnemy(enemyData, entry.Keyword))
+                {
+                    position = entry.Position;
+                    size = entry.Size;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool MatchesEnemy(EnemyDataSO enemyData, string keyword)
+        {
+            return ContainsKeyword(enemyData.EnemyId, keyword)
+                || ContainsKeyword(enemyData.EnemyName, keyword)
+                || ContainsKeyword(enemyData.IdleSprite != null ? enemyData.IdleSprite.name : null, keyword)
+                || ContainsKeyword(enemyData.AttackSprite != null ? enemyData.AttackSprite.name : null, keyword);
+        }
+
+        private static bool ContainsKeyword(string value, string keyword)
+        {
+            if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(keyword))
+                return false;
+
+            return value.IndexOf(keyword, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private readonly struct EnemyImageOverride
+        {
+            public readonly string Keyword;
+            public readonly Vector2 Position;
+            public readonly Vector2 Size;
+
+            public EnemyImageOverride(string keyword, Vector2 position, Vector2 size)
+            {
+                Keyword = keyword;
+                Position = position;
+                Size = size;
+            }
         }
 
         private void CacheBaseImageSizes()

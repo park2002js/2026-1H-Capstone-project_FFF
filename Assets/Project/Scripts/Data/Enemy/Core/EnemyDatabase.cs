@@ -20,7 +20,11 @@ namespace FFF.Data
         public static EnemyDataSO FindById(string enemyId)
         {
             var allEnemies = LoadAllEnemies();
-            return allEnemies.Find(e => e.EnemyId == enemyId);
+            EnemyDataSO enemy = allEnemies.Find(e => e.EnemyId == enemyId);
+            if (enemy != null)
+                return enemy;
+
+            return allEnemies.Find(e => e.name == enemyId);
         }
     }
 }

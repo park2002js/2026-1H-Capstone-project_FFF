@@ -17,5 +17,5 @@ MonoBehaviour:
   DisplayName: 20
   Description: "\uB450\uBC88\uC9F8 \uD134\uC5D0\uB9CC \uB9AC\uB864 \uD69F\uC218 +
     2 "
-  Icon: {fileID: 0}
+  Icon: {fileID: 21300000, guid: 3eada804bf40a204cbb41cc2d9c35592, type: 3}
   Price: 0

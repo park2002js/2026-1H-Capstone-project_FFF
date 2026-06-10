@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using FFF.UI.Core;
 using FFF.Audio;
+using FFF.UI.Common;
 
 namespace FFF.UI.Main
 {
@@ -13,18 +14,17 @@ namespace FFF.UI.Main
         private const string NewGameWarningMessage = "이전 플레이 데이터가 초기화됩니다.\n처음부터 다시 시작할까요?";
         private const string SettingsTitle = "환경 설정";
         private const string QualityPrefsKey = "FFF.Settings.Quality";
-        private const string FullscreenPrefsKey = "FFF.Settings.Fullscreen";
         private const string FrameRatePrefsKey = "FFF.Settings.FrameRate";
-        private const string ResolutionWidthPrefsKey = "FFF.Settings.ResolutionWidth";
-        private const string ResolutionHeightPrefsKey = "FFF.Settings.ResolutionHeight";
 
         public Action OnNewGame;
         public Action OnContinue;
+        public Action OnQuit;
 
         [Header("UI 참조")]
         [SerializeField] private Button _newGameButton;
         [SerializeField] private Button _continueButton;
         [SerializeField] private Button _settingsButton;
+        [SerializeField] private Button _quitButton;
 
         private GameObject _newGameConfirmDialog;
         private GameObject _settingsDialog;
@@ -49,6 +49,11 @@ namespace FFF.UI.Main
             {
                 _settingsButton.onClick.AddListener(OnSettingsButton_Clicked);
             }
+
+            if (_quitButton != null)
+            {
+                _quitButton.onClick.AddListener(OnQuitButton_Clicked);
+            }
         }
 
         private void OnNewGameButton_Clicked()
@@ -70,6 +75,13 @@ namespace FFF.UI.Main
             Debug.Log("[MainUI] Settings 버튼 클릭! 환경설정 창을 표시합니다.");
             SoundManager.PlayDefaultUiClick();
             ShowSettingsDialog();
+        }
+
+        private void OnQuitButton_Clicked()
+        {
+            Debug.Log("[MainUI] Quit 버튼 클릭! GameManager로 종료 요청을 전달합니다.");
+            SoundManager.PlayDefaultUiClick();
+            OnQuit?.Invoke();
         }
 
         private void ShowNewGameConfirmDialog()
@@ -203,21 +215,12 @@ namespace FFF.UI.Main
         private void BuildGraphicsSettings(Transform parent)
         {
             CreateSettingsLabel(parent, "해상도", 174f);
-            List<Vector2Int> resolutions = BuildResolutionOptions();
-            List<string> resolutionLabels = new List<string>();
-            for (int i = 0; i < resolutions.Count; i++)
-                resolutionLabels.Add($"{resolutions[i].x} x {resolutions[i].y}");
-
+            List<string> resolutionLabels = GameDisplaySettings.BuildResolutionLabels();
             Dropdown resolutionDropdown = CreateDropdown("Dropdown_Resolution", parent, resolutionLabels,
-                GetCurrentResolutionIndex(resolutions), new Vector2(320f, 42f), new Vector2(70f, 174f));
+                GameDisplaySettings.GetCurrentResolutionIndex(), new Vector2(320f, 42f), new Vector2(70f, 174f));
             resolutionDropdown.onValueChanged.AddListener(index =>
             {
-                if (index < 0 || index >= resolutions.Count) return;
-                Vector2Int resolution = resolutions[index];
-                Screen.SetResolution(resolution.x, resolution.y, Screen.fullScreen);
-                PlayerPrefs.SetInt(ResolutionWidthPrefsKey, resolution.x);
-                PlayerPrefs.SetInt(ResolutionHeightPrefsKey, resolution.y);
-                PlayerPrefs.Save();
+                GameDisplaySettings.ApplyResolutionIndex(index);
             });
 
             CreateSettingsLabel(parent, "화질", 124f);
@@ -239,14 +242,13 @@ namespace FFF.UI.Main
                 PlayerPrefs.Save();
             });
 
-            CreateSettingsLabel(parent, "전체 화면", 74f);
-            Toggle fullscreenToggle = CreateToggle("Toggle_Fullscreen", parent, "사용", Screen.fullScreen,
-                new Vector2(0f, 74f), new Vector2(180f, 34f));
-            fullscreenToggle.onValueChanged.AddListener(isOn =>
+            CreateSettingsLabel(parent, "화면 모드", 74f);
+            List<string> screenModeLabels = GameDisplaySettings.BuildScreenModeLabels();
+            Dropdown screenModeDropdown = CreateDropdown("Dropdown_ScreenMode", parent, screenModeLabels,
+                GameDisplaySettings.GetCurrentScreenModeIndex(), new Vector2(320f, 42f), new Vector2(70f, 74f));
+            screenModeDropdown.onValueChanged.AddListener(index =>
             {
-                Screen.fullScreen = isOn;
-                PlayerPrefs.SetInt(FullscreenPrefsKey, isOn ? 1 : 0);
-                PlayerPrefs.Save();
+                GameDisplaySettings.ApplyScreenModeIndex(index);
             });
 
             CreateSettingsLabel(parent, "프레임 제한", 24f);
@@ -298,19 +300,10 @@ namespace FFF.UI.Main
                 QualitySettings.SetQualityLevel(quality, true);
             }
 
-            if (PlayerPrefs.HasKey(FullscreenPrefsKey))
-                Screen.fullScreen = PlayerPrefs.GetInt(FullscreenPrefsKey) == 1;
-
             if (PlayerPrefs.HasKey(FrameRatePrefsKey))
                 Application.targetFrameRate = PlayerPrefs.GetInt(FrameRatePrefsKey);
 
-            if (PlayerPrefs.HasKey(ResolutionWidthPrefsKey) && PlayerPrefs.HasKey(ResolutionHeightPrefsKey))
-            {
-                int width = PlayerPrefs.GetInt(ResolutionWidthPrefsKey);
-                int height = PlayerPrefs.GetInt(ResolutionHeightPrefsKey);
-                if (width > 0 && height > 0)
-                    Screen.SetResolution(width, height, Screen.fullScreen);
-            }
+            GameDisplaySettings.ApplySaved();
         }
 
         private static void ApplyFrameRate(int frameRate)
@@ -330,39 +323,6 @@ namespace FFF.UI.Main
             }
 
             return 1;
-        }
-
-        private static List<Vector2Int> BuildResolutionOptions()
-        {
-            var options = new List<Vector2Int>();
-            var seen = new HashSet<string>();
-            Resolution[] resolutions = Screen.resolutions;
-
-            for (int i = 0; i < resolutions.Length; i++)
-            {
-                string key = $"{resolutions[i].width}x{resolutions[i].height}";
-                if (seen.Add(key))
-                    options.Add(new Vector2Int(resolutions[i].width, resolutions[i].height));
-            }
-
-            if (options.Count == 0)
-                options.Add(new Vector2Int(Screen.width, Screen.height));
-
-            return options;
-        }
-
-        private static int GetCurrentResolutionIndex(IReadOnlyList<Vector2Int> resolutions)
-        {
-            int width = PlayerPrefs.GetInt(ResolutionWidthPrefsKey, Screen.width);
-            int height = PlayerPrefs.GetInt(ResolutionHeightPrefsKey, Screen.height);
-
-            for (int i = 0; i < resolutions.Count; i++)
-            {
-                if (resolutions[i].x == width && resolutions[i].y == height)
-                    return i;
-            }
-
-            return 0;
         }
 
         private static string ToPercent(float value)

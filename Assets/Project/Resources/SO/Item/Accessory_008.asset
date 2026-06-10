@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: Accessory_008
   Type: 0
-  DisplayName: 8
+  DisplayName: "\uC625\uC1C4"
   Description: "\uB561 \uC870\uD569\uC2DC \uD50C\uB808\uC774\uC5B4 \uCD5C\uC885 \uB370\uBBF8\uC9C0
     + 10"
-  Icon: {fileID: 0}
+  Icon: {fileID: 21300000, guid: c673eec09af27284fa90a19b89be3bc8, type: 3}
   Price: 0

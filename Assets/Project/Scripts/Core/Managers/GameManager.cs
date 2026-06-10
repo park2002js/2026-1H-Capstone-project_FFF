@@ -137,6 +137,7 @@ namespace FFF.Core
         {
             view.OnNewGame  = HandleNewGame;
             view.OnContinue = HandleContinue;
+            view.OnQuit = HandleQuit;
             UIManager.Instance.RegisterScreen(UIScreenNames.MAIN, view);
             UIManager.Instance.ShowScreen(UIScreenNames.MAIN);
             SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.MAIN);
@@ -262,6 +263,17 @@ namespace FFF.Core
                 TryRestoreRunMapFromPlayerData();
 
             SceneLoader.LoadScene(SceneLoader.SceneNames.MAP);
+        }
+
+        private void HandleQuit()
+        {
+            Debug.Log("[GameManager] 게임 종료 요청을 처리합니다.");
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
 
         private void ResetRunMap()
@@ -600,6 +612,7 @@ namespace FFF.Core
             CurrentBattleEntryData = new BattleEntryData
             {
                 TargetEnemyId = targetEnemyId,
+                RoomType = roomType,
                 EnemyBonusHealth = bonusHealth * enemyBonusCount,
                 EnemyBonusStrength = bonusStr * enemyBonusCount,
                 PlayerMasterData = _masterPlayerData

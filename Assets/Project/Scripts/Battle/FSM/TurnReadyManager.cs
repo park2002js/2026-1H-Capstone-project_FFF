@@ -8,6 +8,7 @@ using FFF.Core.Events;
 using FFF.UI.Battle;
 using FFF.Data;
 using FFF.Audio;
+using FFF.Battle.Damage;
 
 namespace FFF.Battle.Managers
 {
@@ -33,6 +34,12 @@ namespace FFF.Battle.Managers
 
         // UI 대기를 위한 비동기 신호기
         private TaskCompletionSource<bool> _mulligan;
+        private CombatCalculator _combatCalculator;
+
+        private void Awake()
+        {
+            _combatCalculator = new CombatCalculator();
+        }
 
         private void OnEnable()
         {
@@ -137,6 +144,33 @@ namespace FFF.Battle.Managers
 
             // 리롤 버튼 상태 갱신
             _battleUI.UpdateRerollState(_deckSystem.RerollsRemaining, _deckSystem.SelectedCards.Count);
+            RefreshExpectedStrengthForProceed();
+        }
+
+        private void RefreshExpectedStrengthForProceed()
+        {
+            if (_battleManager == null || _battleUI == null || _deckSystem == null)
+                return;
+
+            if (_battleManager.CurrentPhase != TurnState.TurnProceed)
+                return;
+
+            var selected = _deckSystem.SelectedCards;
+            if (selected.Count == 2)
+            {
+                int expectedPower = _combatCalculator.Strength.CalculateExpectedStrength(
+                    selected[0],
+                    selected[1],
+                    _battleManager.CurrentModifierContext);
+
+                _battleUI.SetExpectedStrengthText(expectedPower.ToString());
+                _battleUI.SetEndTurnButtonInteractable(true);
+            }
+            else
+            {
+                _battleUI.SetExpectedStrengthText("-");
+                _battleUI.SetEndTurnButtonInteractable(false);
+            }
         }
 
         // UI의 '리롤' 버튼에서 직접 호출하도록 연결할 public 함수

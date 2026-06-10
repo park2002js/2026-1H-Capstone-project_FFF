@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
   m_Name: Enemy_015
   m_EditorClassIdentifier: 
-  EnemyId: Enemy_014
+  EnemyId: Enemy_015
   EnemyName: "\uB561\uAFBC"
   MaxHealth: 500
   AIPatternDescription: "\uC801\uC740 2\uD134\uB9C8\uB2E4 \uB561\uC5D0 \uD574\uB2F9\uD558\uB294
