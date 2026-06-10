@@ -194,6 +194,7 @@ namespace FFF.UI.Battle
         private TextMeshProUGUI _enemyGimmickToastText;
         private CanvasGroup _enemyGimmickToastCanvasGroup;
         private Coroutine _enemyGimmickToastRoutine;
+        private string _enemyGimmickDescription;
         private GameObject _playerHealthBarRoot;
         private TextMeshProUGUI _playerHealthBarText;
         private Image _playerHealthFillImage;
@@ -302,9 +303,43 @@ namespace FFF.UI.Battle
 
         public void ShowEnemyGimmickDescription(string description)
         {
-            if (string.IsNullOrWhiteSpace(description) || !gameObject.activeInHierarchy)
+            string normalizedDescription = NormalizeEnemyGimmickDescription(description);
+            if (string.IsNullOrWhiteSpace(normalizedDescription))
                 return;
 
+            _enemyGimmickDescription = normalizedDescription;
+
+            if (!gameObject.activeInHierarchy)
+                return;
+
+            ShowEnemyGimmickToast(normalizedDescription, autoHide: true);
+        }
+
+        public void ShowStoredEnemyGimmickDescription()
+        {
+            if (string.IsNullOrWhiteSpace(_enemyGimmickDescription) || !gameObject.activeInHierarchy)
+                return;
+
+            ShowEnemyGimmickToast(_enemyGimmickDescription, autoHide: false);
+        }
+
+        public void HideStoredEnemyGimmickDescription()
+        {
+            if (_enemyGimmickToastRoutine != null)
+            {
+                StopCoroutine(_enemyGimmickToastRoutine);
+                _enemyGimmickToastRoutine = null;
+            }
+
+            if (_enemyGimmickToastCanvasGroup != null)
+                _enemyGimmickToastCanvasGroup.alpha = 0f;
+
+            if (_enemyGimmickToast != null)
+                _enemyGimmickToast.SetActive(false);
+        }
+
+        private void ShowEnemyGimmickToast(string description, bool autoHide)
+        {
             EnsureEnemyGimmickToast();
             if (_enemyGimmickToast == null || _enemyGimmickToastText == null || _enemyGimmickToastCanvasGroup == null)
                 return;
@@ -312,10 +347,18 @@ namespace FFF.UI.Battle
             if (_enemyGimmickToastRoutine != null)
                 StopCoroutine(_enemyGimmickToastRoutine);
 
-            _enemyGimmickToastText.text = description.Trim();
+            _enemyGimmickToastText.text = description;
             _enemyGimmickToast.SetActive(true);
             _enemyGimmickToast.transform.SetAsLastSibling();
-            _enemyGimmickToastRoutine = StartCoroutine(PlayEnemyGimmickToast());
+
+            if (autoHide)
+            {
+                _enemyGimmickToastRoutine = StartCoroutine(PlayEnemyGimmickToast());
+                return;
+            }
+
+            _enemyGimmickToastCanvasGroup.alpha = 1f;
+            _enemyGimmickToast.transform.localScale = Vector3.one;
         }
 
         public void SetupItemIcons(IReadOnlyList<ItemBase> accessories, IReadOnlyList<ItemBase> jokers)
@@ -539,6 +582,11 @@ namespace FFF.UI.Battle
             SetStretch(_enemyGimmickToastText.rectTransform, Vector2.zero, Vector2.one, new Vector2(-52f, -46f), new Vector2(0f, -18f));
 
             _enemyGimmickToast.SetActive(false);
+        }
+
+        private static string NormalizeEnemyGimmickDescription(string description)
+        {
+            return string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
         }
 
         private void PositionEnemyGimmickToast()

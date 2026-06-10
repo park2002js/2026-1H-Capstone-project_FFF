@@ -395,6 +395,7 @@ namespace FFF.UI.Main
 
             GameObject template = CreateDropdownTemplate(go.transform, size.x);
             dropdown.template = template.GetComponent<RectTransform>();
+            dropdown.itemText = template.transform.Find("Viewport/Content/Item/Item Label")?.GetComponent<Text>();
 
             dropdown.options.Clear();
             for (int i = 0; i < options.Count; i++)
@@ -474,13 +475,15 @@ namespace FFF.UI.Main
 
             Text itemLabel = CreateAnchoredText("Item Label", item.transform, "", 17, FontStyle.Normal,
                 TextAnchor.MiddleLeft, Color.white, new Vector2(width - 54f, 32f), new Vector2(24f, 0f));
+            itemLabel.rectTransform.anchorMin = Vector2.zero;
+            itemLabel.rectTransform.anchorMax = Vector2.one;
+            itemLabel.rectTransform.offsetMin = new Vector2(42f, 2f);
+            itemLabel.rectTransform.offsetMax = new Vector2(-8f, -2f);
+            itemLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+            itemLabel.verticalOverflow = VerticalWrapMode.Truncate;
 
             scrollRect.viewport = viewportRect;
             scrollRect.content = contentRect;
-
-            Dropdown dropdown = parent.GetComponent<Dropdown>();
-            if (dropdown != null)
-                dropdown.itemText = itemLabel;
 
             template.SetActive(false);
             return template;

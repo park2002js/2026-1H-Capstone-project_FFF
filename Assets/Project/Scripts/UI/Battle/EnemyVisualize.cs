@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using FFF.Data;
 using FFF.UI.Animation;
@@ -98,6 +100,12 @@ namespace FFF.UI.Battle
             {
                 Debug.LogWarning("[EnemyVisualize] BattleAnimationController 참조가 누락되어 연출 주입 불가함.");
             }
+        }
+
+        public void ConfigureGimmickHover(Action onPointerEnter, Action onPointerExit)
+        {
+            ConfigureGimmickHoverTarget(_idleImage, onPointerEnter, onPointerExit);
+            ConfigureGimmickHoverTarget(_attackImage, onPointerEnter, onPointerExit);
         }
 
         private void ApplyCharacterImageScale()
@@ -213,6 +221,42 @@ namespace FFF.UI.Battle
                 return;
 
             image.rectTransform.anchoredPosition = position;
+        }
+
+        private static void ConfigureGimmickHoverTarget(Image image, Action onPointerEnter, Action onPointerExit)
+        {
+            if (image == null)
+                return;
+
+            image.raycastTarget = true;
+
+            EnemyGimmickHoverTrigger trigger = image.GetComponent<EnemyGimmickHoverTrigger>();
+            if (trigger == null)
+                trigger = image.gameObject.AddComponent<EnemyGimmickHoverTrigger>();
+
+            trigger.SetHandlers(onPointerEnter, onPointerExit);
+        }
+    }
+
+    public sealed class EnemyGimmickHoverTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    {
+        private Action _onPointerEnter;
+        private Action _onPointerExit;
+
+        public void SetHandlers(Action onPointerEnter, Action onPointerExit)
+        {
+            _onPointerEnter = onPointerEnter;
+            _onPointerExit = onPointerExit;
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _onPointerEnter?.Invoke();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _onPointerExit?.Invoke();
         }
     }
 }

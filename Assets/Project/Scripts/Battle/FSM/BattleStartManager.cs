@@ -112,6 +112,12 @@ namespace FFF.Battle.Managers
                 _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
                 _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
                 _battleUI.ShowEnemyGimmickDescription(_enemyDataBattle.AIPatternDescription);
+                if (_enemyVisualize != null)
+                {
+                    _enemyVisualize.ConfigureGimmickHover(
+                        _battleUI.ShowStoredEnemyGimmickDescription,
+                        _battleUI.HideStoredEnemyGimmickDescription);
+                }
 
                 // Manager가 관리하는 ItemBase 객체 리스트를 UI로 직접 전달
                 _battleUI.SetJokerClickHandler(_jokerManager.HandleJokerClicked);

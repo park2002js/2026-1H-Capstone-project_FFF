@@ -36,9 +36,9 @@ namespace FFF.UI.Common
             Stretch(arrow.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f),
                 new Vector2(-42f, 0f), new Vector2(-8f, 0f));
 
-            GameObject template = CreateDropdownTemplate(go.transform, size.x);
+            GameObject template = CreateDropdownTemplate(go.transform, size.x, out TextMeshProUGUI itemLabel);
             dropdown.template = template.GetComponent<RectTransform>();
-            dropdown.itemText = template.transform.Find("Viewport/Content/Item/Item Label")?.GetComponent<TextMeshProUGUI>();
+            dropdown.itemText = itemLabel;
 
             dropdown.options.Clear();
             for (int i = 0; i < options.Count; i++)
@@ -49,7 +49,7 @@ namespace FFF.UI.Common
             return dropdown;
         }
 
-        private static GameObject CreateDropdownTemplate(Transform parent, float width)
+        private static GameObject CreateDropdownTemplate(Transform parent, float width, out TextMeshProUGUI itemLabel)
         {
             GameObject template = CreateUIObject("Template", parent);
             RectTransform templateRect = template.GetComponent<RectTransform>();
@@ -111,9 +111,11 @@ namespace FFF.UI.Common
             checkImage.color = new Color(1f, 0.84f, 0.08f, 1f);
             itemToggle.graphic = checkImage;
 
-            TextMeshProUGUI itemLabel = CreateText("Item Label", item.transform, string.Empty, 17,
+            itemLabel = CreateText("Item Label", item.transform, string.Empty, 17,
                 TextAlignmentOptions.MidlineLeft, FontStyles.Normal);
             Stretch(itemLabel.rectTransform, Vector2.zero, Vector2.one, new Vector2(42f, 2f), new Vector2(-8f, -2f));
+            itemLabel.textWrappingMode = TextWrappingModes.NoWrap;
+            itemLabel.overflowMode = TextOverflowModes.Overflow;
 
             scrollRect.viewport = viewportRect;
             scrollRect.content = contentRect;
