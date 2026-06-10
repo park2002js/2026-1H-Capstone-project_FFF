@@ -1232,8 +1232,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC218\uB9CE\uC740 \uD328\uC640 \uC120\uD0DD \uB05D\uC5D0, \uAE34 \uC2B9\uBD80\uAC00
-    \uB9C9\uC744 \uB0B4\uB838\uB2E4."
+  m_text: "\uADC0\uB9C8\uB97C \uBB3C\uB9AC\uCE58\uACE0, \uC138\uC0C1\uC740 \uD3C9\uD654\uB97C
+    \uB418\uCC3E\uC558\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72d3f74e05b88a84f8413055dc1d472c, type: 2}
   m_sharedMaterial: {fileID: -2104600595238321505, guid: 72d3f74e05b88a84f8413055dc1d472c, type: 2}

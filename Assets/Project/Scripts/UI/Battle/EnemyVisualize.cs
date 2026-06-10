@@ -21,6 +21,7 @@ namespace FFF.UI.Battle
             new EnemyImageOverride("Warrior",     new Vector2(690f, 248f), new Vector2(716f, 792f)),
             new EnemyImageOverride("Jangseung",   new Vector2(696f, 299f), new Vector2(863f, 918f)),
             new EnemyImageOverride("WellGhost",   new Vector2(714f, 109f), new Vector2(530f, 543f)),
+            new EnemyImageOverride("Elite",       new Vector2(735f, 211f), new Vector2(584f, 646f)),
             new EnemyImageOverride("Haetae",      new Vector2(739f, 200f), new Vector2(877f, 646f)),
             new EnemyImageOverride("GrimReaper",  new Vector2(697f, 279f), new Vector2(959f, 844f)),
             new EnemyImageOverride("Wisp",        new Vector2(718f, 172f), new Vector2(850f, 767f)),

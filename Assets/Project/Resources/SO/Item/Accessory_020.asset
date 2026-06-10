@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: Accessory_020
   Type: 0
-  DisplayName: 20
+  DisplayName: "\uC1A1\uACF3\uB2C8"
   Description: "\uB450\uBC88\uC9F8 \uD134\uC5D0\uB9CC \uB9AC\uB864 \uD69F\uC218 +
     2 "
-  Icon: {fileID: 21300000, guid: 3eada804bf40a204cbb41cc2d9c35592, type: 3}
-  Price: 0
+  Icon: {fileID: 21300000, guid: 616063906b405fa42a240a0927604378, type: 3}
+  Price: 140

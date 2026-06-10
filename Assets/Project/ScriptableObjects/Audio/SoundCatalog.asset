@@ -58,6 +58,11 @@ MonoBehaviour:
     _bus: 1
     _defaultVolume: 0.6
     _loop: 1
+  - _soundId: sfx_ending
+    _clip: {fileID: 8300000, guid: 9b275323692708448ab4788524b04848, type: 3}
+    _bus: 1
+    _defaultVolume: 0.55
+    _loop: 1
   - _soundId: sfx_scene_transition
     _clip: {fileID: 0}
     _bus: 2

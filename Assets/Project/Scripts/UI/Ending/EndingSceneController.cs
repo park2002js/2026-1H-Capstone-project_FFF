@@ -43,6 +43,8 @@ namespace FFF.UI.Ending
 
         private void Start()
         {
+            SoundManager.EnsureExists().PlaySceneBgm(SceneLoader.SceneNames.ENDING);
+
             if (HasRequiredReferences())
                 StartCoroutine(PlayEndingSequence());
         }

@@ -12,6 +12,7 @@ namespace FFF.Audio
         public const string BgmMap = "bgm_map";
         public const string BgmShop = "bgm_shop";
         public const string BgmBattle = "bgm_battle";
+        public const string BgmEnding = "sfx_ending";
 
         public const string SfxSceneTransition = "sfx_scene_transition";
 
@@ -91,6 +92,8 @@ namespace FFF.Audio
                     return BgmShop;
                 case "BattleScene":
                     return BgmBattle;
+                case "EndingScene":
+                    return BgmEnding;
                 default:
                     return null;
             }

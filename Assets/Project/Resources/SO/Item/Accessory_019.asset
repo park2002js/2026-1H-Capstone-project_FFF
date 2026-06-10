@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: Accessory_019
   Type: 0
-  DisplayName: 19
+  DisplayName: "\uBC29\uC6B8"
   Description: "\uCCAB \uD134\uC5D0\uB9CC \uB9AC\uB864\uD69F\uC218 + 1"
-  Icon: {fileID: 21300000, guid: 3eada804bf40a204cbb41cc2d9c35592, type: 3}
-  Price: 0
+  Icon: {fileID: 21300000, guid: 549c96e88ec67d84699e03069779dfdd, type: 3}
+  Price: 150
