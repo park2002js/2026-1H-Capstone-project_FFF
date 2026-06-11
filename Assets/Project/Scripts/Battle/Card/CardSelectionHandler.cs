@@ -1,4 +1,5 @@
 using UnityEngine;
+using FFF.Data;
 
 namespace FFF.Battle.Card
 {
@@ -64,7 +65,7 @@ namespace FFF.Battle.Card
         /// 백로그 5번: 최종 선택 카드 2장
         /// </summary>
         /// <returns>선택 성공 여부</returns>
-        public bool SelectCard(Data.HwaTuCard card)
+        public bool SelectCard(HwaTuCard card)
         {
             if (IsSelectionComplete)
             {
@@ -89,7 +90,7 @@ namespace FFF.Battle.Card
         /// "이 카드 선택 취소할게"
         /// </summary>
         /// <returns>해제 성공 여부</returns>
-        public bool DeselectCard(Data.HwaTuCard card)
+        public bool DeselectCard(HwaTuCard card)
         {
             if (!_pile.MoveSelectedToHand(card))
             {

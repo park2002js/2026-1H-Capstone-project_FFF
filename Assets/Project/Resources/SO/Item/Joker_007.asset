@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c052ec099ac93ea4faa81faac3336931, type: 3}
+  m_Name: Joker_007
+  m_EditorClassIdentifier: 
+  Id: Joker_007
+  Type: 1
+  DisplayName: "\uD574\uD0DC"
+  Description: "\uC0AC\uC6A9\uC2DC, \uB2E4\uC74C \uD134\uC5D0 \uCE74\uB4DC\uB97C
+    3\uC7A5 \uB354 \uB4DC\uB85C\uC6B0 \uD568"
+  Icon: {fileID: 21300000, guid: b21f44be98463b54fb7ec4870c7fd957, type: 3}
+  Price: 1

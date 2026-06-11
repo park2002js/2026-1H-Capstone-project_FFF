@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using FFF.Core.Events;
+using FFF.Data;
+using FFF.Audio;
 
 namespace FFF.Battle.Card
 {
@@ -73,7 +75,7 @@ namespace FFF.Battle.Card
         private int _usedRerollsThisTurn = 0;
  
         /// <summary>장신구 등 외부 효과에 의한 가중치 드로우 함수.</summary>
-        private Func<Data.HwaTuCard, float> _drawWeightFunc = null;
+        private Func<HwaTuCard, float> _drawWeightFunc = null;
 
         /// <summary> ModifierManager로부터 주입받을 보너스 수치들 </summary>
         private int _bonusMaxRerolls = 0;
@@ -86,16 +88,16 @@ namespace FFF.Battle.Card
         // CardPile 데이터를 그대로 노출. 외부는 CardPile의 존재를 모른다.
 
         /// <summary>뽑을 화투패 산. 읽기 전용.</summary>
-        public IReadOnlyList<Data.HwaTuCard> DrawPile => _pile.DrawPile;
+        public IReadOnlyList<HwaTuCard> DrawPile => _pile.DrawPile;
 
         /// <summary>현재 손패. 읽기 전용.</summary>
-        public IReadOnlyList<Data.HwaTuCard> Hand => _pile.Hand;
+        public IReadOnlyList<HwaTuCard> Hand => _pile.Hand;
 
         /// <summary>최종 선택된 카드. 읽기 전용.</summary>
-        public IReadOnlyList<Data.HwaTuCard> SelectedCards => _pile.SelectedCards;
+        public IReadOnlyList<HwaTuCard> SelectedCards => _pile.SelectedCards;
 
         /// <summary>버려진 화투패 산 (묘지). 읽기 전용.</summary>
-        public IReadOnlyList<Data.HwaTuCard> DiscardPile => _pile.DiscardPile;
+        public IReadOnlyList<HwaTuCard> DiscardPile => _pile.DiscardPile;
 
 
         /// <summary> 최종 최대 리롤 횟수 (기본값 + 외부 주입 보너스) </summary>
@@ -144,7 +146,7 @@ namespace FFF.Battle.Card
         /// 장신구 등 외부 효과에서 호출. Initialize() 시 CardDrawHandler에 전달된다.
         /// null로 설정하면 균등 드로우로 복귀.
         /// </summary>
-        public void SetDrawWeightFunc(Func<Data.HwaTuCard, float> func)
+        public void SetDrawWeightFunc(Func<HwaTuCard, float> func)
         {
             _drawWeightFunc = func;
             Debug.Log($"[DeckSystem] 가중치 드로우 함수 {(func != null ? "설정" : "해제")}");
@@ -160,7 +162,7 @@ namespace FFF.Battle.Card
         /// 호출자: 초기화 로직 (BattleScene 진입 시)
         /// "이 카드들로 전투 준비해" → 내부에서 알아서 세팅.
         /// </summary>
-        public void Initialize(List<Data.HwaTuCard> allCards, int seed = -1)
+        public void Initialize(List<HwaTuCard> allCards, int seed = -1)
         {
             // 하위 시스템 생성
             _pile = new CardPile();
@@ -193,9 +195,25 @@ namespace FFF.Battle.Card
         /// 카드 k장을 드로우한다.
         /// CardDrawHandler에게 위임. SO Event 발행.
         /// </summary>
-        public List<Data.HwaTuCard> DrawCards()
+        public List<HwaTuCard> DrawCards()
         {
             var drawn = _drawHandler.DrawCards(TotalDrawCount);
+            if (drawn.Count > 0)
+                SoundManager.PlaySfxSound(SoundIds.SfxCardDraw);
+
+            _onCardsDrawn?.Raise();
+            return drawn;
+        }
+
+        /// <summary>
+        /// 지정한 수량만큼 즉시 드로우한다. (조커 등 특수 효과용)
+        /// </summary>
+        public List<HwaTuCard> DrawCards(int count)
+        {
+            var drawn = _drawHandler.DrawCards(count);
+            if (drawn.Count > 0)
+                SoundManager.PlaySfxSound(SoundIds.SfxCardDraw);
+
             _onCardsDrawn?.Raise();
             return drawn;
         }
@@ -204,13 +222,13 @@ namespace FFF.Battle.Card
         /// 리롤을 수행한다.
         /// CardDrawHandler에게 위임. SO Event 발행.
         /// </summary>
-        public List<Data.HwaTuCard> Reroll(List<Data.HwaTuCard> cardsToReturn)
+        public List<HwaTuCard> Reroll(List<HwaTuCard> cardsToReturn)
         {
             // 리롤 전 검증
             if (!CanReroll)
             {
                 Debug.LogWarning("[DeckSystem] 리롤 기회가 없습니다.");
-                return new List<Data.HwaTuCard>();
+                return new List<HwaTuCard>();
             }
 
             var redrawn = _drawHandler.Reroll(cardsToReturn);
@@ -219,6 +237,7 @@ namespace FFF.Battle.Card
             {
                 // 리롤 성공 시 사용 횟수 증가
                 _usedRerollsThisTurn++;
+                SoundManager.PlaySfxSound(SoundIds.SfxCardReroll);
                 _onRerolled?.Raise();
             }
 
@@ -233,12 +252,13 @@ namespace FFF.Battle.Card
         /// 손패에서 카드를 선택한다.
         /// CardSelectionHandler에게 위임. SO Event 발행.
         /// </summary>
-        public bool SelectCard(Data.HwaTuCard card)
+        public bool SelectCard(HwaTuCard card)
         {
             bool success = _selectionHandler.SelectCard(card);
 
             if (success)
             {
+                SoundManager.PlaySfxSound(SoundIds.SfxCardSelect);
                 _onSelectionChanged?.Raise();
             }
 
@@ -249,12 +269,15 @@ namespace FFF.Battle.Card
         /// 카드 선택을 해제한다.
         /// CardSelectionHandler에게 위임. SO Event 발행.
         /// </summary>
-        public bool DeselectCard(Data.HwaTuCard card)
+        public bool DeselectCard(HwaTuCard card, bool playSound = true)
         {
             bool success = _selectionHandler.DeselectCard(card);
 
             if (success)
             {
+                if (playSound)
+                    SoundManager.PlaySfxSound(SoundIds.SfxCardDeselect);
+
                 _onSelectionChanged?.Raise();
             }
 
@@ -273,10 +296,10 @@ namespace FFF.Battle.Card
         public void DeselectAllCards()
         {
             // 컬렉션 순회 중 삭제(Remove)가 발생하므로, 복사본(List)을 만들어 안전하게 순회합니다.
-            var cardsToDeselect = new List<Data.HwaTuCard>(SelectedCards);
+            var cardsToDeselect = new List<HwaTuCard>(SelectedCards);
             foreach (var card in cardsToDeselect)
             {
-                DeselectCard(card);
+                DeselectCard(card, playSound: false);
             }
             Debug.Log($"[DeckSystem] 모든 카드 선택 해제 완료. (Hand: {Hand.Count}장)");
         }
@@ -290,6 +313,7 @@ namespace FFF.Battle.Card
         {
             // 1. 카드 묘지로 이동
             _drawHandler.MoveAllToDiscard(); 
+            SoundManager.PlaySfxSound(SoundIds.SfxCardDiscard);
 
             _onTurnCleanedUp?.Raise();
             Debug.Log($"[DeckSystem] 턴 정리 완료. {this}");

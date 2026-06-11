@@ -1,0 +1,1391 @@
+fileFormatVersion: 2
+guid: 3e22c28ee384fed4eb833b4deacc3a98
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 278443811231408618
+    second: WispAttack_0
+  - first:
+      213: -1329812962209979625
+    second: WispAttack_1
+  - first:
+      213: 7508938468481889820
+    second: WispAttack_2
+  - first:
+      213: 2634932693723111667
+    second: WispAttack_3
+  - first:
+      213: -1257751911063963817
+    second: WispAttack_4
+  - first:
+      213: 8413639509117457997
+    second: WispAttack_5
+  - first:
+      213: 8094808211878605247
+    second: WispAttack_6
+  - first:
+      213: 153530576321421493
+    second: WispAttack_7
+  - first:
+      213: -1405564639152247633
+    second: WispAttack_8
+  - first:
+      213: 3641804944680942112
+    second: WispAttack_9
+  - first:
+      213: -1364767437747809511
+    second: WispAttack_10
+  - first:
+      213: 4008271920915322374
+    second: WispAttack_11
+  - first:
+      213: 41330988807913139
+    second: WispAttack_12
+  - first:
+      213: -5615197466028738071
+    second: WispAttack_13
+  - first:
+      213: 29866906931831214
+    second: WispAttack_14
+  - first:
+      213: -2435305504262283124
+    second: WispAttack_15
+  - first:
+      213: 256316035218225886
+    second: WispAttack_16
+  - first:
+      213: -5260254106316233092
+    second: WispAttack_17
+  - first:
+      213: -5505209476177902
+    second: WispAttack_18
+  - first:
+      213: -6147479366576135458
+    second: WispAttack_19
+  - first:
+      213: 8621111337413230803
+    second: WispAttack_20
+  - first:
+      213: -5044410056271500900
+    second: WispAttack_21
+  - first:
+      213: -2920050419982404279
+    second: WispAttack_22
+  - first:
+      213: -4332157406421066061
+    second: WispAttack_23
+  - first:
+      213: -8098568443809403335
+    second: WispAttack_24
+  - first:
+      213: -7790009163555536453
+    second: WispAttack_25
+  - first:
+      213: 8093812963810156740
+    second: WispAttack_26
+  - first:
+      213: -8854651137731619113
+    second: WispAttack_27
+  - first:
+      213: 5110457126130020392
+    second: WispAttack_28
+  - first:
+      213: 7694977431912760144
+    second: WispAttack_29
+  - first:
+      213: -2075198856565758333
+    second: WispAttack_30
+  - first:
+      213: 7298577143648232783
+    second: WispAttack_31
+  - first:
+      213: -743492827844042690
+    second: WispAttack_32
+  - first:
+      213: -3023255800196618221
+    second: WispAttack_33
+  - first:
+      213: 8774917137993096854
+    second: WispAttack_34
+  - first:
+      213: -3388007878770843902
+    second: WispAttack_35
+  - first:
+      213: -9039061665912190395
+    second: WispAttack_36
+  - first:
+      213: 6894148582299636433
+    second: WispAttack_37
+  - first:
+      213: -2036379887628159571
+    second: WispAttack_38
+  - first:
+      213: 7576481902904684232
+    second: WispAttack_39
+  - first:
+      213: -4169284238969131737
+    second: WispAttack_40
+  - first:
+      213: -7200847971784094931
+    second: WispAttack_41
+  - first:
+      213: -2727618970177810479
+    second: WispAttack_42
+  - first:
+      213: -3316504408423290719
+    second: WispAttack_43
+  - first:
+      213: 7735886970101416388
+    second: WispAttack_44
+  - first:
+      213: -4120415796333776063
+    second: WispAttack_45
+  - first:
+      213: 7858539565127237314
+    second: WispAttack_46
+  - first:
+      213: -2209973139343515361
+    second: WispAttack_47
+  - first:
+      213: -2354005737292253076
+    second: WispAttack_48
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: WispAttack_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 0
+        width: 1214
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae1aa5acb2b3dd300800000000000000
+      internalID: 278443811231408618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_1
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 975
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 713a3c1182e8b8de0800000000000000
+      internalID: -1329812962209979625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_2
+      rect:
+        serializedVersion: 2
+        x: 1211
+        y: 699
+        width: 302
+        height: 325
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c16f026c0cb153860800000000000000
+      internalID: 7508938468481889820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_3
+      rect:
+        serializedVersion: 2
+        x: 834
+        y: 963
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f0ed601359219420800000000000000
+      internalID: 2634932693723111667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_4
+      rect:
+        serializedVersion: 2
+        x: 878
+        y: 962
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 757b67dfc419b8ee0800000000000000
+      internalID: -1257751911063963817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_5
+      rect:
+        serializedVersion: 2
+        x: 1231
+        y: 769
+        width: 10
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4653216e8043c470800000000000000
+      internalID: 8413639509117457997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_6
+      rect:
+        serializedVersion: 2
+        x: 1327
+        y: 769
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb170f93e29865070800000000000000
+      internalID: 8094808211878605247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_7
+      rect:
+        serializedVersion: 2
+        x: 1334
+        y: 759
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b0acc7ee33712200800000000000000
+      internalID: 153530576321421493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_8
+      rect:
+        serializedVersion: 2
+        x: 1231
+        y: 753
+        width: 13
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: facea7e586e6e7ce0800000000000000
+      internalID: -1405564639152247633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_9
+      rect:
+        serializedVersion: 2
+        x: 1059
+        y: 0
+        width: 477
+        height: 742
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02af7f45d4a4a8230800000000000000
+      internalID: 3641804944680942112
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_10
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 742
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91395080f3f5f0de0800000000000000
+      internalID: -1364767437747809511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_11
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 736
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6069459431e30a730800000000000000
+      internalID: 4008271920915322374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_12
+      rect:
+        serializedVersion: 2
+        x: 1287
+        y: 738
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3be7c1ab056d29000800000000000000
+      internalID: 41330988807913139
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_13
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 734
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e9feadb7afc212b0800000000000000
+      internalID: -5615197466028738071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_14
+      rect:
+        serializedVersion: 2
+        x: 1435
+        y: 673
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea1263a2bcb1a6000800000000000000
+      internalID: 29866906931831214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_15
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 654
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c80a4e2fb8e043ed0800000000000000
+      internalID: -2435305504262283124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_16
+      rect:
+        serializedVersion: 2
+        x: 1430
+        y: 647
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eda3b65731e9e8300800000000000000
+      internalID: 256316035218225886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_17
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 638
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c762bb4a2c2dff6b0800000000000000
+      internalID: -5260254106316233092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_18
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 622
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21022c88a017ceff0800000000000000
+      internalID: -5505209476177902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_19
+      rect:
+        serializedVersion: 2
+        x: 1423
+        y: 607
+        width: 11
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed2af2b3614cfaaa0800000000000000
+      internalID: -6147479366576135458
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_20
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 518
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d0cb93b51754a770800000000000000
+      internalID: 8621111337413230803
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_21
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 406
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c99678eb7c7aef9b0800000000000000
+      internalID: -5044410056271500900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_22
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 390
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 945f7b63d95e977d0800000000000000
+      internalID: -2920050419982404279
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_23
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 385
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bed137aac511e3c0800000000000000
+      internalID: -4332157406421066061
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_24
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 350
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93e6d8d88ea1c9f80800000000000000
+      internalID: -8098568443809403335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_25
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 332
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb10c3160f354e390800000000000000
+      internalID: -7790009163555536453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_26
+      rect:
+        serializedVersion: 2
+        x: 271
+        y: 337
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c02b5af100035070800000000000000
+      internalID: 8093812963810156740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_27
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 326
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d69f7544b5fd1580800000000000000
+      internalID: -8854651137731619113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_28
+      rect:
+        serializedVersion: 2
+        x: 1185
+        y: 311
+        width: 8
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 820f7da0eadfbe640800000000000000
+      internalID: 5110457126130020392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_29
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 310
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 053cecf543d0aca60800000000000000
+      internalID: 7694977431912760144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_30
+      rect:
+        serializedVersion: 2
+        x: 1170
+        y: 311
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 386e91482a96333e0800000000000000
+      internalID: -2075198856565758333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_31
+      rect:
+        serializedVersion: 2
+        x: 1176
+        y: 311
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4520fc1e31c94560800000000000000
+      internalID: 7298577143648232783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_32
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 302
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e302e4756359ea5f0800000000000000
+      internalID: -743492827844042690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_33
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 282
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 318242c1edc3b06d0800000000000000
+      internalID: -3023255800196618221
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_34
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 244
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69ed09f35a4c6c970800000000000000
+      internalID: 8774917137993096854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_35
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 222
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20f93a1e8c06bf0d0800000000000000
+      internalID: -3388007878770843902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_36
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 198
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54a047c4e4dce8280800000000000000
+      internalID: -9039061665912190395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_37
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 200
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d29bbcdb9fecaf50800000000000000
+      internalID: 6894148582299636433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_38
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 182
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da57c2a08435db3e0800000000000000
+      internalID: -2036379887628159571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_39
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 174
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ce2fc51622152960800000000000000
+      internalID: 7576481902904684232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_40
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 142
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72d2c90131ab326c0800000000000000
+      internalID: -4169284238969131737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_41
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 102
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2b8730ebe2711c90800000000000000
+      internalID: -7200847971784094931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_42
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 104
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1df4fe78ffc852ad0800000000000000
+      internalID: -2727618970177810479
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_43
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 86
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a8a9e7efc869f1d0800000000000000
+      internalID: -3316504408423290719
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_44
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 70
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c1c77b76346b5b60800000000000000
+      internalID: 7735886970101416388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_45
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 36
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 143fd940aa751d6c0800000000000000
+      internalID: -4120415796333776063
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_46
+      rect:
+        serializedVersion: 2
+        x: 1041
+        y: 39
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2cef2c029142f0d60800000000000000
+      internalID: 7858539565127237314
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_47
+      rect:
+        serializedVersion: 2
+        x: 994
+        y: 24
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f11664283299451e0800000000000000
+      internalID: -2209973139343515361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WispAttack_48
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 12
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c68b6750144e45fd0800000000000000
+      internalID: -2354005737292253076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      WispAttack_0: 278443811231408618
+      WispAttack_1: -1329812962209979625
+      WispAttack_10: -1364767437747809511
+      WispAttack_11: 4008271920915322374
+      WispAttack_12: 41330988807913139
+      WispAttack_13: -5615197466028738071
+      WispAttack_14: 29866906931831214
+      WispAttack_15: -2435305504262283124
+      WispAttack_16: 256316035218225886
+      WispAttack_17: -5260254106316233092
+      WispAttack_18: -5505209476177902
+      WispAttack_19: -6147479366576135458
+      WispAttack_2: 7508938468481889820
+      WispAttack_20: 8621111337413230803
+      WispAttack_21: -5044410056271500900
+      WispAttack_22: -2920050419982404279
+      WispAttack_23: -4332157406421066061
+      WispAttack_24: -8098568443809403335
+      WispAttack_25: -7790009163555536453
+      WispAttack_26: 8093812963810156740
+      WispAttack_27: -8854651137731619113
+      WispAttack_28: 5110457126130020392
+      WispAttack_29: 7694977431912760144
+      WispAttack_3: 2634932693723111667
+      WispAttack_30: -2075198856565758333
+      WispAttack_31: 7298577143648232783
+      WispAttack_32: -743492827844042690
+      WispAttack_33: -3023255800196618221
+      WispAttack_34: 8774917137993096854
+      WispAttack_35: -3388007878770843902
+      WispAttack_36: -9039061665912190395
+      WispAttack_37: 6894148582299636433
+      WispAttack_38: -2036379887628159571
+      WispAttack_39: 7576481902904684232
+      WispAttack_4: -1257751911063963817
+      WispAttack_40: -4169284238969131737
+      WispAttack_41: -7200847971784094931
+      WispAttack_42: -2727618970177810479
+      WispAttack_43: -3316504408423290719
+      WispAttack_44: 7735886970101416388
+      WispAttack_45: -4120415796333776063
+      WispAttack_46: 7858539565127237314
+      WispAttack_47: -2209973139343515361
+      WispAttack_48: -2354005737292253076
+      WispAttack_5: 8413639509117457997
+      WispAttack_6: 8094808211878605247
+      WispAttack_7: 153530576321421493
+      WispAttack_8: -1405564639152247633
+      WispAttack_9: 3641804944680942112
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

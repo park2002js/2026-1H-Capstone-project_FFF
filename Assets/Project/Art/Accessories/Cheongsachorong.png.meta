@@ -1,0 +1,663 @@
+fileFormatVersion: 2
+guid: 08ed37d87eda548488364ac2fb2ecdd2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7589958211629341349
+    second: Cheongsachorong_0
+  - first:
+      213: -648289779317639980
+    second: Cheongsachorong_1
+  - first:
+      213: 6094853132413744827
+    second: Cheongsachorong_2
+  - first:
+      213: 2341952451230618235
+    second: Cheongsachorong_3
+  - first:
+      213: 1454082931417918103
+    second: Cheongsachorong_4
+  - first:
+      213: -8012891494937855370
+    second: Cheongsachorong_5
+  - first:
+      213: 5492465320369529875
+    second: Cheongsachorong_6
+  - first:
+      213: 2890656160185652045
+    second: Cheongsachorong_7
+  - first:
+      213: -7792860821985637498
+    second: Cheongsachorong_8
+  - first:
+      213: 5370395951459210203
+    second: Cheongsachorong_9
+  - first:
+      213: 3352553304304470347
+    second: Cheongsachorong_10
+  - first:
+      213: 398828855259708522
+    second: Cheongsachorong_11
+  - first:
+      213: 1861615600142344107
+    second: Cheongsachorong_12
+  - first:
+      213: -533500750380406552
+    second: Cheongsachorong_13
+  - first:
+      213: -3769904761533630934
+    second: Cheongsachorong_14
+  - first:
+      213: 8282669997657258853
+    second: Cheongsachorong_15
+  - first:
+      213: 5274310976980596175
+    second: Cheongsachorong_16
+  - first:
+      213: -7393827368672465394
+    second: Cheongsachorong_17
+  - first:
+      213: 8346139200245186044
+    second: Cheongsachorong_18
+  - first:
+      213: 5378609014453854330
+    second: Cheongsachorong_19
+  - first:
+      213: -6979461385775139277
+    second: Cheongsachorong_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Cheongsachorong_0
+      rect:
+        serializedVersion: 2
+        x: 523
+        y: 770
+        width: 377
+        height: 394
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5526c7483d0ba690800000000000000
+      internalID: -7589958211629341349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_1
+      rect:
+        serializedVersion: 2
+        x: 854
+        y: 1164
+        width: 46
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d4714861efc007f0800000000000000
+      internalID: -648289779317639980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_2
+      rect:
+        serializedVersion: 2
+        x: 486
+        y: 909
+        width: 56
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb6b2bbc1a4459450800000000000000
+      internalID: 6094853132413744827
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_3
+      rect:
+        serializedVersion: 2
+        x: 505
+        y: 944
+        width: 42
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b72d470a859408020800000000000000
+      internalID: 2341952451230618235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_4
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 867
+        width: 73
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79aaf19d8b0fd2410800000000000000
+      internalID: 1454082931417918103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_5
+      rect:
+        serializedVersion: 2
+        x: 481
+        y: 904
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67afa74b3ad7cc090800000000000000
+      internalID: -8012891494937855370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_6
+      rect:
+        serializedVersion: 2
+        x: 435
+        y: 471
+        width: 308
+        height: 418
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31427c9cb18293c40800000000000000
+      internalID: 5492465320369529875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_7
+      rect:
+        serializedVersion: 2
+        x: 457
+        y: 464
+        width: 44
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4319ab567cad1820800000000000000
+      internalID: 2890656160185652045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_8
+      rect:
+        serializedVersion: 2
+        x: 505
+        y: 453
+        width: 8
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68bcc79ee523ad390800000000000000
+      internalID: -7792860821985637498
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_9
+      rect:
+        serializedVersion: 2
+        x: 523
+        y: 465
+        width: 141
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd31ced0aaa778a40800000000000000
+      internalID: 5370395951459210203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_10
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 453
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4941a9b779a68e20800000000000000
+      internalID: 3352553304304470347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_11
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 453
+        width: 8
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6c3ee31bbce88500800000000000000
+      internalID: 398828855259708522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_12
+      rect:
+        serializedVersion: 2
+        x: 481
+        y: 394
+        width: 60
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: baf5fca6689c5d910800000000000000
+      internalID: 1861615600142344107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_13
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 435
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e8eb26e4ef9898f0800000000000000
+      internalID: -533500750380406552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_14
+      rect:
+        serializedVersion: 2
+        x: 557
+        y: 405
+        width: 68
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a26fbbbd79b9eabc0800000000000000
+      internalID: -3769904761533630934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_15
+      rect:
+        serializedVersion: 2
+        x: 645
+        y: 400
+        width: 55
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56b752aba74f1f270800000000000000
+      internalID: 8282669997657258853
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_16
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 410
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc53fd993ed123940800000000000000
+      internalID: 5274310976980596175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_17
+      rect:
+        serializedVersion: 2
+        x: 551
+        y: 394
+        width: 54
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0e67bfae29d36990800000000000000
+      internalID: -7393827368672465394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_18
+      rect:
+        serializedVersion: 2
+        x: 544
+        y: 286
+        width: 94
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfdb394026173d370800000000000000
+      internalID: 8346139200245186044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_19
+      rect:
+        serializedVersion: 2
+        x: 569
+        y: 248
+        width: 44
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a706c3cc668a4aa40800000000000000
+      internalID: 5378609014453854330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cheongsachorong_20
+      rect:
+        serializedVersion: 2
+        x: 550
+        y: 65
+        width: 88
+        height: 180
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 336315139d8f32f90800000000000000
+      internalID: -6979461385775139277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Cheongsachorong_0: -7589958211629341349
+      Cheongsachorong_1: -648289779317639980
+      Cheongsachorong_10: 3352553304304470347
+      Cheongsachorong_11: 398828855259708522
+      Cheongsachorong_12: 1861615600142344107
+      Cheongsachorong_13: -533500750380406552
+      Cheongsachorong_14: -3769904761533630934
+      Cheongsachorong_15: 8282669997657258853
+      Cheongsachorong_16: 5274310976980596175
+      Cheongsachorong_17: -7393827368672465394
+      Cheongsachorong_18: 8346139200245186044
+      Cheongsachorong_19: 5378609014453854330
+      Cheongsachorong_2: 6094853132413744827
+      Cheongsachorong_20: -6979461385775139277
+      Cheongsachorong_3: 2341952451230618235
+      Cheongsachorong_4: 1454082931417918103
+      Cheongsachorong_5: -8012891494937855370
+      Cheongsachorong_6: 5492465320369529875
+      Cheongsachorong_7: 2890656160185652045
+      Cheongsachorong_8: -7792860821985637498
+      Cheongsachorong_9: 5370395951459210203
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

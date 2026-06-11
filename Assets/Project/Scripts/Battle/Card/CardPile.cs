@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using FFF.Data;
 
 namespace FFF.Battle.Card
 {
@@ -18,26 +19,26 @@ namespace FFF.Battle.Card
     /// </summary>
     public class CardPile
     {
-        private List<Data.HwaTuCard> _drawPile = new();
-        private List<Data.HwaTuCard> _hand = new();
-        private List<Data.HwaTuCard> _selectedCards = new();
-        private List<Data.HwaTuCard> _discardPile = new();
+        private List<HwaTuCard> _drawPile = new();
+        private List<HwaTuCard> _hand = new();
+        private List<HwaTuCard> _selectedCards = new();
+        private List<HwaTuCard> _discardPile = new();
 
         private System.Random _random;
 
         #region === Getter (외부 읽기 전용) ===
 
         /// <summary>뽑을 화투패 산.</summary>
-        public IReadOnlyList<Data.HwaTuCard> DrawPile => _drawPile;
+        public IReadOnlyList<HwaTuCard> DrawPile => _drawPile;
 
         /// <summary>현재 손패.</summary>
-        public IReadOnlyList<Data.HwaTuCard> Hand => _hand;
+        public IReadOnlyList<HwaTuCard> Hand => _hand;
 
         /// <summary>최종 선택된 카드.</summary>
-        public IReadOnlyList<Data.HwaTuCard> SelectedCards => _selectedCards;
+        public IReadOnlyList<HwaTuCard> SelectedCards => _selectedCards;
 
         /// <summary>버려진 화투패 산 (묘지).</summary>
-        public IReadOnlyList<Data.HwaTuCard> DiscardPile => _discardPile;
+        public IReadOnlyList<HwaTuCard> DiscardPile => _discardPile;
 
         /// <summary>전체 카드 수 (모든 영역 합계). 디버그/검증용.</summary>
         public int TotalCardCount =>
@@ -50,7 +51,7 @@ namespace FFF.Battle.Card
         /// <summary>
         /// 모든 영역을 비우고, 전달받은 카드를 DrawPile에 넣고 셔플한다.
         /// </summary>
-        public void Initialize(List<Data.HwaTuCard> allCards, int seed = -1)
+        public void Initialize(List<HwaTuCard> allCards, int seed = -1)
         {
             _random = seed >= 0 ? new System.Random(seed) : new System.Random();
 
@@ -74,10 +75,10 @@ namespace FFF.Battle.Card
         /// DrawPile에 있는 만큼만 이동. 부족 판단은 호출자 책임.
         /// </summary>
         /// <returns>실제로 이동된 카드 목록</returns>
-        public List<Data.HwaTuCard> MoveDrawToHand(int count)
+        public List<HwaTuCard> MoveDrawToHand(int count)
         {
             int actual = Mathf.Min(count, _drawPile.Count);
-            var moved = new List<Data.HwaTuCard>(actual);
+            var moved = new List<HwaTuCard>(actual);
 
             for (int i = 0; i < actual; i++)
             {
@@ -100,10 +101,10 @@ namespace FFF.Battle.Card
         /// <param name="count">뽑을 카드 수</param>
         /// <param name="weightFunc">카드별 가중치 반환 함수. 값이 클수록 자주 뽑힌다.</param>
         /// <returns>실제로 이동된 카드 목록</returns>
-        public List<Data.HwaTuCard> MoveDrawToHandWeighted(int count, Func<Data.HwaTuCard, float> weightFunc)
+        public List<HwaTuCard> MoveDrawToHandWeighted(int count, Func<HwaTuCard, float> weightFunc)
         {
             int actual = Mathf.Min(count, _drawPile.Count);
-            var moved = new List<Data.HwaTuCard>(actual);
+            var moved = new List<HwaTuCard>(actual);
 
             for (int i = 0; i < actual; i++)
             {
@@ -142,7 +143,7 @@ namespace FFF.Battle.Card
         /// 지정한 카드들을 Hand에서 제거하고 DrawPile로 되돌린다.
         /// </summary>
         /// <returns>실제로 되돌려진 카드 수</returns>
-        public int MoveHandToDrawPile(List<Data.HwaTuCard> cards)
+        public int MoveHandToDrawPile(List<HwaTuCard> cards)
         {
             int count = 0;
 
@@ -166,7 +167,7 @@ namespace FFF.Battle.Card
         /// 지정한 카드들을 SelectedCards에서 제거하고 DrawPile로 되돌린다.
         /// </summary>
         /// <returns>실제로 되돌려진 카드 수</returns>
-        public int MoveSelectedCardsToDrawPile(List<Data.HwaTuCard> cards)
+        public int MoveSelectedCardsToDrawPile(List<HwaTuCard> cards)
         {
             int count = 0;
 
@@ -190,7 +191,7 @@ namespace FFF.Battle.Card
         /// Hand에서 카드 하나를 SelectedCards로 이동한다.
         /// </summary>
         /// <returns>이동 성공 여부</returns>
-        public bool MoveHandToSelected(Data.HwaTuCard card)
+        public bool MoveHandToSelected(HwaTuCard card)
         {
             if (!_hand.Remove(card)) return false;
 
@@ -202,7 +203,7 @@ namespace FFF.Battle.Card
         /// SelectedCards에서 카드 하나를 Hand로 되돌린다.
         /// </summary>
         /// <returns>이동 성공 여부</returns>
-        public bool MoveSelectedToHand(Data.HwaTuCard card)
+        public bool MoveSelectedToHand(HwaTuCard card)
         {
             if (!_selectedCards.Remove(card)) return false;
 
@@ -256,7 +257,7 @@ namespace FFF.Battle.Card
         #region === 내부 유틸 ===
 
         /// <summary>Fisher-Yates 셔플.</summary>
-        private void Shuffle(List<Data.HwaTuCard> cards)
+        private void Shuffle(List<HwaTuCard> cards)
         {
             for (int i = cards.Count - 1; i > 0; i--)
             {

@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using FFF.Core;
 using FFF.Core.Events;
 using FFF.Data;
+using FFF.Battle.Data;
 using FFF.Battle.Modifier;
 
 
@@ -25,6 +27,7 @@ namespace FFF.Battle.FSM
 
         // --- 현재 상태 읽기 전용 프로퍼티 ---
         public TurnState CurrentPhase { get; private set; } = TurnState.None;
+        public bool IsBattleActive { get; private set; }
 
         // --- 현재 전투의 데이터를 담을 공용 문맥 객체 (매 전투 스테이지마다 새로 갱신됨) ---
         public BattleContext Context { get; private set; }
@@ -68,16 +71,42 @@ namespace FFF.Battle.FSM
         /// </summary>
         public void StartBattle()
         {
+            if (IsBattleActive)
+            {
+                Debug.LogWarning("[BattleManager] 이미 전투가 진행 중이라 StartBattle 중복 호출을 무시합니다.");
+                return;
+            }
+
+            IsBattleActive = true;
+
+            // Battle내에서 사용할 BattleContext 생성
+            Context = new BattleContext();
+
+            // GameManager로부터 구조체 형태의 전달 데이터 획득
+            BattleEntryData entryData = GameManager.Instance.CurrentBattleEntryData;
+
+            /// ----------  Player Data ---------------
+            // 전달받은 구조체 내부의 Master Data(SO)를 복제 생성
+            Context.PlayerData = new PlayerDataBattle(entryData.PlayerMasterData);
+            /// --------------------------------------
+            
+            /// ----------  Enemy Data ---------------
+            // 구조체에 담긴 적 ID를 이번 전투 Context에 할당
+            Context.TargetEnemyId = entryData.TargetEnemyId;
+
+            // TODO: [Step 4] entryData.EnemyBonusHealth 값을 EnemyDataBattle 생성/초기화 과정에 적용 필요.
+            /// --------------------------------------
+            Debug.Log($"적 아이디 : {Context.TargetEnemyId}");
+
             // 배달통 생성 및 초기화
             CurrentModifierContext = new ModifierContext
             {
-                CurrentTurnNumber = 1, // 1턴부터 시작
-                Player = PlayerData.Instance,
+                CurrentTurnNumber = 0, // 0턴부터 시작 : TurnReady를 거칠 때마다 1씩 증가하므로, 1턴시작을 위해선 0으로 시작
+                Player = Context.PlayerData, // 복제된 로컬 데이터 할당
                 //Enemy = EnemyManager.Instance.CurrentEnemy, 아직 적 시스템이 구현되지 않아서 임시로 주석화
                 ActionHandResult = null
             };
 
-            Context = new BattleContext();
             CurrentPhase = TurnState.None;
             
             // 전투 시작 이벤트 호출 (초기화 관련 로직들이 등록되어 있음)
@@ -92,6 +121,7 @@ namespace FFF.Battle.FSM
         /// </summary>
         public void EndBattle()
         {
+            IsBattleActive = false;
             CurrentPhase = TurnState.None;
             
             // 전투 종료 이벤트 호출
@@ -123,5 +153,49 @@ namespace FFF.Battle.FSM
                     break;
             }
         }
+
+        #region === Temp: 디버그용 갓 코드 ===
+        
+        private void Update()
+        {
+            // 백틱(`) 키를 누르면 즉시 적을 처치하고 전투 종료
+            if (Input.GetKeyDown(KeyCode.BackQuote))
+            {
+                TempKillCodeInBattle();
+            }
+        }
+
+        private void TempKillCodeInBattle()
+        {
+            // 1. 중복 실행 방지: 이미 전투가 종료되었거나 종료 연출 중이라면 무시
+            // (CurrentPhase 변수명은 실제 BattleManager 내부의 상태 변수명에 맞게 수정해주세요)
+            if (CurrentPhase == TurnState.TurnEnd) 
+            {
+                return;
+            }
+
+            Debug.Log("[BattleManager] ☠️ 임시 킬 코드 발동! 적에게 99999 피해를 가하고 즉시 승리 처리합니다.");
+
+            // 2. 씬 내의 적 객체(EnemyDataBattle)를 찾아서 99999 데미지 가하기
+            // BattleManager에 직접적인 참조가 없을 수 있으므로 FindFirstObjectByType을 사용해 안전하게 탐색합니다.
+            var enemy = UnityEngine.Object.FindFirstObjectByType<EnemyDataBattle>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(99999);
+            }
+
+            // 3. BattleContext의 승리 판정 플래그를 강제로 '플레이어 승리'로 설정
+            if (Context != null)
+            {
+                Context.IsPlayerWinner = true;
+            }
+
+            // 4. 기존 FSM 흐름에 맞게 전투 종료 호출
+            // 강제로 씬을 넘기는 것이 아니라 EndBattle()을 호출함으로써, 
+            // BattleEndManager가 정상적으로 이벤트를 수신하고 보상 선택 UI를 띄우도록 합니다.
+            EndBattle();
+        }
+        
+        #endregion
     }    
 }

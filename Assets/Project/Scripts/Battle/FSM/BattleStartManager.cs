@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
+using FFF.Battle.Data;
 using FFF.Battle.FSM;
 using FFF.Battle.Card;
-using FFF.Battle.Enemy;
-using FFF.Battle.Item.Joker;
-using FFF.Battle.Item.Accessory;
+using FFF.Battle.Damage;
 using FFF.UI.Battle;
+using FFF.UI.Animation;
 using FFF.Core.Events;
 using FFF.Data;
+using FFF.Audio;
+using FFF.Core;
 
 namespace FFF.Battle.Managers
 {
@@ -24,8 +26,9 @@ namespace FFF.Battle.Managers
         [SerializeField] private DeckSystem _deckSystem;
         [SerializeField] private AccessoryManager _accessoryManager;
         [SerializeField] private JokerManager _jokerManager;
-        [SerializeField] private EnemyData _enemyData;
+        [SerializeField] private EnemyDataBattle _enemyDataBattle;
         [SerializeField] private BattleUIComponent _battleUI;
+        [SerializeField] private EnemyVisualize _enemyVisualize;
 
         [Header("=== 수신할 이벤트 ===")]
         [Tooltip("BattleManager가 방송하는 BattleStart 이벤트")]
@@ -51,25 +54,75 @@ namespace FFF.Battle.Managers
         {
             try{
                 Debug.Log("[BattleStartManager] 전투 초기화 시작...");
-                // 1. 플레이어 데이터 로드
-                PlayerData player = PlayerData.Instance;
 
-                // 2. 덱 시스템 초기화 (시연용으로 전체 카드 로드)
-                // 현재: Resources 폴더의 모든 카드(20장)를 로드.
-                // 미래: GameManager나 SaveData에서 '현재 플레이어가 보유한 덱'을 가져오도록 수정.
-                List<HwaTuCard> playerDeck = HwaTuCardDatabase.CreateAllCards();
+                // 1. 플레이어 데이터 로드
+                // BattleManager의 Context에 있는 로컬 데이터를 가져옴
+                PlayerDataBattle player = BattleManager.Instance.Context.PlayerData;
+
+                // 2. 플레이어가 보유한 덱 ID 목록을 카드 SO 원본에서 복사해 전투용 덱으로 만든다.
+                // 같은 CardId가 여러 번 들어있으면 같은 카드가 여러 장 생성된다.
+                List<HwaTuCard> playerDeck = HwaTuCardDatabase.CreateCardsFromIds(player.DeckCardIds);
+                if (playerDeck.Count == 0)
+                {
+                    Debug.LogWarning("[BattleStartManager] 플레이어 덱이 비어 있어 기본 1~10월 초기 덱을 사용합니다.");
+                    playerDeck = HwaTuCardDatabase.CreateDefaultInitialDeck();
+                }
 
                 // 3. DeckSystem 초기화 (시드값을 고정하고 싶다면 두 번째 인자로 전달)
                 _deckSystem.Initialize(playerDeck);
-
                 _battleUI.Show();
+                
 
-                // 5. UI 초기화
-                _enemyData.InitializeMockData();
-                Debug.Log($"{_enemyData.CurrentHealth} dlqslek tq");
+                // 4. 적 데이터 연동 및 초기화
+                // BattleContext에서 타겟 EnemyId 로드
+                string targetEnemyId = BattleManager.Instance.Context.TargetEnemyId;
+                // 데이터베이스에서 해당 ID를 가진 SO 파일을 로드
+                EnemyDataSO enemySO = EnemyDatabase.FindById(targetEnemyId);
+                // 해당 SO로 배틀 전용 객체를 초기화
+                
+                 // <ver 1.2.1> 임시 - 적의 추가 체력을 설정하는 로직을 만들지 않아서 여기에 임시로 추가함
+                _enemyDataBattle.Initialize(enemySO, 
+                    GameManager.Instance.CurrentBattleEntryData.EnemyBonusHealth, 
+                    GameManager.Instance.CurrentBattleEntryData.EnemyBonusStrength);
+
+                if (_enemyVisualize != null)
+                {
+                    _enemyVisualize.SetupVisual(enemySO);
+                }
+                else
+                {
+                    Debug.LogWarning("[BattleStartManager] EnemyVisualize 참조가 없어 적 외형 설정을 건너뜀.");
+                }
+                
+
+
+                // 5. 아이템 시스템 ID 기반 초기화 및 장신구 버프 적용
+                // 장신구 객체 생성 및 전투 컨텍스트에 영구 버프 등록
+                _accessoryManager.Initialize(player.EquippedAccessoryIds);
+                _accessoryManager.ApplyAllAccessories(BattleManager.Instance.CurrentModifierContext);
+
+                // 조커 객체 생성 (실행 대기 상태)
+                _jokerManager.Initialize(player.HeldJokerIds);
+
+
+                // 6. UI 초기화
                 _battleUI.SetPlayerHealth(player.CurrentHealth, player.MaxHealth);
-                _battleUI.SetEnemyHealth(_enemyData.CurrentHealth, _enemyData.MaxHealth);
-                _battleUI.SetupItemIcons(player.EquippedAccessoryIds, player.HeldJokerIds);
+                _battleUI.SetPlayerGold(player.CurrentGold);
+                _battleUI.SetDeckCards(player.DeckCardIds);
+                _battleUI.SetEnemyHealth(_enemyDataBattle.CurrentHealth, _enemyDataBattle.MaxHealth);
+                _battleUI.SetPileCounts(_deckSystem.DrawPile.Count, _deckSystem.DiscardPile.Count);
+                _battleUI.ShowEnemyGimmickDescription(_enemyDataBattle.AIPatternDescription);
+                if (_enemyVisualize != null)
+                {
+                    _enemyVisualize.ConfigureGimmickHover(
+                        _battleUI.ShowStoredEnemyGimmickDescription,
+                        _battleUI.HideStoredEnemyGimmickDescription);
+                }
+
+                // Manager가 관리하는 ItemBase 객체 리스트를 UI로 직접 전달
+                _battleUI.SetJokerClickHandler(_jokerManager.HandleJokerClicked);
+                _battleUI.SetupItemIcons(_accessoryManager.EquippedAccessories, _jokerManager.HeldJokers);
+                
 
                 Debug.Log("[BattleStartManager] 전투 초기화 완료. 턴 시작 준비 끝!");
             }

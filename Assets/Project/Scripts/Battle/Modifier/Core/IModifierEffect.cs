@@ -6,10 +6,8 @@ namespace FFF.Battle.Modifier
     public interface IModifierEffect
     {
         /// <summary>
-        /// 파이프라인의 이전 단계에서 넘어온 값을 받아, 연산을 수행한 뒤 뱉어냅니다.
+        /// 전달된 Context 내부의 누적용 변수들을 조작하여 효과를 적용함.
         /// </summary>
-        /// <param name="currentValue">아이템이 개입하기 전의 현재 값</param>
-        /// <returns>더하기, 곱하기, 덮어쓰기 등이 적용된 최종 연산 값</returns>
-        int Apply(int currentValue);
+        void Apply(ModifierContext context);
     }
 }

@@ -35,19 +35,19 @@ namespace FFF.UI.Animation
 
         [Header("=== 애니메이션 설정 ===")]
         [Tooltip("드로우 시 이동 시간")]
-        [SerializeField] private float _drawDuration = 0.45f;
+        [SerializeField] private float _drawDuration = 0.8f;
 
         [Tooltip("손패 정렬 시 이동 시간")]
-        [SerializeField] private float _arrangeDuration = 0.25f;
+        [SerializeField] private float _arrangeDuration = 0.35f;
 
         [Tooltip("호버 시 상승 거리 (px)")]
-        [SerializeField] private float _hoverRiseAmount = 15f;
+        [SerializeField] private float _hoverRiseAmount = 115f;
 
         [Tooltip("선택 시 상승 거리 (px)")]
-        [SerializeField] private float _selectRiseAmount = 20f;
+        [SerializeField] private float _selectRiseAmount = 115f;
 
         [Tooltip("선택 시 스케일")]
-        [SerializeField] private float _selectScale = 1.05f;
+        [SerializeField] private float _selectScale = 1.06f;
 
         [Tooltip("폐기 시 낙하 거리 (px)")]
         [SerializeField] private float _discardDropAmount = 80f;
@@ -83,9 +83,6 @@ namespace FFF.UI.Animation
 
         /// <summary>현재 선택 상태인지.</summary>
         private bool _isSelected;
-
-        /// <summary>현재 호버 상태인지.</summary>
-        private bool _isHovered;
 
         #endregion
 
@@ -146,13 +143,13 @@ namespace FFF.UI.Animation
 
         /// <summary>
         /// 마우스 호버 진입. 제자리에서 살짝 위로 올라옴.
-        /// 데모v3: translateY(-15px), 스케일 1.08, 기울기 절반으로.
+        /// 데모v3: 화면 하단에 묻힌 카드가 온전히 보이도록 위로 슬라이드.
         /// </summary>
         public void PlayHoverEnter()
         {
             if (_isSelected) return; // 선택 상태면 호버 무시
-            _isHovered = true;
 
+            EnsureFullyVisible();
             StopCurrentTween();
             Vector2 hoverPos = _handPosition + Vector2.up * _hoverRiseAmount;
             _currentTween = StartCoroutine(HoverSequence(hoverPos, 1.08f, _handRotation * 0.5f));
@@ -164,20 +161,20 @@ namespace FFF.UI.Animation
         public void PlayHoverExit()
         {
             if (_isSelected) return;
-            _isHovered = false;
 
+            EnsureFullyVisible();
             StopCurrentTween();
             _currentTween = StartCoroutine(HoverSequence(_handPosition, 1f, _handRotation));
         }
 
         /// <summary>
         /// 카드 선택. 위로 올라가며 금테 + 스케일 변화.
-        /// 데모v3: translateY(-20px), 스케일 1.05, 금색 보더, 기울기 0도.
+        /// 데모v3: 호버와 같은 높이로 고정, 금색 보더, 기울기 0도.
         /// </summary>
         public void PlaySelect()
         {
             _isSelected = true;
-            _isHovered = false;
+            EnsureFullyVisible();
 
             if (_borderImage != null)
                 _borderImage.color = _selectedBorderColor;
@@ -193,6 +190,7 @@ namespace FFF.UI.Animation
         public void PlayDeselect()
         {
             _isSelected = false;
+            EnsureFullyVisible();
 
             if (_borderImage != null)
                 _borderImage.color = _defaultBorderColor;
@@ -322,6 +320,12 @@ namespace FFF.UI.Animation
                 StopCoroutine(_currentTween);
                 _currentTween = null;
             }
+        }
+
+        private void EnsureFullyVisible()
+        {
+            if (_canvasGroup != null)
+                _canvasGroup.alpha = 1f;
         }
 
         #endregion

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
+  m_Name: Enemy_015
+  m_EditorClassIdentifier: 
+  EnemyId: Enemy_015
+  EnemyName: "\uB561\uAFBC"
+  MaxHealth: 500
+  AIPatternDescription: "\uC801\uC740 2\uD134\uB9C8\uB2E4 \uB561\uC5D0 \uD574\uB2F9\uD558\uB294
+    \uC871\uBCF4\uB97C \uB0C5\uB2C8\uB2E4. \uB561\uC778 \uC871\uBCF4\uB97C \uB0B4\uBA74
+    \uC801\uC5D0\uAC8C \uC8FC\uB294 \uB370\uBBF8\uC9C0\uAC00 \uC0C1\uC2B9\uD558\uACE0,
+    \uADF8\uB807\uC9C0 \uC54A\uC73C\uBA74 \uC801\uC5D0\uAC8C \uC8FC\uB294 \uB370\uBBF8\uC9C0\uAC00
+    \uAC10\uC18C\uD569\uB2C8\uB2E4."
+  IdleSprite: {fileID: -6248741079362886434, guid: a4f49606484bd584fafa58040bc462e1, type: 3}
+  AttackSprite: {fileID: -7100139421218375167, guid: 3728670667abeb8438ebaa3f532cdaf5, type: 3}
+  BackgroundSprite: {fileID: 2887422426852493428, guid: 552f2bf7a62f2ac40bea8c94c273a34b, type: 3}

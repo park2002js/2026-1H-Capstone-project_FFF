@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665036407fc21954cabb1ad7eba74438, type: 3}
+  m_Name: Enemy_008
+  m_EditorClassIdentifier: 
+  EnemyId: Enemy_008
+  EnemyName: "10\uC774\uC0C1"
+  MaxHealth: 200
+  AIPatternDescription: "\uC871\uBCF4\uC758 \uC6D4 \uC22B\uC790 \uD569\uC774 10\uC774\uC0C1\uC774\uC5EC\uC57C
+    \uB370\uBBF8\uC9C0\uAC00 \uD06C\uAC8C \uB4E4\uC5B4\uAC00\uACE0, 10 \uBBF8\uB9CC\uC774\uBA74
+    \uB370\uBBF8\uC9C0\uAC00 \uC57D\uD558\uAC8C \uB4E4\uC5B4\uAC11\uB2C8\uB2E4."
+  IdleSprite: {fileID: 21300000, guid: 82e7eaed419fa5a4291d0c22eecb382c, type: 3}
+  AttackSprite: {fileID: 21300000, guid: 2097cce73356785478daac6876bad118, type: 3}
+  BackgroundSprite: {fileID: 21300000, guid: c80d83bc22ade5a4eae570ea6ab262c5, type: 3}

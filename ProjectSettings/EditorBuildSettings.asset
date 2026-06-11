@@ -20,6 +20,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/BattleScene.unity
     guid: 9ef38aa297f19934791537e09d615644
+  - enabled: 1
+    path: Assets/Project/Scenes/ShopScene.unity
+    guid: acd59f50d7c14a1ea64b6a2b31e6b5ce
+  - enabled: 1
+    path: Assets/Project/Scenes/RestScene.unity
+    guid: d48f5ca560b744a69a2f7de345fb36a1
+  - enabled: 1
+    path: Assets/Project/Scenes/TreasureScene.unity
+    guid: f47f592dd0414c1f9e65068bc5e09a34
+  - enabled: 1
+    path: Assets/Project/Scenes/EndingScene.unity
+    guid: 0a2a85c8db23fa5449eb64f154122e7f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

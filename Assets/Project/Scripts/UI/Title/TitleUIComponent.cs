@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using FFF.UI.Core;
+using FFF.Audio;
 
 namespace FFF.UI.Title
 {
@@ -125,6 +126,7 @@ namespace FFF.UI.Title
         private void OnAnyKeyPressed()
         {
             Debug.Log("[TitleUI] 아무 키 입력 감지 → GameManager에 전달");
+            SoundManager.PlayDefaultUiClick();
             OnExit?.Invoke();
         }
     }

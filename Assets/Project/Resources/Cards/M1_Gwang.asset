@@ -16,5 +16,6 @@ MonoBehaviour:
   Type: 0
   CardId: M1_Gwang
   DisplayName: "1\uC6D4 \uAD11"
+  Artwork: {fileID: 21300000, guid: 1ce4d65b6ced9e049b853d9fe817e9b1, type: 3}
   IsSpecial: 0
   EffectId: 

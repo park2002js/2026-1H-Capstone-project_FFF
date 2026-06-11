@@ -69,5 +69,7 @@ namespace FFF.UI.Core
         public const string MAP    = "Map";
         public const string BATTLE = "Battle";
         public const string SHOP   = "Shop";
+        public const string REST   = "Rest";
+        public const string TREASURE = "Treasure";
     }
 }
