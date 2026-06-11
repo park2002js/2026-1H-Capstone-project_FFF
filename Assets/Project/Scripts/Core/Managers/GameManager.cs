@@ -59,11 +59,11 @@ namespace FFF.Core
 
         private static readonly RewardCatalogItem[] EventJokerRewardPool =
         {
-            new RewardCatalogItem("Jocker_001", "각시탈"),
-            new RewardCatalogItem("Jocker_002", "분이"),
-            new RewardCatalogItem("Jocker_003", "목자"),
-            new RewardCatalogItem("Jocker_004", "양반"),
-            new RewardCatalogItem("Jocker_005", "소무")
+            new RewardCatalogItem("Joker_001", "각시탈"),
+            new RewardCatalogItem("Joker_002", "분이"),
+            new RewardCatalogItem("Joker_003", "목자"),
+            new RewardCatalogItem("Joker_004", "양반"),
+            new RewardCatalogItem("Joker_005", "소무")
         };
 
         private static readonly RewardCatalogItem[] EventAccessoryRewardPool =

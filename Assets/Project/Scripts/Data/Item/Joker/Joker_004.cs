@@ -10,7 +10,7 @@ namespace FFF.Data
     public class Joker_004 : JokerItemBase
     {
         public override string Id => "Joker_004";
-        protected override string SpriteFileName => "gaksi";
+        protected override string SpriteFileName => "yangban";
 
         public override void Apply(ModifierContext context, Action onConsume = null)
         {
